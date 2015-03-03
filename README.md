@@ -1,7 +1,7 @@
 # narratr
 ## now with fewer vowels
 
-**Note**: I changed the repo name so you guys may have to do 'git remote set-url origin https://github.com/cswatt/narratr.git'
+**Note**: I changed the repo name so you guys may have to do `git remote set-url origin https://github.com/cswatt/narratr.git`
 
 ## TO DO
 - writing grammars
