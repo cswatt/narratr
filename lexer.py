@@ -38,7 +38,11 @@ class LexerForNarratr:
     tokens = ['SCENEID', 'LCURLY', 'RCURLY', 'COLON', 'TAB',
               'NEWLINE', 'ID', 'STRING'] + list(reserved.values())
 
-    # Regular expression rules for simple tokens
+    # The constructor here builds the lexer.
+    def __init__(self, **kwargs):
+        self.lexer = lex.lex(module=self, **kwargs)
+
+    # Regular expression rules for simple tokens are specified here.
     t_LCURLY = r'{'
     t_RCURLY = r'}'
     t_COLON = r':'
@@ -48,30 +52,51 @@ class LexerForNarratr:
     # only.
     t_ignore = ' '
 
-    # This rule matches an Identifier except
-    def t_ID(t):
+    # This rule matches an Identifier except for the reserved words defined
+    # above. The reserved words will be matched to their own tokens.
+    def t_ID(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9]*'
-        t.type = reserved.get(t.value, 'ID')    # Check for reserved words
+        t.type = self.reserved.get(t.value, 'ID')    # Check for reserved words
         return t
 
-    def t_SCENEID(t):
+    # This rule matches he Scene ID and stores the value as the integer ID.
+    def t_SCENEID(self, t):
         r'\$[0-9]+'
         t.value = int(t.value[1:])
         return t
 
-    def t_STRING(t):
+    # This rule matches strings.
+    def t_STRING(self, t):
         r'\".*\"'
         t.value = t.value[1:-1]
         return t
 
-    # Rule to track Line numbers
-    def t_NEWLINE(t):
+    # This rule tracks line numbers
+    def t_NEWLINE(self, t):
         r'\n+'
         t.value = len(t.value)
         t.lexer.lineno += t.value
         return t
 
-    # Error handling rule
-    def t_error(t):
+    # This rule is triggered if an error is encountered. The lexer skips a line
+    # after printing a message.
+    def t_error(self, t):
         print "Illegal character '%s'" % t.value[0]
         t.lexer.skip(1)
+
+    # This method provides an interface to the lexer's input(string) function
+    def input(self, string_to_scan):
+        self.lexer.input(string_to_scan)
+
+    # This method provides an interface to the lexer's token() function
+    def token(self):
+        return self.lexer.token()
+
+    # This method prints all tokens scanned by the lexer. This method should be
+    # called only after passing some input through the input(string) function.
+    # This method is for testing purposes only.
+    def printAllTokens(self):
+        nextToken = self.lexer.token()
+        while nextToken:
+            print nextToken
+            nextToken = self.lexer.token()
