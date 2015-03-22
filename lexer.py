@@ -31,7 +31,19 @@ class LexerForNarratr:
         'action': 'ACTION',
         'cleanup': 'CLEANUP',
         'say': 'SAY',
-        'start': 'START'
+        'win' : 'WIN',
+        'lose' : 'LOSE',
+        'start': 'START',
+        'exposition' : 'EXPOSITION',
+        'moves' : 'MOVES',
+        'move' : 'MOVE',
+        'left' : 'LEFT',
+        'right' : 'RIGHT',
+        'up' : 'UP',
+        'down' : 'DOWN',
+        'is' : 'IS',
+        'item' : 'ITEM',
+        'has' : 'HAS'
     }
 
     # All other tokens are declared here. Tokens not declared here would
