@@ -1,0 +1,8 @@
+scene $1 {
+	setup:
+		say "Hello, World!"
+	action:
+	cleanup:
+}
+
+start: $1
