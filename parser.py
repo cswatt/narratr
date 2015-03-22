@@ -27,30 +27,34 @@ class ParserForNarratr:
         self.parser = yacc.yacc(module=self, **kwargs)
 
     def p_program(self, p):
-        '''program : sceneblocks
-                   | sceneblocks NEWLINE startstate'''
+        '''program : newlines sceneblocks
+                   | newlines sceneblocks startstate newlines'''
 
     def p_sceneblocks(self, p):
-        '''sceneblocks : sceneblock
-                       | sceneblocks sceneblock'''
+        '''sceneblocks : sceneblock newlines
+                       | sceneblocks sceneblock newlines'''
+
+    def p_newlines(self, p):
+        '''newlines : NEWLINE
+                    | '''
 
     def p_sceneblock(self, p):
-        "sceneblock : SCENE SCENEID LCURLY NEWLINE TAB setupblock NEWLINE TAB actionblock NEWLINE TAB cleanupblock NEWLINE RCURLY"
+        "sceneblock : SCENE SCENEID LCURLY NEWLINE INDENT setupblock actionblock cleanupblock DEDENT RCURLY"
 
     def p_startstate(self, p):
         'startstate : START COLON SCENEID'
 
     def p_setupblock(self, p):
-        'setupblock : SETUP COLON NEWLINE TAB TAB statement'
+        'setupblock : SETUP COLON NEWLINE INDENT statements DEDENT'
 
     def p_actionblock(self, p):
-        'actionblock : ACTION COLON'
+        'actionblock : ACTION COLON NEWLINE'
 
     def p_cleanupblock(self, p):
-        'cleanupblock : CLEANUP COLON'
+        'cleanupblock : CLEANUP COLON NEWLINE'
 
-    def p_statement(self, p):
-        'statement : SAY STRING'
+    def p_statements(self, p):
+        'statements : SAY STRING NEWLINE'
 
     def p_error(self, p):
         print "Syntax Error in input at ", p
