@@ -1,3 +1,7 @@
 *~
 *.pyc
 .DS_Store
+parser.out
+parsetab.py
+parselog.txt
+dev_test.py
