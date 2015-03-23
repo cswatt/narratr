@@ -57,8 +57,8 @@ class LexerForNarratr:
     tokens = ['SCENEID', 'LCURLY', 'RCURLY', 'LPARAN', 'RPARAN', 'COLON',
               'NEWLINE', 'INDENT', 'DEDENT', 'ID', 'STRING', 'EQUALS',
               'LESS', 'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS',
-              'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE'] \
-        + list(reserved.values())
+              'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE', 'INTEGER',
+              'FLOAT'] + list(reserved.values())
 
     # The constructor here builds the lexer. The re.MULTILINE flag is critical
     # in matching indents.
@@ -89,6 +89,20 @@ class LexerForNarratr:
     def t_ID(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9]*'
         t.type = self.reserved.get(t.value, 'ID')    # Check for reserved words
+        return t
+
+    # This rule matches integers, signed and unsigned.
+    def t_INTEGER(self, t):
+        r'-?[1-9][0-9]*'
+        t.value = int(t.value)
+        return t
+
+    # This rule matches a floating point number.
+    # The float defined by this rule has to have at least one digit either to
+    # the left or the right of the decimal point.
+    def t_FLOAT(self, t):
+        r'-?([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)'
+        t.value = float(t.value)
         return t
 
     # This rule matches he Scene ID and stores the value as the integer ID.
