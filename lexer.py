@@ -57,7 +57,7 @@ class LexerForNarratr:
     tokens = ['SCENEID', 'LCURLY', 'RCURLY', 'LPARAN', 'RPARAN', 'COLON',
               'NEWLINE', 'INDENT', 'DEDENT', 'ID', 'STRING', 'EQUALS',
               'LESS', 'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS',
-              'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE']
+              'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE'] \
         + list(reserved.values())
 
     # The constructor here builds the lexer. The re.MULTILINE flag is critical
