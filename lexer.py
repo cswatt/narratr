@@ -31,25 +31,34 @@ class LexerForNarratr:
         'action': 'ACTION',
         'cleanup': 'CLEANUP',
         'say': 'SAY',
-        'win' : 'WIN',
-        'lose' : 'LOSE',
+        'win': 'WIN',
+        'lose': 'LOSE',
         'start': 'START',
-        'exposition' : 'EXPOSITION',
-        'moves' : 'MOVES',
-        'move' : 'MOVE',
-        'left' : 'LEFT',
-        'right' : 'RIGHT',
-        'up' : 'UP',
-        'down' : 'DOWN',
-        'is' : 'IS',
-        'item' : 'ITEM',
-        'has' : 'HAS'
+        'exposition': 'EXPOSITION',
+        'moves': 'MOVES',
+        'move': 'MOVE',
+        'left': 'LEFT',
+        'right': 'RIGHT',
+        'up': 'UP',
+        'down': 'DOWN',
+        'is': 'IS',
+        'item': 'ITEM',
+        'has': 'HAS',
+        'if': 'IF',
+        'while': 'WHILE',
+        'for': 'FOR',
+        'and': 'AND',
+        'or': 'OR',
+        'not': 'NOT'
     }
 
     # All other tokens are declared here. Tokens not declared here would
     # produce an error.
-    tokens = ['SCENEID', 'LCURLY', 'RCURLY', 'COLON', 'NEWLINE', 'INDENT',
-              'DEDENT', 'ID', 'STRING'] + list(reserved.values())
+    tokens = ['SCENEID', 'LCURLY', 'RCURLY', 'LPARAN', 'RPARAN', 'COLON',
+              'NEWLINE', 'INDENT', 'DEDENT', 'ID', 'STRING', 'EQUALS',
+              'LESS', 'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS',
+              'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE']
+        + list(reserved.values())
 
     # The constructor here builds the lexer. The re.MULTILINE flag is critical
     # in matching indents.
@@ -61,7 +70,19 @@ class LexerForNarratr:
     # Regular expression rules for simple tokens are specified here.
     t_LCURLY = r'{'
     t_RCURLY = r'}'
+    t_LPARAN = r'\('
+    t_RPARAN = r'\)'
     t_COLON = r':'
+    t_EQUALS = r'=='
+    t_LESS = r'<'
+    t_GREATER = r'>'
+    t_LESSEQUALS = r'<='
+    t_GREATEREQUALS = r'>='
+    t_PLUS = r'\+'
+    t_TIMES = r'\*'
+    t_MINUS = r'-'
+    t_DIVIDE = r'/'
+    t_INTEGERDIVIDE = r'//'
 
     # This rule matches an Identifier except for the reserved words defined
     # above. The reserved words will be matched to their own tokens.
