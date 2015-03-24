@@ -5,9 +5,9 @@
 
 ## running tests
 Let's use nose!
-'pip install nose'
+`pip install nose`
 
-And then just run 'nosetests'
+And then just run `nosetests`
 
 ## Other resources
 Whitepaper - https://drive.google.com/open?id=0B7xCVUksODqXSmpkTUhMa0tYR1E&authuser=0
