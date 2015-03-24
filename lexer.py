@@ -43,13 +43,14 @@ class LexerForNarratr:
         'down': 'DOWN',
         'is': 'IS',
         'item': 'ITEM',
-        'has': 'HAS',
         'if': 'IF',
         'while': 'WHILE',
         'for': 'FOR',
         'and': 'AND',
         'or': 'OR',
-        'not': 'NOT'
+        'not': 'NOT',
+        'true': 'TRUE',
+        'false': 'FALSE'
     }
 
     # All other tokens are declared here. Tokens not declared here would
@@ -58,7 +59,7 @@ class LexerForNarratr:
               'NEWLINE', 'INDENT', 'DEDENT', 'ID', 'STRING', 'EQUALS',
               'LESS', 'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS',
               'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE', 'INTEGER',
-              'FLOAT'] + list(reserved.values())
+              'FLOAT', 'DOT', 'COMMA'] + list(reserved.values())
 
     # The constructor here builds the lexer. The re.MULTILINE flag is critical
     # in matching indents.
@@ -91,18 +92,23 @@ class LexerForNarratr:
         t.type = self.reserved.get(t.value, 'ID')    # Check for reserved words
         return t
 
-    # This rule matches integers, signed and unsigned.
-    def t_INTEGER(self, t):
-        r'-?[1-9][0-9]*'
-        t.value = int(t.value)
-        return t
-
     # This rule matches a floating point number.
     # The float defined by this rule has to have at least one digit either to
     # the left or the right of the decimal point.
     def t_FLOAT(self, t):
         r'-?([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)'
         t.value = float(t.value)
+        return t
+
+    # This rule matches integers, signed and unsigned.
+    def t_INTEGER(self, t):
+        r'-?[1-9][0-9]*'
+        t.value = int(t.value)
+        return t
+
+    # This rule matches a period. Period is used to resolve into another scope.
+    def t_DOT(self, t):
+        r'\.'
         return t
 
     # This rule matches he Scene ID and stores the value as the integer ID.
