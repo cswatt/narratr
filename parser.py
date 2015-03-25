@@ -27,40 +27,50 @@ class ParserForNarratr:
         self.parser = yacc.yacc(module=self, **kwargs)
 
     def p_program(self, p):
-        "program : newlines blocks"
+        "program : optionalnewlines blocks"
 
     def p_blocks(self, p):
-        '''blocks : sceneblock newlines
-                  | itemblock newlines
-                  | startstate newlines
-                  | blocks sceneblock newlines
-                  | blocks itemblock newlines
-                  | blocks startstate newlines'''
+        '''blocks : sceneblock optionalnewlines
+                  | itemblock optionalnewlines
+                  | startstate optionalnewlines
+                  | blocks sceneblock optionalnewlines
+                  | blocks itemblock optionalnewlines
+                  | blocks startstate optionalnewlines'''
+
+    def p_optionalnewlines(self, p):
+        '''optionalnewlines : newlines
+                            | '''
 
     def p_newlines(self, p):
-        '''newlines : NEWLINE
-                    | '''
+        '''newlines : newlines NEWLINE
+                    | NEWLINE'''
 
     def p_sceneblock(self, p):
-        "sceneblock : SCENE SCENEID LCURLY NEWLINE INDENT setupblock actionblock cleanupblock DEDENT RCURLY"
+        '''sceneblock : SCENE SCENEID LCURLY newlines INDENT \
+                          setupblock actionblock cleanupblock DEDENT RCURLY
+                      | SCENE SCENEID LCURLY newlines setupblock actionblock \
+                          cleanupblock RCURLY'''
 
     def p_itemblock(self, p):
-        "itemblock : ITEM ID calllist LCURLY newlines statements RCURLY"
+        '''itemblock : ITEM ID calllist LCURLY optionalnewlines statements \
+                          RCURLY
+                     | ITEM ID calllist LCURLY optionalnewlines INDENT
+                          statements DEDENT RCURLY'''
 
     def p_startstate(self, p):
         'startstate : START COLON SCENEID'
 
     def p_setupblock(self, p):
-        '''setupblock : SETUP COLON NEWLINE INDENT statements DEDENT
-                      | SETUP COLON NEWLINE'''
+        '''setupblock : SETUP COLON newlines INDENT statements DEDENT
+                      | SETUP COLON newlines'''
 
     def p_actionblock(self, p):
-        '''actionblock : ACTION COLON NEWLINE INDENT statements DEDENT
-                       | ACTION COLON NEWLINE'''
+        '''actionblock : ACTION COLON newlines INDENT statements DEDENT
+                       | ACTION COLON newlines'''
 
     def p_cleanupblock(self, p):
-        '''cleanupblock : CLEANUP COLON NEWLINE INDENT statements DEDENT
-                        | CLEANUP COLON NEWLINE'''
+        '''cleanupblock : CLEANUP COLON newlines INDENT statements DEDENT
+                        | CLEANUP COLON newlines'''
 
     def p_statements(self, p):
         '''statements : statementlist
@@ -75,20 +85,19 @@ class ParserForNarratr:
                      | blockstatement'''
 
     def p_simplestatement(self, p):
-        '''simplestatement : SAY STRING NEWLINE
-                           | WIN NEWLINE
-                           | WIN STRING NEWLINE
-                           | LOSE NEWLINE
-                           | LOSE STRING NEWLINE
-                           | EXPOSITION STRING NEWLINE
-                           | assignstatement'''
+        '''simplestatement : SAY args newlines
+                           | WIN newlines
+                           | WIN args newlines
+                           | LOSE newlines
+                           | LOSE args newlines
+                           | EXPOSITION STRING newlines
+                           | ID IS expression newlines'''
 
     def p_blockstatement(self, p):
-        '''blockstatement : IF booleanexpression COLON NEWLINE INDENT statements DEDENT
-                          | WHILE booleanexpression COLON NEWLINE INDENT statements DEDENT'''
-
-    def p_assignstatement(self, p):
-        '''assignstatement : ID IS expression'''
+        '''blockstatement : IF booleanexpression COLON newlines INDENT \
+                                statements DEDENT
+                          | WHILE booleanexpression COLON newlines INDENT \
+                                statements DEDENT'''
 
     def p_expression(self, p):
         '''expression : arithmeticexpression
