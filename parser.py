@@ -92,8 +92,12 @@ class ParserForNarratr:
                            | LOSE args newlines
                            | EXPOSITION STRING newlines
                            | ID IS expression newlines
+                           | GOD ID IS expression newlines
                            | MOVES directionlist newlines
-                           | MOVE direction newlines'''
+                           | MOVE direction newlines
+                           | BREAK newlines
+                           | CONTINUE newlines
+                           | POCKET DOT ID atom newlines'''
 
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
@@ -108,9 +112,9 @@ class ParserForNarratr:
 
     def p_blockstatement(self, p):
         '''blockstatement : IF booleanexpression COLON newlines INDENT \
-                                statements DEDENT
+                                statements DEDENT optionalnewlines
                           | WHILE booleanexpression COLON newlines INDENT \
-                                statements DEDENT'''
+                                statements DEDENT optionalnewlines'''
 
     def p_expression(self, p):
         '''expression : arithmeticexpression
@@ -146,20 +150,24 @@ class ParserForNarratr:
         '''number : INTEGER
                   | FLOAT'''
 
+    def p_boolean(self, p):
+        '''boolean : TRUE
+                   | FALSE'''
+
     def p_booleanexpression(self, p):
         '''booleanexpression : booleanterm OR booleanexpression
                              | booleanterm'''
 
     def p_booleanterm(self, p):
         '''booleanterm : booleanfactor AND booleanfactor
+                       | booleanfactor EQUALS booleanfactor
                        | booleanfactor'''
 
     def p_booleanfactor(self, p):
         '''booleanfactor : LPARAN booleanexpression RPARAN
-                         | NOT booleanfactor
+                         | NOT factor
                          | conditional
-                         | FALSE
-                         | TRUE'''
+                         | boolean'''
 
     def p_conditional(self, p):
         '''conditional : factor conditionalop factor'''

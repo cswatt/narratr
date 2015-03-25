@@ -49,7 +49,11 @@ class LexerForNarratr:
         'or': 'OR',
         'not': 'NOT',
         'true': 'TRUE',
-        'false': 'FALSE'
+        'false': 'FALSE',
+        'god': 'GOD',
+        'continue': 'CONTINUE',
+        'break': 'BREAK',
+        'pocket': 'POCKET'
     }
 
     # All other tokens are declared here. Tokens not declared here would
