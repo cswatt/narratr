@@ -44,6 +44,7 @@ class LexerForNarratr:
         'is': 'IS',
         'item': 'ITEM',
         'if': 'IF',
+        'else': 'ELSE',
         'while': 'WHILE',
         'and': 'AND',
         'or': 'OR',
@@ -100,13 +101,13 @@ class LexerForNarratr:
     # The float defined by this rule has to have at least one digit either to
     # the left or the right of the decimal point.
     def t_FLOAT(self, t):
-        r'-?([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)'
+        r'(\+|-)?([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*)'
         t.value = float(t.value)
         return t
 
     # This rule matches integers, signed and unsigned.
     def t_INTEGER(self, t):
-        r'-?[1-9][0-9]*'
+        r'(\+|-)?(0|[1-9][0-9]*)'
         t.value = int(t.value)
         return t
 
