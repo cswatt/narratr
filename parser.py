@@ -111,10 +111,18 @@ class ParserForNarratr:
                      | DOWN'''
 
     def p_blockstatement(self, p):
-        '''blockstatement : IF booleanexpression COLON newlines INDENT \
-                                statements DEDENT optionalnewlines
+        '''blockstatement : ifstatement
                           | WHILE booleanexpression COLON newlines INDENT \
                                 statements DEDENT optionalnewlines'''
+
+    def p_ifstatement(self, p):
+        '''ifstatement : IF booleanexpression COLON newlines INDENT \
+                                statements DEDENT optionalnewlines
+                       | IF booleanexpression COLON newlines INDENT \
+                                statements DEDENT ELSE COLON newlines \
+                                INDENT statements DEDENT optionalnewlines
+                       | IF booleanexpression COLON newlines INDENT \
+                                statements DEDENT ELSE ifstatement'''
 
     def p_expression(self, p):
         '''expression : arithmeticexpression
