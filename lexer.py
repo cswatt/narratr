@@ -84,6 +84,7 @@ class LexerForNarratr:
     t_MINUS = r'-'
     t_DIVIDE = r'/'
     t_INTEGERDIVIDE = r'//'
+    t_COMMA = r','
 
     # This rule matches an Identifier except for the reserved words defined
     # above. The reserved words will be matched to their own tokens.
@@ -170,6 +171,7 @@ class LexerForNarratr:
                     self.dedenting = False
                     t.lexer.lineno += len(t.value) - 1
                     t.lexer.lexpos -= 1
+                    pass
             else:
                 if self.indentstack[-1] > 0:
                     self.dedenting = True
@@ -185,6 +187,11 @@ class LexerForNarratr:
     # All white spaces not at the beginning of a logical line are ignored.
     def t_ignore_whitespace(self, t):
         r'\s+'
+
+    # Ignoring all comments. Comments are defined as a % follwed by any
+    # number of characters until a newline is encountered.
+    def t_ignore_comments(self, t):
+        r'%[^\n]*'
 
     # This rule is triggered if an error is encountered. The lexer skips a line
     # after printing a message.
