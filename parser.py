@@ -54,7 +54,7 @@ class ParserForNarratr:
     def p_itemblock(self, p):
         '''itemblock : ITEM ID calllist LCURLY optionalnewlines statements \
                           RCURLY
-                     | ITEM ID calllist LCURLY optionalnewlines INDENT
+                     | ITEM ID calllist LCURLY optionalnewlines INDENT \
                           statements DEDENT RCURLY'''
 
     def p_startstate(self, p):
