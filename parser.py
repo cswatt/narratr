@@ -91,7 +91,20 @@ class ParserForNarratr:
                            | LOSE newlines
                            | LOSE args newlines
                            | EXPOSITION STRING newlines
-                           | ID IS expression newlines'''
+                           | ID IS expression newlines
+                           | MOVES directionlist newlines
+                           | MOVE direction newlines'''
+
+    def p_directionlist(self, p):
+        '''directionlist : direction LPARAN SCENEID RPARAN
+                         | directionlist COMMA direction LPARAN SCENEID \
+                                RPARAN'''
+
+    def p_direction(self, p):
+        '''direction : LEFT
+                     | RIGHT
+                     | UP
+                     | DOWN'''
 
     def p_blockstatement(self, p):
         '''blockstatement : IF booleanexpression COLON newlines INDENT \
@@ -143,6 +156,7 @@ class ParserForNarratr:
 
     def p_booleanfactor(self, p):
         '''booleanfactor : LPARAN booleanexpression RPARAN
+                         | NOT booleanfactor
                          | conditional
                          | FALSE
                          | TRUE'''
