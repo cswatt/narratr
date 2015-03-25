@@ -45,7 +45,6 @@ class LexerForNarratr:
         'item': 'ITEM',
         'if': 'IF',
         'while': 'WHILE',
-        'for': 'FOR',
         'and': 'AND',
         'or': 'OR',
         'not': 'NOT',
