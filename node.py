@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# narrtr: ast.py
+# narrtr: node.py
 # This file defines the Node class for the narratr AST.
 #
 # Copyright (C) 2015 Team narratr
