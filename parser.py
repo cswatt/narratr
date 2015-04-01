@@ -17,6 +17,7 @@
 
 import ply.yacc as yacc
 from lexer import LexerForNarratr
+from node import Node
 
 
 class ParserForNarratr:
@@ -28,6 +29,7 @@ class ParserForNarratr:
 
     def p_program(self, p):
         "program : optionalnewlines blocks"
+        p[0] = Node(None, "program", p[1:3])
 
     def p_blocks(self, p):
         '''blocks : sceneblock optionalnewlines
@@ -36,20 +38,35 @@ class ParserForNarratr:
                   | blocks sceneblock optionalnewlines
                   | blocks itemblock optionalnewlines
                   | blocks startstate optionalnewlines'''
+        p[0] = Node(None, "blocks", p[1:])
 
     def p_optionalnewlines(self, p):
         '''optionalnewlines : newlines
                             | '''
+        p[0] = Node(None, "optionalnewlines", [])
 
     def p_newlines(self, p):
         '''newlines : newlines NEWLINE
                     | NEWLINE'''
+        p[0] = Node(None, "newlines", [])
 
     def p_sceneblock(self, p):
         '''sceneblock : SCENE SCENEID LCURLY newlines INDENT \
                           setupblock actionblock cleanupblock DEDENT RCURLY
                       | SCENE SCENEID LCURLY newlines setupblock actionblock \
                           cleanupblock RCURLY'''
+        # create a SCENE leaf node
+        s = Node(None, "scene", [])
+        # create a SCENEID leaf node
+        sid = Node(p[2], "sceneid", [])
+
+        children = [s, sid]
+
+        if len(p) == 11:
+            children += [p[6], p[7], p[8]]
+        elif len(p) == 9:
+            children += [p[5], p[6], p[7]]
+        p[0] = Node(None, "sceneblock", children)
 
     def p_itemblock(self, p):
         '''itemblock : ITEM ID calllist LCURLY optionalnewlines statements \
@@ -59,33 +76,57 @@ class ParserForNarratr:
 
     def p_startstate(self, p):
         'startstate : START COLON SCENEID'
+        p[0] = Node(p[3], "startstate", [])
 
     def p_setupblock(self, p):
         '''setupblock : SETUP COLON newlines INDENT statements DEDENT
                       | SETUP COLON newlines'''
+        if len(p) == 7:
+            children = [p[5]]
+        if len(p) == 4:
+            children = []
+        p[0] = Node(None, "setupblock", children)
 
     def p_actionblock(self, p):
         '''actionblock : ACTION COLON newlines INDENT statements DEDENT
                        | ACTION COLON newlines'''
+        if len(p) == 7:
+            children = [p[5]]
+        if len(p) == 4:
+            children = []
+        p[0] = Node(None, "actionblock", children)
 
     def p_cleanupblock(self, p):
         '''cleanupblock : CLEANUP COLON newlines INDENT statements DEDENT
                         | CLEANUP COLON newlines'''
+        if len(p) == 7:
+            children = [p[5]]
+        if len(p) == 4:
+            children = []
+        p[0] = Node(None, "actionblock", children)
 
     def p_statements(self, p):
         '''statements : statementlist
                       | '''
+        p[0] = Node(None, "statements", p[1:])
 
     def p_statementlist(self, p):
         '''statementlist : statementlist statement
                          | statement'''
+        p[0] = Node(None, "statementlist", p[1:])
 
     def p_statement(self, p):
         '''statement : simplestatement
                      | blockstatement'''
+        p[0] = Node(None, "statement", [p[1]])
 
     def p_simplestatement(self, p):
-        '''simplestatement : SAY args newlines
+        # I think the grammar for "SAY", "WIN", "LOSE" might need a STRING
+        # instead of args?
+        #
+        # The real problem is that args is made up of expressions, which are
+        # only arithmetic and boolean at the moment.
+        '''simplestatement : SAY STRING newlines
                            | WIN newlines
                            | WIN args newlines
                            | LOSE newlines
@@ -98,6 +139,15 @@ class ParserForNarratr:
                            | BREAK newlines
                            | CONTINUE newlines
                            | POCKET DOT ID atom newlines'''
+        if p[1] == "say":
+            p[0] = Node(None, "say", [Node(p[2], "string", [])])
+
+        if p[1] == "win":
+            if len(p) == 3:
+                children = []
+            if len(p) == 4:
+                children = [p[2]]
+            p[0] = Node(None, "win", children)
 
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
@@ -195,4 +245,4 @@ class ParserForNarratr:
         print "Syntax Error in input at ", p
 
     def parse(self, string_to_parse, **kwargs):
-        self.parser.parse(string_to_parse, lexer=self.lexer, **kwargs)
+        return self.parser.parse(string_to_parse, lexer=self.lexer, **kwargs)
