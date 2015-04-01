@@ -103,7 +103,7 @@ class ParserForNarratr:
             children = [p[5]]
         if len(p) == 4:
             children = []
-        p[0] = Node(None, "actionblock", children)
+        p[0] = Node(None, "cleanupblock", children)
 
     def p_statements(self, p):
         '''statements : statementlist
@@ -128,7 +128,7 @@ class ParserForNarratr:
         # only arithmetic and boolean at the moment.
         '''simplestatement : SAY STRING newlines
                            | WIN newlines
-                           | WIN args newlines
+                           | WIN STRING newlines
                            | LOSE newlines
                            | LOSE args newlines
                            | EXPOSITION STRING newlines
@@ -146,7 +146,7 @@ class ParserForNarratr:
             if len(p) == 3:
                 children = []
             if len(p) == 4:
-                children = [p[2]]
+                children = [Node(p[2], "string", [])]
             p[0] = Node(None, "win", children)
 
     def p_directionlist(self, p):
