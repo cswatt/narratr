@@ -39,4 +39,4 @@ rec_print(ast, 0)
 # these commands generate the code for the AST
 c = CodeGen()
 c.process(ast)
-c.construct("dev_test.nrtrc")
+c.construct("dev_test.ntrc")
