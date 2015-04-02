@@ -5,3 +5,6 @@ parser.out
 parsetab.py
 parselog.txt
 dev_test.py
+*.nrtrc
+*.ntrc
+*.ntr
