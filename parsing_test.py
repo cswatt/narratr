@@ -8,14 +8,16 @@ ast = test.parse("""scene $1 {
 	setup:
 		say "Hello, World!"
 	action:
-        win
+        win "you win!"
 	cleanup:
 }
 
-start: $1""")
+start:$1""")
 
 # this is a function that visualizes the node structure of the abstract
 # syntax tree.
+
+
 def rec_print(node, indent):
     prefix = "    "*indent
     try:
@@ -30,7 +32,7 @@ def rec_print(node, indent):
             for n in node.children:
                 rec_print(n, indent+1)
     except:
-        print prefix + "[None node]"
+        print prefix + "[Something bad happened]"
 
 rec_print(ast, 0)
 
