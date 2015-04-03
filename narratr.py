@@ -60,6 +60,7 @@ def read(path):
             source = f.read()
     except:
         print "Couldn't read file"
+    return source
 
 
 def main():
@@ -72,17 +73,10 @@ def main():
     elif len(args) == 3:
         if args[1] == "-t":
             source = read(args[2])
-#             ast = parse("""scene $1 {
-#     setup:
-#         say "Hello, World!"
-#     action:
-#         win "you win!"
-#     cleanup:
-# }
-#
-# start:$1""")
             ast = parse(source)
+            print "\n------------------- AST ---------------------"
             print_tree(ast, 0)
+            print "------------------- /AST ---------------------\n"
             generate_code(ast)
 
 
