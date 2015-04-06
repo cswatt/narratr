@@ -29,12 +29,15 @@ class CodeGen:
     def add_main(self, startstate=None):
         if self.main == "":
             if startstate is None:
-                state = 1
+                self.startstate = 1
             else:
-                state = startstate.value
+                self.startstate = startstate.value
 
-            self.main = "if __name__ == '__main__':\n    s_" + str(state)\
-                + "()"
+            self.main = "if __name__ == '__main__':\n    s = s_"\
+                        + str(self.startstate) + "()\n    s.setup()"
+        else:
+            print "WARNING: You wrote multiple start states. State "\
+                    + str(self.startstate) + " will be used."
 
     def construct(self, outputfile):
         # defaults to scene labeled "1" (assume exists)
@@ -46,8 +49,6 @@ class CodeGen:
             f.write("\n")
             f.write("\n".join(self.scenes))
             f.write("\n\n")
-            # f.write("\n".join(self.items))
-            # f.write("\n\n")
             f.write(self.main)
 
     # basically, do dfs and process all of the sceneblocks [and
@@ -74,20 +75,24 @@ class CodeGen:
             if c.type == "sceneid":
                 sid = c.value
 
-            elif c.type in ["setupblock", "cleanupblock"]:
-                commands.append(self.process_statements(c.children))
+            elif c.type == "setupblock":
+                commands.append("def setup(self):\n" +
+                                self.process_statements(c.children, 2) +
+                                "\n        self.action()\n")
+
+            elif c.type == "cleanupblock":
+                commands.append("def cleanup(self):\n        pass\n" +
+                                self.process_statements(c.children, 2))
 
             elif c.type == "actionblock":
-                commands.append("response = \"\"")
-                # there's a good chance this is going to have the wrong
-                # indentation when there are multiple commands
-                commands.append("while (True):")
-                commands.append("    " +
-                                self.process_statements(c.children, 2))
-                commands.append("    response = raw_input(\">\")")
+                commands.append("def action(self):\n        " +
+                                "response = \"\"\n        while(True):\n" +
+                                self.process_statements(c.children, 3) +
+                                "\n            response = raw_input(\">\")\n")
 
-        scene_code = "def s_" + str(sid) + "():\n    " \
-            + "\n    ".join(commands)
+        scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
+            + "\n        pass\n\n    " + "\n    ".join(commands)
+
         return scene_code
 
     def process_statements(self, statements, indentlevel=1):
@@ -110,8 +115,8 @@ class CodeGen:
                                     command.children[0].value +
                                     "\"")
                 commands.append("sys.exit(0)")
-        # if len(commands) > 0:
-        #     commands[0] = prefix + commands[0]
+        if len(commands) > 0:
+            commands[0] = "    "*indentlevel + commands[0]
         return prefix.join(commands)
 
     def find_statement(self, statements):
