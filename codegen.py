@@ -32,14 +32,14 @@ class CodeGen:
     # construct main. Add to the appropriate instance variables.
     def process(self, node):
         if node.type == "sceneblock":
-            self.add_scene(self.scene_gen(node))
+            self._add_scene(self._scene_gen(node))
 
         # This is just a boilerplate example, it's not implemented yet.
         if node.type == "itemblock":
             item_gen(node)
 
         elif node.type == "startstate":
-            self.add_main(node)
+            self._add_main(node)
 
         if not node.is_leaf():
             for n in node.children:
@@ -58,7 +58,7 @@ class CodeGen:
     def construct(self, outputfile="stdout"):
         # defaults to scene labeled "1" (assume exists)
         if self.main == "":
-            self.add_main()
+            self._add_main()
 
         if outputfile == "stdout":
             print self.frontmatter
@@ -74,15 +74,15 @@ class CodeGen:
 
     # This function is used internally to add a scene to the scene list. It
     # takes a string *with correct indentation*.
-    def add_scene(self, scene):
+    def _add_scene(self, scene):
         self.scenes.append(scene)
 
     # This function generates the code for a start state given a start state
     # node. If start state code has already been generated, it produces a
     # warning and keeps the start state declared higher in the program. If
     # called without a node, it triggers the default action, which is a start
-    # state of 1.
-    def add_main(self, startstate=None):
+    # state of 1. This should only be used internally.
+    def _add_main(self, startstate=None):
         if self.main == "":
             if startstate is None:
                 self.startstate = 1
@@ -98,8 +98,8 @@ class CodeGen:
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
     # of the input node and constructs the setup, cleanup, and action blocks
-    # using boilerplate code.
-    def scene_gen(self, scene):
+    # using boilerplate code. This should only be used internally.
+    def _scene_gen(self, scene):
         commands = []
         for c in scene.children:
             if c.type == "sceneid":
@@ -107,17 +107,17 @@ class CodeGen:
 
             elif c.type == "setupblock":
                 commands.append("def setup(self):\n" +
-                                self.process_statements(c.children, 2) +
+                                self._process_statements(c.children, 2) +
                                 "\n        self.action()\n")
 
             elif c.type == "cleanupblock":
                 commands.append("def cleanup(self):\n        pass\n" +
-                                self.process_statements(c.children, 2))
+                                self._process_statements(c.children, 2))
 
             elif c.type == "actionblock":
                 commands.append("def action(self):\n        " +
                                 "response = \"\"\n        while(True):\n" +
-                                self.process_statements(c.children, 3) +
+                                self._process_statements(c.children, 3) +
                                 "\n            response = raw_input(\">\")\n")
 
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
@@ -125,20 +125,27 @@ class CodeGen:
 
         return scene_code
 
-    def process_statements(self, statements, indentlevel=1):
+    # Takes a "statements" node, calls a function to find the "statement"
+    # nodes that descend from it, and then figures out what kind of statement
+    # it is and takes the appropriate action. Many of the new features we add
+    # to the language will just be a matter of adding to this function.
+    # Returns a string of statements that descended from the "statements"
+    # node. This function should only be used internally. Indent level
+    # specifies how many indents should appear before statements in the
+    # sequence.
+    def _process_statements(self, statements, indentlevel=1):
         # returns a list of statement nodes
-        smts = self.find_statement(statements)
+        smts = self._find_statement(statements)
         commands = []
         prefix = "\n" + "    "*indentlevel
 
-        # You pretty much just need to follow this scheme for statements
         for smt in smts:
             command = smt.children[0]
             if command.type == "say":
                 commands.append("print \"" +
                                 command.children[0].value + "\"")
 
-            if command.type == "win":
+            if command.type in ["win", "lose"]:
                 # win with an argument
                 if len(command.children) > 0:
                     commands.append("print \"" +
@@ -149,9 +156,10 @@ class CodeGen:
             commands[0] = "    "*indentlevel + commands[0]
         return prefix.join(commands)
 
-    # this is a function that finds all the "statement" children
-    # of "statements" node
-    def find_statement(self, statements):
+    # This function finds all the "statement" children of a "statements" node.
+    # It uses a non-recursive DFS algorithm, basically. It returns a list of
+    # nodes, IN ORDER OF APPEARANCE. To be used internally.
+    def _find_statement(self, statements):
             smts = []
             nodes_to_visit = statements
             while len(nodes_to_visit) > 0:
