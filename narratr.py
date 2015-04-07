@@ -68,7 +68,7 @@ def main():
     if len(args) == 3:
         source = read(args[1])
         ast = parse(source)
-        generate_code(ast)
+        generate_code(ast, args[2])
 
     elif len(args) == 4:
         if args[1] == "-t":
