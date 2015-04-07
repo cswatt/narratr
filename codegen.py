@@ -20,6 +20,7 @@ class CodeGen:
     def __init__(self):
         self.frontmatter = "import sys\n"
         self.scenes = []
+        self.scene_nums = []
         self.items = []
         self.main = ""
 
@@ -84,13 +85,20 @@ class CodeGen:
     # state of 1. This should only be used internally.
     def _add_main(self, startstate=None):
         if self.main == "":
+            for s in self.scene_nums:
+                self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
+
             if startstate is None:
                 self.startstate = 1
-            else:
+            elif startstate.value in self.scene_nums:
                 self.startstate = startstate.value
+            else:
+                print "WARNING: You specified a start state that does not "\
+                        + "exist. Defaulting to Scene 1."
+                self.startstate = 1
 
-            self.main = "if __name__ == '__main__':\n    s = s_"\
-                        + str(self.startstate) + "()\n    s.setup()"
+            self.main += "if __name__ == '__main__':\n    s_"\
+                + str(self.startstate) + "_inst.setup()"
         else:
             print "WARNING: You wrote multiple start states. State "\
                     + str(self.startstate) + " will be used."
@@ -119,6 +127,8 @@ class CodeGen:
                                 "response = \"\"\n        while(True):\n" +
                                 self._process_statements(c.children, 3) +
                                 "\n            response = raw_input(\">\")\n")
+
+        self.scene_nums.append(sid)
 
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
             + "\n        pass\n\n    " + "\n    ".join(commands)
