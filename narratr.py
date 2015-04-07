@@ -45,11 +45,11 @@ def parse(source):
     return ast
 
 
-def generate_code(ast):
+def generate_code(ast, outfile="stdout"):
     print "generating code..."
     c = CodeGen()
     c.process(ast)
-    c.construct("dev_test.ntrc")
+    c.construct(outfile)
     print "success!"
 
 
@@ -65,19 +65,19 @@ def read(path):
 
 def main():
     args = sys.argv
-    if len(args) == 2:
+    if len(args) == 3:
         source = read(args[1])
         ast = parse(source)
         generate_code(ast)
 
-    elif len(args) == 3:
+    elif len(args) == 4:
         if args[1] == "-t":
             source = read(args[2])
             ast = parse(source)
             print "\n------------------- AST ---------------------"
             print_tree(ast, 0)
             print "------------------- /AST ---------------------\n"
-            generate_code(ast)
+            generate_code(ast, args[3])
 
 
 if __name__ == "__main__":
