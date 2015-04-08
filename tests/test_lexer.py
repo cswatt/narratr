@@ -4,6 +4,7 @@ import unittest
 class TestLexer(unittest.TestCase):
 
 	def test_lexer_helloworld(self):
+		"""Test that lexer can read Hello World."""
 		m = LexerForNarratr()
 		file = open('sampleprograms/helloworld.ntr', 'r')
 		m.input(file.read())
@@ -43,4 +44,4 @@ class TestLexer(unittest.TestCase):
 		while t:
 		    tokenlist.append(str(t))
 		    t = m.token()
-		self.assertEqual(cmp(tokenlist, correctlist), 0, "Something did not work correctly."
+		self.assertEqual(cmp(tokenlist, correctlist), 0, "Something did not work correctly.")
