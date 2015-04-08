@@ -19,6 +19,7 @@ import sys
 import parser
 from codegen import CodeGen
 from node import Node
+import argparse
 
 
 def print_tree(node, indent):
@@ -39,46 +40,64 @@ def print_tree(node, indent):
 
 
 def parse(source):
-    print "parsing..."
+    if verbose: print "parsing...",
     p = parser.ParserForNarratr()
     ast = p.parse(source)
+    if verbose: print u'\u2713'
     return ast
 
 
 def generate_code(ast, outfile="stdout"):
-    print "generating code..."
+    if verbose: print "generating code...",
     c = CodeGen()
     c.process(ast)
     c.construct(outfile)
-    print "success!"
+    if verbose: print u'\u2713'
 
 
 def read(path):
-    print "reading file..."
+    if verbose: print "reading file...",
     try:
         with open(path, 'r') as f:
             source = f.read()
-    except:
-        print "Couldn't read file"
-    return source
-
+    except IOError as e:
+        print "\nERROR: Couldn't read source file " + path
+        sys.exit(1)
+    else:
+        if verbose: print u'\u2713'
+        return source
 
 def main():
-    args = sys.argv
-    if len(args) == 3:
-        source = read(args[1])
-        ast = parse(source)
-        generate_code(ast, args[2])
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-t', '--tree', action='store_true',
+                           help='print a representation of the abstract' +
+                           'syntax tree from the parser')
+    argparser.add_argument('-v', '--verbose', action="store_true",
+                           help='print updates on each step of the compile')
+    argparser.add_argument('source', action="store", help='the source file')
+    argparser.add_argument('-o', '--output', nargs=1, action="store",
+                           help='specify an output file. defaults to' +
+                           '[input file].ntrc')
+    args = argparser.parse_args(sys.argv[1:])
 
-    elif len(args) == 4:
-        if args[1] == "-t":
-            source = read(args[2])
-            ast = parse(source)
-            print "\n------------------- AST ---------------------"
-            print_tree(ast, 0)
-            print "------------------- /AST ---------------------\n"
-            generate_code(ast, args[3])
+    global verbose
+    verbose = args.verbose
 
+    if args.output is None:
+        outputfile = args.source + ".ntrc"
+    else:
+        outputfile = args.output[0]
+
+    source = read(args.source)
+    ast = parse(source)
+    if args.tree:
+        print "\n------------------- AST ---------------------"
+        print_tree(ast, 0)
+        print "------------------- /AST ---------------------\n"
+    
+    generate_code(ast, outputfile)
+    if verbose:
+        print "your game is ready--have fun!"
 
 if __name__ == "__main__":
     main()
