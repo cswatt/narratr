@@ -26,4 +26,4 @@ class TestLexer(unittest.TestCase):
 
         # check for equivalence
         self.assertEqual(cmp(tokenlist, correctlist), 0,
-                         "Something did not work correctly.")
+                         "Hello World lexing does not match expected tokens.")
