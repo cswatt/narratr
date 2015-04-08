@@ -17,3 +17,17 @@ class TestCodeFormat(unittest.TestCase):
         result = pep8style.check_files(['parser.py'])
         self.assertEqual(result.total_errors, 0,
                          "Found code style errors (and warnings).")
+
+    def test_pep8_conformance_codegen(self):
+        """Test that codegen conforms to PEP8."""
+        pep8style = pep8.StyleGuide(quiet=True)
+        result = pep8style.check_files(['codegen.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
+
+    def test_pep8_conformance_node(self):
+        """Test that node conforms to PEP8."""
+        pep8style = pep8.StyleGuide(quiet=True)
+        result = pep8style.check_files(['node.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
