@@ -84,14 +84,14 @@ def main():
     argparser.add_argument('source', action="store", help='the source file')
     argparser.add_argument('-o', '--output', nargs=1, action="store",
                            help='specify an output file. defaults to' +
-                           '[input file].ntrc')
+                           '[input file].py')
     args = argparser.parse_args(sys.argv[1:])
 
     global verbose
     verbose = args.verbose
 
     if args.output is None:
-        outputfile = args.source + ".ntrc"
+        outputfile = args.source + ".py"
     else:
         outputfile = args.output[0]
 
