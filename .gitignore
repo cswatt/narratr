@@ -8,4 +8,4 @@ dev_test.py
 parsing_test.py
 *.nrtrc
 *.ntrc
-*.ntr
+*.ntr.py

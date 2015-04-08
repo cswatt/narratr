@@ -1,0 +1,28 @@
+scene $2 {
+
+    setup:
+        exposition "You've entered a strange room decorated with beautiful woven baskets. You can hear a wolf howling in the distance. You're feeling slightly better, but the world is still spinning. On the table in the corner, there is a key. It seems to call to you."
+
+        moves left($1), right($3)
+
+        god key1 is key("the bronze key", 1)
+
+    action:
+
+        say "You can move left or right. What would you like to do?"
+
+        if (not response):
+            continue
+        %If the player doesn't give response to the say, the program skips the loop and goes to another round%
+
+        if (response == "pick up key") and (not key1.pickedUp): 
+            pocket.add key1
+        
+
+    cleanup:
+
+        say "'Goooooodbye,' howls the wolf."
+
+        if (key1.pickedUp):
+            exposition "You've entered a strange room decorated with beautiful woven baskets. You can hear a wolf howling in the distance. You're feeling slightly better, but the world is still spinning. There is a table in the corner."
+}
