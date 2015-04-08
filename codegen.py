@@ -18,7 +18,7 @@
 
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "import sys\n"
+        self.frontmatter = "#!/usr/bin/env python\nimport sys\n"
         self.scenes = []
         self.scene_nums = []
         self.items = []
