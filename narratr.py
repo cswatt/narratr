@@ -40,23 +40,28 @@ def print_tree(node, indent):
 
 
 def parse(source):
-    if verbose: print "parsing...",
+    if verbose:
+        print "parsing...",
     p = parser.ParserForNarratr()
     ast = p.parse(source)
-    if verbose: print u'\u2713'
+    if verbose:
+        print u'\u2713'
     return ast
 
 
 def generate_code(ast, outfile="stdout"):
-    if verbose: print "generating code...",
+    if verbose:
+        print "generating code...",
     c = CodeGen()
     c.process(ast)
     c.construct(outfile)
-    if verbose: print u'\u2713'
+    if verbose:
+        print u'\u2713'
 
 
 def read(path):
-    if verbose: print "reading file...",
+    if verbose:
+        print "reading file...",
     try:
         with open(path, 'r') as f:
             source = f.read()
@@ -64,8 +69,10 @@ def read(path):
         print "\nERROR: Couldn't read source file " + path
         sys.exit(1)
     else:
-        if verbose: print u'\u2713'
+        if verbose:
+            print u'\u2713'
         return source
+
 
 def main():
     argparser = argparse.ArgumentParser()
@@ -94,7 +101,7 @@ def main():
         print "\n------------------- AST ---------------------"
         print_tree(ast, 0)
         print "------------------- /AST ---------------------\n"
-    
+
     generate_code(ast, outputfile)
     if verbose:
         print "your game is ready--have fun!"
