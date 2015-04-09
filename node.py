@@ -27,6 +27,10 @@ class Node:
         self.type = t
         self.children = c
 
+    # for helpful string representations
+    def __repr__(self):
+        return "Node(%r, %r, %r)" % (self.value, self.type, self.children)
+
     # checks if a node is a leaf node.
     def is_leaf(self):
         if len(self.children) > 0:
