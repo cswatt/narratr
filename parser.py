@@ -28,33 +28,33 @@ class ParserForNarratr:
         self.parser = yacc.yacc(module=self, **kwargs)
 
     def p_program(self, p):
-        "program : optionalnewlines blocks"
+        "program : newlines_optional blocks"
         p[0] = Node(None, "program", p[1:3])
 
     def p_blocks(self, p):
-        '''blocks : sceneblock optionalnewlines
-                  | itemblock optionalnewlines
-                  | startstate optionalnewlines
-                  | blocks sceneblock optionalnewlines
-                  | blocks itemblock optionalnewlines
-                  | blocks startstate optionalnewlines'''
+        '''blocks : scene_block newlines_optional
+                  | item_block newlines_optional
+                  | start_state newlines_optional
+                  | blocks scene_block newlines_optional
+                  | blocks item_block newlines_optional
+                  | blocks start_state newlines_optional'''
         p[0] = Node(None, "blocks", p[1:])
 
-    def p_optionalnewlines(self, p):
-        '''optionalnewlines : newlines
-                            | '''
-        p[0] = Node(None, "optionalnewlines", [])
+    def p_newlines_optional(self, p):
+        '''newlines_optional : newlines
+                             | '''
+        p[0] = Node(None, "newlines_optional")
 
     def p_newlines(self, p):
         '''newlines : newlines NEWLINE
                     | NEWLINE'''
-        p[0] = Node(None, "newlines", [])
+        p[0] = Node(None, "newlines")
 
-    def p_sceneblock(self, p):
-        '''sceneblock : SCENE SCENEID LCURLY newlines INDENT \
-                          setupblock actionblock cleanupblock DEDENT RCURLY
-                      | SCENE SCENEID LCURLY newlines setupblock actionblock \
-                          cleanupblock RCURLY'''
+    def p_scene_block(self, p):
+        '''scene_block : SCENE SCENEID LCURLY newlines INDENT \
+                          setup_block action_block cleanup_block DEDENT RCURLY
+                       | SCENE SCENEID LCURLY newlines setup_block action_block \
+                          cleanup_block RCURLY'''
         # create a SCENE leaf node
         s = Node(None, "scene", [])
         # create a SCENEID leaf node
@@ -66,89 +66,117 @@ class ParserForNarratr:
             children += [p[6], p[7], p[8]]
         elif len(p) == 9:
             children += [p[5], p[6], p[7]]
-        p[0] = Node(None, "sceneblock", children)
+        p[0] = Node(None, "scene_block", children)
 
-    def p_itemblock(self, p):
-        '''itemblock : ITEM ID calllist LCURLY optionalnewlines statements \
-                          RCURLY
-                     | ITEM ID calllist LCURLY optionalnewlines INDENT \
-                          statements DEDENT RCURLY'''
+    def p_item_block(self, p):
+        '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
+                      | ITEM ID calllist LCURLY suite RCURLY'''
 
-    def p_startstate(self, p):
-        'startstate : START COLON SCENEID'
-        p[0] = Node(p[3], "startstate", [])
+    def p_start_state(self, p):
+        'start_state : START COLON SCENEID'
+        p[0] = Node(p[3], "start_state", [])
 
-    def p_setupblock(self, p):
-        '''setupblock : SETUP COLON newlines INDENT statements DEDENT
-                      | SETUP COLON newlines'''
+    def p_setup_block(self, p):
+        '''setup_block : SETUP COLON suite
+                       | SETUP COLON newlines'''
         if len(p) == 7:
             children = [p[5]]
         if len(p) == 4:
             children = []
-        p[0] = Node(None, "setupblock", children)
+        p[0] = Node(None, "setup_block", children)
 
-    def p_actionblock(self, p):
-        '''actionblock : ACTION COLON newlines INDENT statements DEDENT
-                       | ACTION COLON newlines'''
+    def p_action_block(self, p):
+        '''action_block : ACTION COLON suite
+                        | ACTION COLON newlines'''
         if len(p) == 7:
             children = [p[5]]
         if len(p) == 4:
             children = []
-        p[0] = Node(None, "actionblock", children)
+        p[0] = Node(None, "action_block", children)
 
-    def p_cleanupblock(self, p):
-        '''cleanupblock : CLEANUP COLON newlines INDENT statements DEDENT
-                        | CLEANUP COLON newlines'''
+    def p_cleanup_block(self, p):
+        '''cleanup_block : CLEANUP COLON suite
+                         | CLEANUP COLON newlines'''
         if len(p) == 7:
             children = [p[5]]
         if len(p) == 4:
             children = []
-        p[0] = Node(None, "cleanupblock", children)
+        p[0] = Node(None, "cleanup_block", children)
+
+    def p_suite(self, p):
+        '''suite : simple_statement
+                 | newlines INDENT statements DEDENT'''
 
     def p_statements(self, p):
-        '''statements : statementlist
-                      | '''
+        '''statements : statements statement
+                      | statement'''
         p[0] = Node(None, "statements", p[1:])
 
-    def p_statementlist(self, p):
-        '''statementlist : statementlist statement
-                         | statement'''
-        p[0] = Node(None, "statementlist", p[1:])
-
     def p_statement(self, p):
-        '''statement : simplestatement
-                     | blockstatement'''
+        '''statement : simple_statement
+                     | block_statement'''
         p[0] = Node(None, "statement", [p[1]])
 
-    def p_simplestatement(self, p):
-        # I think the grammar for "SAY", "WIN", "LOSE" might need a STRING
-        # instead of args?
-        #
-        # The real problem is that args is made up of expressions, which are
-        # only arithmetic and boolean at the moment.
-        '''simplestatement : SAY STRING newlines
-                           | WIN newlines
-                           | WIN STRING newlines
-                           | LOSE newlines
-                           | LOSE args newlines
-                           | EXPOSITION STRING newlines
-                           | ID IS expression newlines
-                           | GOD ID IS expression newlines
-                           | MOVES directionlist newlines
-                           | MOVE direction newlines
-                           | BREAK newlines
-                           | CONTINUE newlines
-                           | POCKET DOT ID atom newlines'''
-        if p[1] == "say":
-            p[0] = Node(None, "say", [Node(p[2], "string", [])])
+    def p_simple_statement(self, p):
+        '''simple_statement : say_statement newlines
+                            | exposition_statement newlines
+                            | win_statement newlines
+                            | lose_statement newlines
+                            | flow_statement newlines
+                            | expression_statement newlines'''
+        if isinstance(p[1], Node):
+            if p[1].type == "say":
+                p[0] = Node(None, "simple_statement")
 
+    def p_say_statement(self, p):
+        '''say_statement : SAY STRING'''
+        if p[1] == "say":
+            p[0] = Node(None, "say", [Node(p[2], "string")])
+    
+    def p_exposition_statement(self, p):
+        '''exposition_statement : EXPOSITION STRING'''
+        if p[1] == "exposition":
+            p[0] = Node(None, "exposition", [Node(p[2], "string", [])])
+
+    def p_win_statement(self, p):
+        '''win_statement : WIN
+                         | WIN STRING'''
         if p[1] == "win":
-            if len(p) == 3:
+            if len(p) == 2:
                 children = []
-            if len(p) == 4:
+            if len(p) == 3:
                 children = [Node(p[2], "string", [])]
             p[0] = Node(None, "win", children)
 
+    def p_lose_statement(self, p):
+        '''lose_statement : LOSE
+                          | LOSE STRING'''
+        if p[1] == "lose":
+            if len(p) == 2:
+                children = []
+            if len(p) == 3:
+                children = [Node(p[2], "string", [])]
+            p[0] = Node(None, "lose", children)
+
+    def p_flow_statement(self, p):
+        '''flow_statement : break_statement
+                          | continue_statement
+                          | moves_declaration
+                          | moveto_statement'''
+
+    def p_expression_statement(self, p):
+        '''expression_statement : testlist IS testlist
+                                | GOD testlist IS testlist'''
+
+    def p_break_statement(self, p):
+        '''break_statement : BREAK'''
+
+    def p_continue_statement(self, p):
+        '''continue_statement : CONTINUE'''
+
+    def p_moves_declaration(self, p):
+        '''moves_declaration : MOVES directionlist'''
+    
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
@@ -160,28 +188,49 @@ class ParserForNarratr:
                      | UP
                      | DOWN'''
 
-    def p_blockstatement(self, p):
-        '''blockstatement : ifstatement
-                          | WHILE booleanexpression COLON newlines INDENT \
-                                statements DEDENT optionalnewlines'''
+    def p_moveto_statement(self, p):
+        '''moveto_statement : MOVETO SCENEID''' 
 
-    def p_ifstatement(self, p):
-        '''ifstatement : IF booleanexpression COLON newlines INDENT \
-                                statements DEDENT optionalnewlines
-                       | IF booleanexpression COLON newlines INDENT \
-                                statements DEDENT ELSE COLON newlines \
-                                INDENT statements DEDENT optionalnewlines
-                       | IF booleanexpression COLON newlines INDENT \
-                                statements DEDENT ELSE ifstatement'''
+    def p_testlist(self, p):
+        '''testlist : testlist COMMA test
+                    | test'''
+
+    def p_test(self, p):
+        '''test : or_test'''
+
+    def p_or_test(self, p):
+        '''or_test : or_test OR and_test
+                   | and_test'''
+
+    def p_and_test(self, p):
+        '''and_test : and_test AND not_test
+                    | not_test'''
+
+    def p_not_test(self, p):
+        '''not_test : NOT not_test
+                    | comparison'''
+
+    def p_comparison(self, p):
+        '''comparison : comparison comparison_op expression
+                      | expression'''
 
     def p_expression(self, p):
-        '''expression : arithmeticexpression
-                      | booleanexpression'''
+        '''expression : arithmetic_expression'''
 
-    def p_arithmeticexpression(self, p):
-        '''arithmeticexpression : arithmeticexpression PLUS term
-                                | arithmeticexpression MINUS term
-                                | term'''
+    def p_comparison_op(self, p):
+        '''comparison_op : LESS
+                         | GREATER
+                         | LESSEQUALS
+                         | GREATEREQUALS
+                         | EQUALS
+                         | NOTEQUALS
+                         | NOT EQUALS'''
+
+
+    def p_arithmetic_expression(self, p):
+        '''arithmetic_expression : arithmetic_expression PLUS term
+                                 | arithmetic_expression MINUS term
+                                 | term'''
 
     def p_term(self, p):
         '''term : term TIMES factor
@@ -190,56 +239,61 @@ class ParserForNarratr:
                 | factor '''
 
     def p_factor(self, p):
-        '''factor : LPARAN arithmeticexpression RPARAN
-                  | atom
-                  | number
-                  | STRING'''
+        '''factor : PLUS factor
+                  | MINUS factor
+                  | power'''
+
+    def p_power(self, p):
+        '''power : power trailer
+                 | atom'''
 
     def p_atom(self, p):
-        '''atom : atom calllist
-                | atom DOT ID
+        '''atom : number
+                | strings
+                | boolean
                 | ID'''
 
-    def p_calllist(self, p):
-        '''calllist : LPARAN args RPARAN
-                    | LPARAN RPARAN'''
+    def p_trailer(self, p):
+        '''trailer : LPARAN RPARAN
+                   | LPARAN args RPARAN
+                   | DOT ID'''
 
     def p_number(self, p):
         '''number : INTEGER
                   | FLOAT'''
 
+    def p_strings(self, p):
+        '''strings : strings PLUS STRING
+                   | STRING'''
+
     def p_boolean(self, p):
         '''boolean : TRUE
                    | FALSE'''
 
-    def p_booleanexpression(self, p):
-        '''booleanexpression : booleanterm OR booleanexpression
-                             | booleanterm'''
-
-    def p_booleanterm(self, p):
-        '''booleanterm : booleanfactor AND booleanfactor
-                       | booleanfactor EQUALS booleanfactor
-                       | booleanfactor'''
-
-    def p_booleanfactor(self, p):
-        '''booleanfactor : LPARAN booleanexpression RPARAN
-                         | NOT factor
-                         | conditional
-                         | boolean'''
-
-    def p_conditional(self, p):
-        '''conditional : factor conditionalop factor'''
-
-    def p_conditionalop(self, p):
-        '''conditionalop : LESS
-                         | GREATER
-                         | LESSEQUALS
-                         | GREATEREQUALS
-                         | EQUALS'''
+    def p_calllist(self, p):
+        '''calllist : LPARAN args RPARAN
+                    | LPARAN RPARAN'''
 
     def p_args(self, p):
         '''args : args COMMA expression
                 | expression'''
+
+    def p_block_statement(self, p):
+        '''block_statement : if_statement
+                           | while_statement'''
+
+    def p_if_statement(self, p):
+        '''if_statement : IF test COLON suite elif_statements ELSE COLON suite
+                        | IF test COLON suite ELSE COLON suite
+                        | IF test COLON suite elif_statements
+                        | IF test COLON suite'''
+
+    def p_elif_statements(self, p):
+        '''elif_statements : elif_statements ELIF test COLON suite
+                           | ELIF test COLON suite'''
+
+    def p_while_statement(self, p):
+        '''while_statement : WHILE test COLON suite''' 
 
     def p_error(self, p):
         print "Syntax Error in input at ", p

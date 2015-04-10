@@ -36,7 +36,7 @@ class LexerForNarratr:
         'start': 'START',
         'exposition': 'EXPOSITION',
         'moves': 'MOVES',
-        'move': 'MOVE',
+        'moveto': 'MOVETO',
         'left': 'LEFT',
         'right': 'RIGHT',
         'up': 'UP',
@@ -44,6 +44,7 @@ class LexerForNarratr:
         'is': 'IS',
         'item': 'ITEM',
         'if': 'IF',
+        'elif': 'ELIF',
         'else': 'ELSE',
         'while': 'WHILE',
         'and': 'AND',
@@ -63,7 +64,7 @@ class LexerForNarratr:
               'NEWLINE', 'INDENT', 'DEDENT', 'ID', 'STRING', 'EQUALS',
               'LESS', 'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS',
               'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE', 'INTEGER',
-              'FLOAT', 'DOT', 'COMMA'] + list(reserved.values())
+              'FLOAT', 'DOT', 'COMMA', 'NOTEQUALS'] + list(reserved.values())
 
     # The constructor here builds the lexer. The re.MULTILINE flag is critical
     # in matching indents.
@@ -78,7 +79,8 @@ class LexerForNarratr:
     t_LPARAN = r'\('
     t_RPARAN = r'\)'
     t_COLON = r':'
-    t_EQUALS = r'=='
+    t_EQUALS = r'==|='
+    t_NOTEQUALS = r'!='
     t_LESS = r'<'
     t_GREATER = r'>'
     t_LESSEQUALS = r'<='
