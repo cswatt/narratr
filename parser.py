@@ -29,7 +29,7 @@ class ParserForNarratr:
 
     def p_program(self, p):
         "program : newlines_optional blocks"
-        p[0] = Node(None, "program", p[1:3])
+        p[0] = Node(None, "program", [p[2]])
 
     def p_blocks(self, p):
         '''blocks : scene_block newlines_optional
@@ -38,7 +38,8 @@ class ParserForNarratr:
                   | blocks scene_block newlines_optional
                   | blocks item_block newlines_optional
                   | blocks start_state newlines_optional'''
-        p[0] = Node(None, "blocks", p[1:])
+        children = p[1:-1]
+        p[0] = Node(None, "blocks", children)
 
     def p_newlines_optional(self, p):
         '''newlines_optional : newlines
@@ -56,9 +57,10 @@ class ParserForNarratr:
                        | SCENE SCENEID LCURLY newlines setup_block action_block \
                           cleanup_block RCURLY'''
         # create a SCENE leaf node
-        s = Node(None, "scene", [])
+        s = Node(None, "scene")
         # create a SCENEID leaf node
-        sid = Node(p[2], "sceneid", [])
+        sid = Node(p[2], "sceneid")
+        # probably add to the symbol table here
 
         children = [s, sid]
 
@@ -79,20 +81,20 @@ class ParserForNarratr:
     def p_setup_block(self, p):
         '''setup_block : SETUP COLON suite
                        | SETUP COLON newlines'''
-        if len(p) == 7:
-            children = [p[5]]
-        if len(p) == 4:
-            children = []
-        p[0] = Node(None, "setup_block", children)
+        if isinstance(p[3], Node):
+            if p[3].type == "suite":
+                p[0] = Node(None, "setup_block", [p[3]])
+            else:
+                p[0] = Node(None, "setup_block")
 
     def p_action_block(self, p):
         '''action_block : ACTION COLON suite
                         | ACTION COLON newlines'''
-        if len(p) == 7:
-            children = [p[5]]
-        if len(p) == 4:
-            children = []
-        p[0] = Node(None, "action_block", children)
+        if isinstance(p[3], Node):
+            if p[3].type == "suite":
+                p[0] = Node(None, "action_block", [p[3]])
+            else:
+                p[0] = Node(None, "action_block")
 
     def p_cleanup_block(self, p):
         '''cleanup_block : CLEANUP COLON suite
@@ -106,6 +108,12 @@ class ParserForNarratr:
     def p_suite(self, p):
         '''suite : simple_statement
                  | newlines INDENT statements DEDENT'''
+        if len(p) == 2:
+            children = [p[1]]
+        elif len(p) == 5:
+            children = [p[3]]
+
+        p[0] = Node(None, "suite", children)
 
     def p_statements(self, p):
         '''statements : statements statement
@@ -125,8 +133,7 @@ class ParserForNarratr:
                             | flow_statement newlines
                             | expression_statement newlines'''
         if isinstance(p[1], Node):
-            if p[1].type == "say":
-                p[0] = Node(None, "simple_statement")
+            p[0] = Node(None, "simple_statement", [p[1]])
 
     def p_say_statement(self, p):
         '''say_statement : SAY STRING'''
@@ -136,17 +143,16 @@ class ParserForNarratr:
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION STRING'''
         if p[1] == "exposition":
-            p[0] = Node(None, "exposition", [Node(p[2], "string", [])])
+            p[0] = Node(None, "exposition", [Node(p[2], "string")])
 
     def p_win_statement(self, p):
         '''win_statement : WIN
                          | WIN STRING'''
-        if p[1] == "win":
-            if len(p) == 2:
-                children = []
-            if len(p) == 3:
-                children = [Node(p[2], "string", [])]
-            p[0] = Node(None, "win", children)
+        if len(p) == 2:
+            children = []
+        if len(p) == 3:
+            children = [Node(p[2], "string")]
+        p[0] = Node(None, "win", children)
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE

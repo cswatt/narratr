@@ -32,12 +32,12 @@ class CodeGen:
     # eventually itemblocks]. Also find the startstates and use them to
     # construct main. Add to the appropriate instance variables.
     def process(self, node):
-        if node.type == "sceneblock":
+        if node.type == "scene_block":
             self._add_scene(self._scene_gen(node))
 
         # This is just a boilerplate example, it's not implemented yet.
-        if node.type == "itemblock":
-            item_gen(node)
+        if node.type == "item_block":
+            self._item_gen(node)
 
         elif node.type == "startstate":
             self._add_main(node)
@@ -113,16 +113,16 @@ class CodeGen:
             if c.type == "sceneid":
                 sid = c.value
 
-            elif c.type == "setupblock":
+            elif c.type == "setup_block":
                 commands.append("def setup(self):\n" +
                                 self._process_statements(c.children, 2) +
                                 "\n        self.action()\n")
 
-            elif c.type == "cleanupblock":
+            elif c.type == "cleanup_block":
                 commands.append("def cleanup(self):\n        pass\n" +
                                 self._process_statements(c.children, 2))
 
-            elif c.type == "actionblock":
+            elif c.type == "action_block":
                 commands.append("def action(self):\n        " +
                                 "response = \"\"\n        while(True):\n" +
                                 self._process_statements(c.children, 3) +
@@ -174,7 +174,7 @@ class CodeGen:
             nodes_to_visit = statements
             while len(nodes_to_visit) > 0:
                 cnode = nodes_to_visit.pop(0)
-                if cnode.type == "statement":
+                if cnode.type == "simple_statement":
                     smts.insert(0, cnode)
                 else:
                     for node in cnode.children:
