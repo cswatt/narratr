@@ -11,7 +11,7 @@ class TestLexer(unittest.TestCase):
         tokenlist = []
 
         # look at correct list of tokens
-        with open('tests/helloworld_tokens') as f:
+        with open('tests/lexed_helloworld') as f:
             for line in f:
                 correctlist.append(line.rstrip())
 
@@ -26,4 +26,4 @@ class TestLexer(unittest.TestCase):
 
         # check for equivalence
         self.assertEqual(cmp(tokenlist, correctlist), 0,
-                         "Something did not work correctly.")
+                         "Hello World lexing does not match expected tokens.")
