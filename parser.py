@@ -52,10 +52,10 @@ class ParserForNarratr:
         p[0] = Node(None, "newlines")
 
     def p_scene_block(self, p):
-        '''scene_block : SCENE SCENEID LCURLY newlines INDENT \
-                          setup_block action_block cleanup_block DEDENT RCURLY
-                       | SCENE SCENEID LCURLY newlines setup_block action_block \
-                          cleanup_block RCURLY'''
+        '''scene_block : SCENE SCENEID LCURLY newlines INDENT setup_block \
+                          action_block cleanup_block DEDENT RCURLY
+                       | SCENE SCENEID LCURLY newlines setup_block \
+                          action_block cleanup_block RCURLY'''
         # create a SCENE leaf node
         s = Node(None, "scene")
         # create a SCENEID leaf node
@@ -139,7 +139,7 @@ class ParserForNarratr:
         '''say_statement : SAY STRING'''
         if p[1] == "say":
             p[0] = Node(None, "say", [Node(p[2], "string")])
-    
+
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION STRING'''
         if p[1] == "exposition":
@@ -182,7 +182,7 @@ class ParserForNarratr:
 
     def p_moves_declaration(self, p):
         '''moves_declaration : MOVES directionlist'''
-    
+
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
@@ -195,7 +195,7 @@ class ParserForNarratr:
                      | DOWN'''
 
     def p_moveto_statement(self, p):
-        '''moveto_statement : MOVETO SCENEID''' 
+        '''moveto_statement : MOVETO SCENEID'''
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
@@ -231,7 +231,6 @@ class ParserForNarratr:
                          | EQUALS
                          | NOTEQUALS
                          | NOT EQUALS'''
-
 
     def p_arithmetic_expression(self, p):
         '''arithmetic_expression : arithmetic_expression PLUS term
@@ -299,7 +298,7 @@ class ParserForNarratr:
                            | ELIF test COLON suite'''
 
     def p_while_statement(self, p):
-        '''while_statement : WHILE test COLON suite''' 
+        '''while_statement : WHILE test COLON suite'''
 
     def p_error(self, p):
         print "Syntax Error in input at ", p

@@ -11,10 +11,10 @@ scene $2 {
 
         say "You can move left or right. What would you like to do?"
 
-        if (not response):
+        if not response:
             continue
-        %If the player doesn't give response to the say, the program skips the loop and goes to another round%
-
+   
+        % If the player doesn't give response to the say, the program skips the loop and goes to another round
         if (response == "pick up key") and (not key1.pickedUp): 
             pocket.add key1
         
