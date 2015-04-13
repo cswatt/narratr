@@ -44,31 +44,21 @@ class ParserForNarratr:
     def p_newlines_optional(self, p):
         '''newlines_optional : newlines
                              | '''
-        p[0] = Node(None, "newlines_optional")
 
     def p_newlines(self, p):
         '''newlines : newlines NEWLINE
                     | NEWLINE'''
-        p[0] = Node(None, "newlines")
 
     def p_scene_block(self, p):
         '''scene_block : SCENE SCENEID LCURLY newlines INDENT setup_block \
                           action_block cleanup_block DEDENT RCURLY
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
-        # create a SCENE leaf node
-        s = Node(None, "scene")
-        # create a SCENEID leaf node
-        sid = Node(p[2], "sceneid")
-        # probably add to the symbol table here
-
-        children = [s, sid]
-
         if len(p) == 11:
-            children += [p[6], p[7], p[8]]
+            children = [p[6], p[7], p[8]]
         elif len(p) == 9:
-            children += [p[5], p[6], p[7]]
-        p[0] = Node(None, "scene_block", children)
+            children = [p[5], p[6], p[7]]
+        p[0] = Node(P[2], "scene_block", children)
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
@@ -118,7 +108,9 @@ class ParserForNarratr:
     def p_statements(self, p):
         '''statements : statements statement
                       | statement'''
-        p[0] = Node(None, "statements", p[1:])
+        if p[1].type == "statements":
+            p[1].children.append(p[2])
+            p[0] = p[1]
 
     def p_statement(self, p):
         '''statement : simple_statement
@@ -201,8 +193,13 @@ class ParserForNarratr:
         '''testlist : testlist COMMA test
                     | test'''
 
+    # If there is just one possible rule and one child, the type of the node
+    # still needs to be updated because parent AST nodes may check the type to
+    # make decisions.
     def p_test(self, p):
         '''test : or_test'''
+        p[0] = p[1]
+        p[0].type = "test"
 
     def p_or_test(self, p):
         '''or_test : or_test OR and_test
@@ -222,6 +219,7 @@ class ParserForNarratr:
 
     def p_expression(self, p):
         '''expression : arithmetic_expression'''
+        p[0] = p[1]
 
     def p_comparison_op(self, p):
         '''comparison_op : LESS
