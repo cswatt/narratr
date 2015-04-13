@@ -85,6 +85,8 @@ def main():
     argparser.add_argument('-o', '--output', nargs=1, action="store",
                            help='specify an output file. defaults to' +
                            '[input file].py')
+    argparser.add_argument('-i', '--inert', action="store_true",
+                           help='does not try to use code generator')
     args = argparser.parse_args(sys.argv[1:])
 
     global verbose
@@ -102,7 +104,8 @@ def main():
         print_tree(ast, 0)
         print "------------------- /AST ---------------------\n"
 
-    generate_code(ast, outputfile)
+    if not args.inert:
+        generate_code(ast, outputfile)
     if verbose:
         print "your game is ready--have fun!"
 
