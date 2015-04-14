@@ -99,12 +99,11 @@ class ParserForNarratr:
     def p_suite(self, p):
         '''suite : simple_statement
                  | newlines INDENT statements DEDENT'''
-        if len(p) == 2:
-            children = [p[1]]
-        elif len(p) == 5:
-            children = [p[3]]
-
-        p[0] = Node(None, "suite", children)
+        if p[3].type == "statements":
+            p[0] = p[3]
+        else:
+            p[0] = p[1]
+        p[0].type = "suite"
 
     def p_statements(self, p):
         '''statements : statements statement
@@ -132,12 +131,16 @@ class ParserForNarratr:
             if p[1].type == "say_statement":
                 p[0] = p[1]
                 p[0].value = "say"
-                p[0].type = "simple_statement"
-            
+
+            if p[1].type == "exposition_statement":
+                p[0] = p[1]
+                p[0].value = "exposition"
+
             if p[1].type == "win_statement":
                 p[0] = p[1]
                 p[0].value = "win"
-                p[0].type = "simple_statement"
+
+            p[0].type = "simple_statement"
 
     def p_say_statement(self, p):
         '''say_statement : SAY STRING'''
@@ -231,6 +234,7 @@ class ParserForNarratr:
     def p_expression(self, p):
         '''expression : arithmetic_expression'''
         p[0] = p[1]
+        p[0].type = "expression"
 
     def p_comparison_op(self, p):
         '''comparison_op : LESS
