@@ -34,7 +34,12 @@ def print_tree(node, indent):
 
         if not node.is_leaf():
             for n in node.children:
-                print_tree(n, indent+1)
+                if type(n) is dict:
+                    for key, value in d.iteritems():
+                        print_tree(value, indent+1)
+                else:
+                    print_tree(n, indent+1)
+        
     except:
         print prefix + "[Something bad happened]"
 
