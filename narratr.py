@@ -35,14 +35,14 @@ def print_tree(node, indent):
         if not node.is_leaf():
             for n in node.children:
                 if type(n) is dict:
-                    for key, value in d.iteritems():
-                        print_tree(value, indent+1)
+                    print "    " + prefix + "(dictionary)"
+                    for key, value in n.iteritems():
+                        print_tree(value, indent+2)
                 else:
                     print_tree(n, indent+1)
         
     except:
         print prefix + "[Something bad happened]"
-
 
 def parse(source):
     if verbose:
