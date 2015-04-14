@@ -78,13 +78,13 @@ def main():
     argparser = argparse.ArgumentParser()
     argparser.add_argument('-t', '--tree', action='store_true',
                            help='print a representation of the abstract' +
-                           'syntax tree from the parser')
+                           ' syntax tree from the parser')
     argparser.add_argument('-v', '--verbose', action="store_true",
                            help='print updates on each step of the compile')
     argparser.add_argument('source', action="store", help='the source file')
     argparser.add_argument('-o', '--output', nargs=1, action="store",
                            help='specify an output file. defaults to' +
-                           '[input file].py')
+                           ' [input file].py')
     argparser.add_argument('-i', '--inert', action="store_true",
                            help='does not try to use code generator')
     args = argparser.parse_args(sys.argv[1:])
