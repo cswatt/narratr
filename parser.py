@@ -54,11 +54,12 @@ class ParserForNarratr:
                           action_block cleanup_block DEDENT RCURLY
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
+        # This is set, but it still needs symbol table (SCENEID).
         if len(p) == 11:
             children = [p[6], p[7], p[8]]
         elif len(p) == 9:
             children = [p[5], p[6], p[7]]
-        p[0] = Node(P[2], "scene_block", children)
+        p[0] = Node(p[2], "scene_block", children)
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
@@ -66,7 +67,7 @@ class ParserForNarratr:
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
-        p[0] = Node(p[3], "start_state", [])
+        p[0] = Node(p[3], "start_state")
 
     def p_setup_block(self, p):
         '''setup_block : SETUP COLON suite
@@ -111,11 +112,14 @@ class ParserForNarratr:
         if p[1].type == "statements":
             p[1].children.append(p[2])
             p[0] = p[1]
+        else:
+            p[0] = Node(None, "statements", [p[1]])
 
     def p_statement(self, p):
         '''statement : simple_statement
                      | block_statement'''
-        p[0] = Node(None, "statement", [p[1]])
+        p[0] = p[1]
+        p[0].type = "statement"
 
     def p_simple_statement(self, p):
         '''simple_statement : say_statement newlines
@@ -125,12 +129,19 @@ class ParserForNarratr:
                             | flow_statement newlines
                             | expression_statement newlines'''
         if isinstance(p[1], Node):
-            p[0] = Node(None, "simple_statement", [p[1]])
+            if p[1].type == "say_statement":
+                p[0] = p[1]
+                p[0].value = "say"
+                p[0].type = "simple_statement"
+            
+            if p[1].type == "win_statement":
+                p[0] = p[1]
+                p[0].value = "win"
+                p[0].type = "simple_statement"
 
     def p_say_statement(self, p):
         '''say_statement : SAY STRING'''
-        if p[1] == "say":
-            p[0] = Node(None, "say", [Node(p[2], "string")])
+        p[0] = Node(None, "say_statement", [Node(p[2], "string")])
 
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION STRING'''
@@ -144,7 +155,7 @@ class ParserForNarratr:
             children = []
         if len(p) == 3:
             children = [Node(p[2], "string")]
-        p[0] = Node(None, "win", children)
+        p[0] = Node(None, "win_statement", children)
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
