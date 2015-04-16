@@ -31,6 +31,7 @@ class ParserForNarratr:
         "program : newlines_optional blocks"
         p[0] = Node(None, "program", [p[2]])
 
+	#assumes start state only given once
     def p_blocks(self, p):
         '''blocks : scene_block newlines_optional
                   | item_block newlines_optional
@@ -38,8 +39,26 @@ class ParserForNarratr:
                   | blocks scene_block newlines_optional
                   | blocks item_block newlines_optional
                   | blocks start_state newlines_optional'''
-        children = p[1:-1]
-        p[0] = Node(None, "blocks", children)
+        if   p[1].type == "blocks" and p[2].type == "scene_block":
+        	p[0].children[0][p[2].value] = p[2]
+        elif p[1].type == "blocks" and p[2].type == "item_block":
+        	p[0].children[1][p[2].value] = p[2]
+        elif p[1].type == "blocks" and p[2].type == "start_state":
+        	p[0].children.append(p[2])
+        elif p[1].type == "scene_block":
+	        print 'scene block'
+	        if(not isinstance(p[0], Node)):
+	        	p[0] = Node(None, "blocks", [{}, {}]) 
+        	p[0].children[0][p[1].value] = p[1]
+        elif p[1].type == "item_block":
+        	if(not isinstance(p[0], Node)):
+	        	p[0] = Node(None, "blocks", [{}, {}])
+        	p[0].children[1][p[1].value] = p[1]
+        elif p[1].type == "start_state":
+        	if(not isinstance(p[0], Node)):
+        		print 'in start state'
+	        	p[0] = Node(None, "blocks", [{}, {}])
+        	p[0].children.append(p[2])
 
     def p_newlines_optional(self, p):
         '''newlines_optional : newlines
@@ -55,15 +74,21 @@ class ParserForNarratr:
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
         # This is set, but it still needs symbol table (SCENEID).
-        if len(p) == 11:
+        if p[6].type == 'setup_block':
             children = [p[6], p[7], p[8]]
-        elif len(p) == 9:
+        elif p[5].type == 'setup_block':
             children = [p[5], p[6], p[7]]
         p[0] = Node(p[2], "scene_block", children)
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
                       | ITEM ID calllist LCURLY suite RCURLY'''
+    	if isinstance(p[3], Node):
+    		if p[5].type == "suite":
+    			children = [p[3], p[5]]
+    		else:
+    			children = [p[3]]
+    	p[0] = Node(p[2], "item_block", children)
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
