@@ -15,7 +15,6 @@ class CodeGen:
                     if type (bc) is dict:
                         for key, s_i in bc.iteritems():
                             if s_i.type == "scene_block":
-                                print "scene" 
                                 self._add_scene(self._scene_gen(s_i,key))
                             elif s_i.type == "item_block":
                                 pass
