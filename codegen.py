@@ -103,10 +103,9 @@ class CodeGen:
     # valid Python (really, a Python class). Iterates through the children
     # of the input node and constructs the setup, cleanup, and action blocks
     # using boilerplate code. This should only be used internally.
-    def _scene_gen(self, scene,sid):
+    def _scene_gen(self,scene,sid):
         commands = []
         for c in scene.children:
-            print c
             if c.type == "SCENEID":
                 sid = c.value
 
