@@ -60,6 +60,21 @@ class CodeGen:
     # state of 1. This should only be used internally.
     def _add_main(self, startstate=None):
         if self.main == "":
+            self.main = '''
+            def get_response():
+                response = raw_input(" -->> ")
+                response = response.lower()
+                response = response.translate(None,
+                            '!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
+                response = ' '.join(response.split())
+                if response == "exit":
+                    print "== GAME TERMINATED =="
+                    exit(0)
+                else:
+                    return response
+
+            '''
+
             for s in self.scene_nums:
                 self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
 
@@ -102,7 +117,7 @@ class CodeGen:
                 commands.append("def action(self):\n        " +
                                 "response = \"\"\n        while(True):\n" +
                                 self._process_statements(c.children, 3) +
-                                "\n            response = raw_input(\">\")\n")
+                                "\n            response = get_response()\n")
 
         self.scene_nums.append(sid)
 
