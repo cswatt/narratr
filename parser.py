@@ -143,7 +143,6 @@ class ParserForNarratr:
     def p_statement(self, p):
         '''statement : simple_statement
                      | block_statement'''
-        # print p[1].type
         p[0] = p[1]
         p[0].type = "statement"
 
@@ -155,29 +154,28 @@ class ParserForNarratr:
                             | flow_statement newlines
                             | expression_statement newlines'''
         if isinstance(p[1], Node):
-            print p[1].type
             if p[1].type == "say_statement":
                 p[0] = p[1]
                 p[0].value = "say"
-
-            if p[1].type == "exposition":
+            elif p[1].type == "exposition":
                 p[0] = p[1]
                 p[0].value = "exposition"
-
-            if p[1].type == "win_statement":
+            elif p[1].type == "win_statement":
                 p[0] = p[1]
                 p[0].value = "win"
-            if p[1].type == "expression_statement":
+            elif p[1].type == "expression_statement":
                 p[0] = p[1]
                 p[0].value = "expression"
-            if p[1].type == "flow_statement":
+            elif p[1].type == "flow_statement":
                 p[0] = p[1]
                 p[0].value = "flow"
-            if p[1].type == "lose_statement":
+            elif p[1].type == "lose_statement":
                 p[0] = p[1]
                 p[0].value = "lose"
 
             p[0].type = "simple_statement"
+        else:
+            self.p_error("Syntax Error forming simple_statement.")
 
     def p_say_statement(self, p):
         '''say_statement : SAY STRING'''
@@ -338,9 +336,10 @@ class ParserForNarratr:
                  | atom'''
 
     def p_atom(self, p):
-        '''atom : number
-                | strings
+        '''atom : LPARAN test RPARAN
+                | number
                 | boolean
+                | STRING
                 | ID'''
 
     def p_trailer(self, p):
@@ -351,10 +350,6 @@ class ParserForNarratr:
     def p_number(self, p):
         '''number : INTEGER
                   | FLOAT'''
-
-    def p_strings(self, p):
-        '''strings : strings PLUS STRING
-                   | STRING'''
 
     def p_boolean(self, p):
         '''boolean : TRUE
@@ -386,7 +381,10 @@ class ParserForNarratr:
         '''while_statement : WHILE test COLON suite'''
 
     def p_error(self, p):
-        print "Syntax Error in input at ", p
+        if isinstance(p, str):
+            raise Exception(p)
+        else:
+            raise Exception("Syntax Error at token " + p)
 
     def parse(self, string_to_parse, **kwargs):
         return self.parser.parse(string_to_parse, lexer=self.lexer, **kwargs)

@@ -1,6 +1,6 @@
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "#!/usr/bin/env python\nimport sys\n"
+        self.frontmatter = "#!/usr/bin/env python\n"
         self.scenes = []
         self.scene_nums = []
         self.items = []
@@ -152,7 +152,7 @@ class CodeGen:
                     commands.append("print \"" +
                                     command.children[0].value +
                                     "\"")
-                commands.append("sys.exit(0)")
+                commands.append("exit(0)")
         if len(commands) > 0:
             commands[0] = "    "*indentlevel + commands[0]
         return prefix.join(commands)
