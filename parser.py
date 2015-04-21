@@ -116,11 +116,11 @@ class ParserForNarratr:
     def p_cleanup_block(self, p):
         '''cleanup_block : CLEANUP COLON suite
                          | CLEANUP COLON newlines'''
-        if len(p) == 7:
-            children = [p[5]]
-        if len(p) == 4:
-            children = []
-        p[0] = Node(None, "cleanup_block", children)
+        if isinstance(p[3], Node):
+            if p[3].type == 'suite':
+                p[0] = Node(None, "cleanup_block", [p[3]])
+            else:
+                p[0] = Node(None, "cleanup_block")
 
     def p_suite(self, p):
         '''suite : simple_statement
@@ -143,6 +143,7 @@ class ParserForNarratr:
     def p_statement(self, p):
         '''statement : simple_statement
                      | block_statement'''
+        # print p[1].type
         p[0] = p[1]
         p[0].type = "statement"
 
@@ -154,17 +155,27 @@ class ParserForNarratr:
                             | flow_statement newlines
                             | expression_statement newlines'''
         if isinstance(p[1], Node):
+            print p[1].type
             if p[1].type == "say_statement":
                 p[0] = p[1]
                 p[0].value = "say"
 
-            if p[1].type == "exposition_statement":
+            if p[1].type == "exposition":
                 p[0] = p[1]
                 p[0].value = "exposition"
 
             if p[1].type == "win_statement":
                 p[0] = p[1]
                 p[0].value = "win"
+            if p[1].type == "expression_statement":
+                p[0] = p[1]
+                p[0].value = "expression"
+            if p[1].type == "flow_statement":
+                p[0] = p[1]
+                p[0].value = "flow"
+            if p[1].type == "lose_statement":
+                p[0] = p[1]
+                p[0].value = "lose"
 
             p[0].type = "simple_statement"
 
@@ -183,7 +194,7 @@ class ParserForNarratr:
         if len(p) == 2:
             children = []
         if len(p) == 3:
-            children = [Node(p[2], "string")]
+            children = [Node(p[2], "string", [])]
         p[0] = Node(None, "win_statement", children)
 
     def p_lose_statement(self, p):
@@ -194,13 +205,27 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [Node(p[2], "string", [])]
-            p[0] = Node(None, "lose", children)
+            p[0] = Node(None, "lose_statement", children)
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
                           | continue_statement
                           | moves_declaration
                           | moveto_statement'''
+        if isinstance(p[1], Node):
+            if p[1].type == 'break_statement':
+                p[0] = p[1]
+                p[0].value = 'break'
+            if p[1].type == 'continue_statement':
+                p[0] = p[1]
+                p[0].value = 'continue'
+            if p[1].type == 'moves_declaration':
+                p[0] = p[1]
+                p[0].value = 'moves'
+            if p[1].type == 'moveto_statement':
+                p[0] = p[1]
+                p[0].type = 'moveto'
+            p[0].type = 'simple_statement'
 
     def p_expression_statement(self, p):
         '''expression_statement : testlist IS testlist
@@ -225,6 +250,8 @@ class ParserForNarratr:
                      | RIGHT
                      | UP
                      | DOWN'''
+        p[0] = Node(None, p[1], [])
+        p[0].type = 'direction'
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
@@ -244,10 +271,24 @@ class ParserForNarratr:
     def p_or_test(self, p):
         '''or_test : or_test OR and_test
                    | and_test'''
+        if len(p) == 4:
+            children = [p[1], p[3]]
+            p[0] = Node(None, 'or', children)
+            p[0].type = 'test'
+        else:
+            p[0] = p[1]
+            p[0].type = 'test'
 
     def p_and_test(self, p):
         '''and_test : and_test AND not_test
                     | not_test'''
+        if len(p) == 4:
+            children = [p[1], p[3]]
+            p[0] = Node(None, 'and', children)
+            p[0].type = 'test'
+        else:
+            p[0] = p[1]
+            p[0].type = 'test'
 
     def p_not_test(self, p):
         '''not_test : NOT not_test
@@ -275,6 +316,11 @@ class ParserForNarratr:
         '''arithmetic_expression : arithmetic_expression PLUS term
                                  | arithmetic_expression MINUS term
                                  | term'''
+        if len(p) == 4:
+            p[0] = Node(None, p[2], [p[1], p[3]])
+        else:
+            p[0] = p[1]
+        p[0].type = 'arithmetic_expression'
 
     def p_term(self, p):
         '''term : term TIMES factor
