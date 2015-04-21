@@ -6,41 +6,20 @@ class CodeGen:
         self.items = []
         self.main = ""
 
-    # This function iterates through all the nodes of the tree since we know 
-    # the structure already 
+    # This function iterates through all the nodes of the tree since we know
+    # the structure already
     def process(self, node):
         for c in node.children:
             if c.type == "blocks":
                 for bc in c.children:
-                    if type (bc) is dict:
+                    if type(bc) is dict:
                         for key, s_i in bc.iteritems():
                             if s_i.type == "scene_block":
-                                self._add_scene(self._scene_gen(s_i,key))
+                                self._add_scene(self._scene_gen(s_i, key))
                             elif s_i.type == "item_block":
                                 pass
                     elif bc.type == "start_state":
-                        self._add_main(bc)    
-
-                        
-
-
-
-
-
-
-    #    if node.type == "scene_block":
-    #        self._add_scene(self._scene_gen(node))
-
-        # This is just a boilerplate example, it's not implemented yet.
-    #    if node.type == "item_block":
-    #        self._item_gen(node)
-
-    #    elif node.type == "startstate":
-    #        self._add_main(node)
-
-    #    if not node.is_leaf():
-    #        for n in node.children:
-    #            self.process(n)
+                        self._add_main(bc)
 
     # This function takes the instance variables constructed by the process()
     # function and writes them to an output file. (As such, it must be run
@@ -103,7 +82,7 @@ class CodeGen:
     # valid Python (really, a Python class). Iterates through the children
     # of the input node and constructs the setup, cleanup, and action blocks
     # using boilerplate code. This should only be used internally.
-    def _scene_gen(self,scene,sid):
+    def _scene_gen(self, scene, sid):
         commands = []
         for c in scene.children:
             if c.type == "SCENEID":
