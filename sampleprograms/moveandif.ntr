@@ -10,13 +10,11 @@ scene $2 {
 
 	setup:
 		exposition "You've entered a new room."
-
-		move left($1)
+		moves left($1)
 
 	action:
 		if (1 == 1) and (2 == 3):
 			lose
-
 		if (1 == 1) or (2 == 3):
 			win
 

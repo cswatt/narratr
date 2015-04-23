@@ -1,46 +1,25 @@
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "#!/usr/bin/env python\nimport sys\n"
+        self.frontmatter = "#!/usr/bin/env python\n"
         self.scenes = []
         self.scene_nums = []
         self.items = []
         self.main = ""
 
-    # This function iterates through all the nodes of the tree since we know 
-    # the structure already 
+    # This function iterates through all the nodes of the tree since we know
+    # the structure already
     def process(self, node):
         for c in node.children:
             if c.type == "blocks":
                 for bc in c.children:
-                    if type (bc) is dict:
+                    if type(bc) is dict:
                         for key, s_i in bc.iteritems():
                             if s_i.type == "scene_block":
-                                self._add_scene(self._scene_gen(s_i,key))
+                                self._add_scene(self._scene_gen(s_i, key))
                             elif s_i.type == "item_block":
                                 pass
                     elif bc.type == "start_state":
-                        self._add_main(bc)    
-
-                        
-
-
-
-
-
-
-    #    if node.type == "scene_block":
-    #        self._add_scene(self._scene_gen(node))
-
-        # This is just a boilerplate example, it's not implemented yet.
-    #    if node.type == "item_block":
-    #        self._item_gen(node)
-
-    #    elif node.type == "startstate":
-    #        self._add_main(node)
-
-    #    if not node.is_leaf():
-    #        for n in node.children:
-    #            self.process(n)
+                        self._add_main(bc)
 
     # This function takes the instance variables constructed by the process()
     # function and writes them to an output file. (As such, it must be run
@@ -81,6 +60,21 @@ class CodeGen:
     # state of 1. This should only be used internally.
     def _add_main(self, startstate=None):
         if self.main == "":
+            self.main = '''
+            def get_response():
+                response = raw_input(" -->> ")
+                response = response.lower()
+                response = response.translate(None,
+                            '!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
+                response = ' '.join(response.split())
+                if response == "exit":
+                    print "== GAME TERMINATED =="
+                    exit(0)
+                else:
+                    return response
+
+            '''
+
             for s in self.scene_nums:
                 self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
 
@@ -103,7 +97,7 @@ class CodeGen:
     # valid Python (really, a Python class). Iterates through the children
     # of the input node and constructs the setup, cleanup, and action blocks
     # using boilerplate code. This should only be used internally.
-    def _scene_gen(self,scene,sid):
+    def _scene_gen(self, scene, sid):
         commands = []
         for c in scene.children:
             if c.type == "SCENEID":
@@ -123,7 +117,7 @@ class CodeGen:
                 commands.append("def action(self):\n        " +
                                 "response = \"\"\n        while(True):\n" +
                                 self._process_statements(c.children, 3) +
-                                "\n            response = raw_input(\">\")\n")
+                                "\n            response = get_response()\n")
 
         self.scene_nums.append(sid)
 
@@ -158,7 +152,7 @@ class CodeGen:
                     commands.append("print \"" +
                                     command.children[0].value +
                                     "\"")
-                commands.append("sys.exit(0)")
+                commands.append("exit(0)")
         if len(commands) > 0:
             commands[0] = "    "*indentlevel + commands[0]
         return prefix.join(commands)
