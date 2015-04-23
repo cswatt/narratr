@@ -192,7 +192,7 @@ class ParserForNarratr:
         if len(p) == 2:
             children = []
         if len(p) == 3:
-            children = [Node(p[2], "string", [])]
+            children = [Node(p[2], "string")]
         p[0] = Node(None, "win_statement", children)
 
     def p_lose_statement(self, p):
@@ -202,7 +202,7 @@ class ParserForNarratr:
             if len(p) == 2:
                 children = []
             if len(p) == 3:
-                children = [Node(p[2], "string", [])]
+                children = [Node(p[2], "string")]
             p[0] = Node(None, "lose_statement", children)
 
     def p_flow_statement(self, p):
