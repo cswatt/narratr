@@ -143,7 +143,7 @@ class ParserForNarratr:
     def p_statement(self, p):
         '''statement : simple_statement
                      | block_statement'''
-        # print p[1].type
+        print p[1].type
         p[0] = p[1]
         p[0].type = "statement"
 
@@ -239,7 +239,9 @@ class ParserForNarratr:
 
     def p_moves_declaration(self, p):
         '''moves_declaration : MOVES directionlist'''
-
+        p[0] = Node(None, 'moves', p[1])
+        p[0].type = 'moves_declaration'
+ 
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
@@ -250,11 +252,14 @@ class ParserForNarratr:
                      | RIGHT
                      | UP
                      | DOWN'''
+        print p[1]
         p[0] = Node(None, p[1], [])
         p[0].type = 'direction'
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
+        p[0] = Node(None, 'moveto', [p[2]])
+        p[0].type = 'moveto_statement'        
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
@@ -371,6 +376,7 @@ class ParserForNarratr:
     def p_block_statement(self, p):
         '''block_statement : if_statement
                            | while_statement'''
+        print p[1]
 
     def p_if_statement(self, p):
         '''if_statement : IF test COLON suite elif_statements ELSE COLON suite

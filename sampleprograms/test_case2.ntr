@@ -1,3 +1,11 @@
+scene $1 {
+	setup:
+		say "Hello, World!"
+	action:
+		say "first action"
+	cleanup:
+}
+
 scene $2 {
 
 	setup:
