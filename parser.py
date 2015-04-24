@@ -71,7 +71,8 @@ class ParserForNarratr:
 
     def p_scene_block(self, p):
         '''scene_block : SCENE SCENEID LCURLY newlines INDENT setup_block \
-                          action_block cleanup_block DEDENT RCURLY
+                          action_block cleanup_block DEDENT newlines_optional \
+                          RCURLY
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
         # This is set, but it still needs symbol table (SCENEID).
@@ -123,11 +124,11 @@ class ParserForNarratr:
 
     def p_suite(self, p):
         '''suite : simple_statement
-                 | newlines INDENT statements DEDENT'''
-        if p[3].type == "statements":
-            p[0] = p[3]
-        else:
+                 | newlines INDENT statements DEDENT newlines_optional'''
+        if p[1].type == "simple_statement":
             p[0] = p[1]
+        else:
+            p[0] = p[3]
         p[0].type = "suite"
 
     def p_statements(self, p):
@@ -177,31 +178,31 @@ class ParserForNarratr:
             self.p_error("Syntax Error forming simple_statement.")
 
     def p_say_statement(self, p):
-        '''say_statement : SAY STRING'''
+        '''say_statement : SAY testlist'''
         p[0] = Node(None, "say_statement", [Node(p[2], "string")])
 
     def p_exposition_statement(self, p):
-        '''exposition_statement : EXPOSITION STRING'''
+        '''exposition_statement : EXPOSITION testlist'''
         if p[1] == "exposition":
             p[0] = Node(None, "exposition", [Node(p[2], "string")])
 
     def p_win_statement(self, p):
         '''win_statement : WIN
-                         | WIN STRING'''
+                         | WIN testlist'''
         if len(p) == 2:
             children = []
         if len(p) == 3:
-            children = [Node(p[2], "string", [])]
+            children = [Node(p[2], "string")]
         p[0] = Node(None, "win_statement", children)
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
-                          | LOSE STRING'''
+                          | LOSE testlist'''
         if p[1] == "lose":
             if len(p) == 2:
                 children = []
             if len(p) == 3:
-                children = [Node(p[2], "string", [])]
+                children = [Node(p[2], "string")]
             p[0] = Node(None, "lose_statement", children)
             p[0].type = 'lose_statement'
 
@@ -230,6 +231,7 @@ class ParserForNarratr:
                                 | GOD testlist IS testlist'''
         p[0] = p[1]
         p[0].type = "expression_statement"
+
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
@@ -394,6 +396,7 @@ class ParserForNarratr:
 
     def p_atom(self, p):
         '''atom : LPARAN test RPARAN
+                | list
                 | number
                 | boolean
                 | STRING
@@ -416,6 +419,10 @@ class ParserForNarratr:
             p[0] = Node(None, 'trailer', [p[1], p[2]])
 
         p[0].type = 'trailer'
+
+    def p_list(self, p):
+        '''list : LSQUARE RSQUARE
+                | LSQUARE testlist RSQUARE'''
 
     def p_number(self, p):
         '''number : INTEGER
@@ -489,7 +496,7 @@ class ParserForNarratr:
         if isinstance(p, str):
             raise Exception(p)
         else:
-            raise Exception("Syntax Error at token " + p)
+            raise Exception("Syntax Error at token " + str(p))
 
     def parse(self, string_to_parse, **kwargs):
         return self.parser.parse(string_to_parse, lexer=self.lexer, **kwargs)

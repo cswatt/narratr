@@ -32,6 +32,20 @@ class TestCodeFormat(unittest.TestCase):
         self.assertEqual(result.total_errors, 0,
                          "Found code style errors (and warnings).")
 
+    def test_pep8_conformance_symtab(self):
+        """Test that symtab conforms to PEP8."""
+        pep8style = pep8.StyleGuide(quiet=False)
+        result = pep8style.check_files(['symtab.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
+
+    def test_pep8_conformance_narratr(self):
+        """Test that narratr conforms to PEP8."""
+        pep8style = pep8.StyleGuide(quiet=False)
+        result = pep8style.check_files(['narratr.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
+
     def test_pep8_conformance_lexertest(self):
         """Test that lexer test conforms to PEP8."""
         pep8style = pep8.StyleGuide(quiet=False)
