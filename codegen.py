@@ -1,3 +1,20 @@
+# -----------------------------------------------------------------------------
+# narrtr: codegen.py
+# This file contains the Code Generator to generate target Python code.
+#
+# Copyright (C) 2015 Team narratr
+# All Rights Reserved
+# Team narratr: Yelin Hong, Shloka Kini, Nivvedan Senthamil Selvan, Jonah
+# Smith, Cecilia Watt
+#
+# File Created: 01 April 2015
+# Primary Authors: Jonah Smith, Yelin Hong
+#
+# Any questions, bug reports and complaints are to be directed at the primary
+# author.
+#
+# -----------------------------------------------------------------------------
+
 class CodeGen:
     def __init__(self):
         self.frontmatter = "#!/usr/bin/env python\n"
