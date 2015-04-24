@@ -82,7 +82,7 @@ class CodeGen:
                 response = raw_input(" -->> ")
                 response = response.lower()
                 response = response.translate(None,
-                            '!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
+                            "!#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~")
                 response = ' '.join(response.split())
                 if response == "exit":
                     print "== GAME TERMINATED =="
@@ -121,27 +121,54 @@ class CodeGen:
                 sid = c.value
 
             elif c.type == "setup_block":
-                commands.append("def setup(self):\n" +
-                                self._process_statements(c.children, 2) +
-                                "\n        print 'hello word'\n"
-                                "\n        self.action()\n")
+                #add suite block node here
+                commands.append("def setup(self):\n")
+                if len(c.children) > 0:
+                    print "confusing?"
+                    for child in c.children:
+                        print child
+                        commands.append(self._process_statements(child, 1))
+                print "setup block commands here"
+                commands.append("\n        self.action()\n")
 
             elif c.type == "cleanup_block":
-                commands.append("def cleanup(self):\n        pass\n" +
-                                self._process_statements(c.children, 2))
+                commands.append("def cleanup(self):\n        pass\n") 
+                if len(c.children) > 0:
+                    commands.append(self._process_statements(c.children[0], 2))
 
             elif c.type == "action_block":
-                commands.append("def action(self):\n        " +
-                                "response = \"\"\n        while(True):\n" +
-                                self._process_statements(c.children, 3) +
-                                "\n            response = get_response()\n")
+                if len(c.children) > 0:
+                    for child in c.children:
+                        self._process_statements(child, 2)
+                        print "child of action"
+                        print child
+                print "action block here"
+                print c.children
+                #commands.append("def action(self):\n        " +
+                #                "response = \"\"\n        while(True):\n" +
+                #                self._process_statements(c.children[0], 3) +
+                #                "\n            response = get_response()\n")
 
         self.scene_nums.append(sid)
-
+        #delete the join(commands) for debuggung reason, the original one is
+        #scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
+        #    + "\n        pass\n\n    " + "\n    ".join(commands)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
             + "\n        pass\n\n    " + "\n    ".join(commands)
+        print "want commands are like"
+        print commands
 
         return scene_code
+
+
+    #Takes a "suite" node, calls the function to process "statemant"    
+    def _process_suite(self , suite, indentlevel=1):
+        commands = []
+        if len(suite.children) > 0:
+            for smt in suite.children:
+                if smt.type == "statement":
+                    commands.append(self._process_statements(smt, 2))
+        return commands
 
     # Takes a "statements" node, calls a function to find the "statement"
     # nodes that descend from it, and then figures out what kind of statement
@@ -151,40 +178,69 @@ class CodeGen:
     # node. This function should only be used internally. Indent level
     # specifies how many indents should appear before statements in the
     # sequence.
-    def _process_statements(self, statements, indentlevel=1):
-        # returns a list of statement nodes
-        smts = self._find_statement(statements)
-        commands = []
+    def _process_statements(self, statement, indentlevel=1):
+        commands = ''
         prefix = "\n" + "    "*indentlevel
+        for smt in statement.children:
+            if smt.value == "say":
+                commands += "    "*indentlevel + "print "
+                print "match the say statement"
+                print smt
+                for testlist in smt.children:
+                    print "tests are here"
+                    commands += self._process_testlist(testlist, 2)
+            elif smt.value == "exposition":
+                print "match the exposition"
+                for testlist in smt.children:
+                    self._process_testlist(testlist, 2)
 
-        for smt in smts:
-            command = smt.children[0]
-            if command.type == "say":
-                commands.append("print \"" +
-                                command.children[0].value + "\"")
+            elif smt.value == "win":
+                print "match the win statement"
+                if len(smt.children) > 0:
+                    for testlist in smt.children:
+                        self._process_testlist(testlist, 2)
 
-            if command.type in ["win", "lose"]:
-                # win with an argument
-                if len(command.children) > 0:
-                    commands.append("print \"" +
-                                    command.children[0].value +
-                                    "\"")
+            elif smt.value == "expression":
+                print "match the expression"
+
+            elif smt.value == "flow":
+                print "match the flow statement"
+
+            elif smt.value == "lose":
+                print "match the lose statement"
+                if len(smt.children) > 0:
+                    for testlist in smt.children:
+                        self._process_testlist(testlist, 2)
+
                 commands.append("exit(0)")
-        if len(commands) > 0:
-            commands[0] = "    "*indentlevel + commands[0]
-        return prefix.join(commands)
+                commands.append("sys.exit(0)")
 
-    # This function finds all the "statement" children of a "statements" node.
-    # It uses a non-recursive DFS algorithm, basically. It returns a list of
-    # nodes, IN ORDER OF APPEARANCE. To be used internally.
-    def _find_statement(self, statements):
-            smts = []
-            nodes_to_visit = statements
-            while len(nodes_to_visit) > 0:
-                cnode = nodes_to_visit.pop(0)
-                if cnode.type == "simple_statement":
-                    smts.insert(0, cnode)
-                else:
-                    for node in cnode.children:
-                        nodes_to_visit.insert(0, node)
-            return smts
+        #if len(commands) > 0:
+        #    commands[0] = "    "*indentlevel + commands[0]
+        #return prefix.join(commands)
+        print "want to know why can not join"
+        print commands
+        return commands
+    #This function takes "testlist" node as argument
+    def _process_testlist(self, testlist, indentlevel=1):
+        commands = ''
+        for test in testlist.children:
+            if test.type == "test":
+                for child in test.children:
+                    if child.type == "expression":
+                        commands += self._process_expression(child, 2)
+
+                print "test are here"
+                print test
+        return commands
+    #This function takes "expression" node as argument
+    def _process_expression(self, exps, indentlevel=1):
+        commands = ''
+        for child in exps.children:
+            if child.type == "factor":
+                commands += '"'+ child.value + '"'
+        return commands
+
+
+    
+
