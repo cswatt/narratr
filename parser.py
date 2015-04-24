@@ -402,9 +402,9 @@ class ParserForNarratr:
                 | ID'''
         if len(p) == 4:
             p[0] = p[2]
-        elif isinstance(p[1], Node) and
-        (p[1].type == 'number' or p[1].type == 'boolean'):
-            p[0] = p[1]
+        elif isinstance(p[1], Node):
+            if (p[1].type == 'number' or p[1].type == 'boolean'):
+                p[0] = p[1]
         else:
             p[0] = Node(p[1], 'atom', [])
         p[0].type = 'atom'
