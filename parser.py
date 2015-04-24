@@ -125,7 +125,7 @@ class ParserForNarratr:
     def p_suite(self, p):
         '''suite : simple_statement
                  | newlines INDENT statements DEDENT newlines_optional'''
-        if p[1].type == "simple_statement":
+        if isinstance(p[1], Node) and p[1].type == "simple_statement":
             p[0] = p[1]
         else:
             p[0] = p[3]
@@ -232,7 +232,6 @@ class ParserForNarratr:
         p[0] = p[1]
         p[0].type = "expression_statement"
 
-
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
         p[0] = Node(p[1], 'break_statement', [])
@@ -331,7 +330,7 @@ class ParserForNarratr:
                       | expression'''
         if p[1].type == 'comparison':
             p[0] = p[1]
-            p[0].children.append( p[2])
+            p[0].children.append(p[2])
             p[0].children.append(p[3])
         else:
             p[0] = Node(None, 'comparison', [p[1]])
@@ -403,7 +402,8 @@ class ParserForNarratr:
                 | ID'''
         if len(p) == 4:
             p[0] = p[2]
-        elif p[1].type == 'number' or p[1].type == 'boolean':
+        elif isinstance(p[1], Node) and
+        (p[1].type == 'number' or p[1].type == 'boolean'):
             p[0] = p[1]
         else:
             p[0] = Node(p[1], 'atom', [])
