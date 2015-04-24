@@ -179,12 +179,12 @@ class ParserForNarratr:
 
     def p_say_statement(self, p):
         '''say_statement : SAY testlist'''
-        p[0] = Node(None, "say_statement", [Node(p[2], "string")])
+        p[0] = Node(None, "say_statement", [p[2]])
 
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION testlist'''
         if p[1] == "exposition":
-            p[0] = Node(None, "exposition", [Node(p[2], "string")])
+            p[0] = Node(None, "exposition", [p[2]])
 
     def p_win_statement(self, p):
         '''win_statement : WIN
@@ -192,7 +192,7 @@ class ParserForNarratr:
         if len(p) == 2:
             children = []
         if len(p) == 3:
-            children = [Node(p[2], "string")]
+            children = p[2]
         p[0] = Node(None, "win_statement", children)
 
     def p_lose_statement(self, p):
@@ -202,7 +202,7 @@ class ParserForNarratr:
             if len(p) == 2:
                 children = []
             if len(p) == 3:
-                children = [Node(p[2], "string")]
+                children = p[2]
             p[0] = Node(None, "lose_statement", children)
             p[0].type = 'lose_statement'
 
@@ -283,12 +283,11 @@ class ParserForNarratr:
         '''testlist : testlist COMMA test
                     | test'''
         if p[1].type == 'test':
-            p[0] = p[1]
+            p[0] = Node(None, 'testlist', [p[1]])
             p[0].type = 'testlist'
         else:
             p[0] = p[1]
-            new_test = Node(None, p[3], [])
-            p[0].children.append(new_test)
+            p[0].children.append(p[3])
             p[0].type = 'testlist'
 
     # If there is just one possible rule and one child, the type of the node
@@ -305,10 +304,10 @@ class ParserForNarratr:
         if len(p) == 4:
             children = [p[1], p[3]]
             p[0] = Node(None, 'or', children)
-            p[0].type = 'test'
+            p[0].type = 'or_test'
         else:
             p[0] = p[1]
-            p[0].type = 'test'
+            p[0].type = 'or_test'
 
     def p_and_test(self, p):
         '''and_test : and_test AND not_test
@@ -316,20 +315,20 @@ class ParserForNarratr:
         if len(p) == 4:
             children = [p[1], p[3]]
             p[0] = Node(None, 'and', children)
-            p[0].type = 'test'
+            p[0].type = 'and_test'
         else:
             p[0] = p[1]
-            p[0].type = 'test'
+            p[0].type = 'and_test'
 
     def p_not_test(self, p):
         '''not_test : NOT not_test
                     | comparison'''
         if len(p) == 3:
             p[0] = Node(None, 'not', [p[2]])
-            p[0].type = 'test'
+            p[0].type = 'not_test'
         else:
-            p[0] = Node(None, 'not', [p[1]])
-            p[0].type = 'test'
+            p[0] = p[1]
+            p[0].type = 'not_test'
 
     def p_comparison(self, p):
         '''comparison : comparison comparison_op expression
@@ -377,7 +376,7 @@ class ParserForNarratr:
         if len(p) == 4:
             p[0] = Node(p[2], 'term', [p[1], p[3]])
         else:
-            p[0] = Node(p[1], 'term', [])
+            p[0] = Node(None, 'term', [p[1]])
         p[0].type = 'term'
 
     def p_factor(self, p):
@@ -394,7 +393,7 @@ class ParserForNarratr:
         '''power : power trailer
                  | atom'''
         if len(p) == 3:
-            p[0] = Node(None, 'power', [p[1], ])
+            p[0] = Node(None, 'power', [p[1], p[2]])
         else:
             p[0] = p[1]
             p[0].type = 'power'
@@ -418,8 +417,8 @@ class ParserForNarratr:
         '''trailer : LPARAN RPARAN
                    | LPARAN args RPARAN
                    | DOT ID'''
-        if p[1].type == 'args':
-            p[0] = p[1]
+        if p[2].type == 'args':
+            p[0] = p[2]
         else:
             p[0] = Node(None, 'trailer', [p[1], p[2]])
 
