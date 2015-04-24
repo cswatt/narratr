@@ -228,8 +228,14 @@ class ParserForNarratr:
 
     def p_expression_statement(self, p):
         '''expression_statement : testlist IS testlist
-                                | GOD testlist IS testlist'''
-        p[0] = p[1]
+                                | GOD testlist IS testlist
+                                | testlist'''
+        if not isinstance(p[1], Node):
+            p[0] = p[4]
+        elif len(p) == 4:
+            p[0] = p[3]
+        else:
+            p[0] = p[1]
         p[0].type = "expression_statement"
 
     def p_break_statement(self, p):
@@ -334,7 +340,7 @@ class ParserForNarratr:
             p[0].children.append(p[3])
         else:
             p[0] = Node(None, 'comparison', [p[1]])
-        print p[0]
+        # print p[0]
         p[0].type = 'comparison'
 
     def p_expression(self, p):
@@ -379,7 +385,7 @@ class ParserForNarratr:
                   | MINUS factor
                   | power'''
         if len(p) == 3:
-            p[0] = Node(None, p[1], [p[2]])
+            p[0] = Node(p[1], 'factor', [p[2]])
         else:
             p[0] = p[1]
             p[0].type = 'factor'
@@ -403,8 +409,7 @@ class ParserForNarratr:
         if len(p) == 4:
             p[0] = p[2]
         elif isinstance(p[1], Node):
-            if (p[1].type == 'number' or p[1].type == 'boolean'):
-                p[0] = p[1]
+            p[0] = p[1]
         else:
             p[0] = Node(p[1], 'atom', [])
         p[0].type = 'atom'
@@ -423,6 +428,9 @@ class ParserForNarratr:
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
                 | LSQUARE testlist RSQUARE'''
+        if p[2].type == 'testlist':
+            p[0] = p[2]
+            p[0].type = 'list'
 
     def p_number(self, p):
         '''number : INTEGER
