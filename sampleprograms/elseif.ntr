@@ -1,0 +1,12 @@
+scene $1 {
+	setup:
+	action:
+		if (1==2):
+			Say "something bad has happened"
+		else:
+			Say "Okay."
+
+	cleanup:
+}
+
+start: $1
