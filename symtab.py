@@ -30,11 +30,12 @@ class SymTabEntry:
     # scope is applicable for all variables. It is the scene ID in which a
     # variable has scope. It may also be POCKET, or GLOBAL. GLOBAL is for
     # scenes and items.
-    def __init__(self, symbol, value, symboltype, scope):
+    def __init__(self, symbol, value, symboltype, scope, god):
         self.symbol = symbol
         self.value = value
         self.symboltype = symboltype
         self.scope = scope
+        self.god = god
 
 
 class SymTab:
@@ -59,12 +60,12 @@ class SymTab:
 
     # This should be the interface used to add new SymTab entries.
     # Parameters are explained above in SymTabEntry.
-    def insert(self, symbol, value, symboltype, scope):
+    def insert(self, symbol, value, symboltype, scope, god=False):
         if self.getKey(symbol, scope) in self.table:
             raise Exception("Symbol already in the Symbol Table in " +
                             "the same scope.")
         else:
-            self.overwrite(SymTabEntry(symbol, value, symboltype, scope))
+            self.overwrite(SymTabEntry(symbol, value, symboltype, scope, god))
 
     # This should be the interface used to get a SymTab Entry from the Table.
     # Returns None if there is no entry.
@@ -72,9 +73,9 @@ class SymTab:
         self.table.get(self.getKey(symbol, scope), None)
 
     # Updates an existing entry.
-    def update(self, symbol, value, symboltype, scope):
+    def update(self, symbol, value, symboltype, scope, god=False):
         if self.getKey(symbol, scope) not in self.table:
             raise Exception("Symbol not in the Symbol Table in the same" +
                             "scope. Nothing to update")
         else:
-            self.overwrite(SymTabEntry(symbol, value, symboltype, scope))
+            self.overwrite(SymTabEntry(symbol, value, symboltype, scope, god))

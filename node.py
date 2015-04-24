@@ -18,20 +18,20 @@
 
 # Class for nodes in the narratr AST.
 class Node:
-    # to initialize, requires:
+    # Constructor requires:
     #   v           the value of the node
     #   t           the variable type, defined by Lexer/Parser
-    #   c           a list of children nodes
+    #   c           a list of children nodes (Optional)
     def __init__(self, v, t, c=[]):
         self.value = v
         self.type = t
         self.children = c
 
-    # for helpful string representations
+    # This method is helpful for string representations
     def __repr__(self):
         return "Node(%r, %r, %r)" % (self.value, self.type, self.children)
 
-    # checks if a node is a leaf node.
+    # This method checks if a node is a leaf node.
     def is_leaf(self):
         if len(self.children) > 0:
             return False
