@@ -21,10 +21,10 @@ import ply.lex as lex
 
 class LexerForNarratr:
 
-    # This dictionary defines all the reserved keyword in the language. They
-    # are specified here to make keyword matching easy. All keywords must be
-    # declared here. Alphanumeric patterns that is not declared as a keyword
-    # here will be considered to be an identifier.
+    # This dictionary defines all the reserved keywords in the language. They
+    # are specified here to make keyword matching easier. All keywords must be
+    # declared here. Alphanumeric patterns that are not declared as a keyword
+    # here will be considered an identifier.
     reserved = {
         'scene': 'SCENE',
         'setup': 'SETUP',
@@ -55,16 +55,17 @@ class LexerForNarratr:
         'god': 'GOD',
         'continue': 'CONTINUE',
         'break': 'BREAK',
-        'pocket': 'POCKET'
+        'pocket': 'ID'  # Pocket is a special kind of identifier.
     }
 
     # All other tokens are declared here. Tokens not declared here would
     # produce an error.
     tokens = ['SCENEID', 'LCURLY', 'RCURLY', 'LPARAN', 'RPARAN', 'COLON',
-              'NEWLINE', 'INDENT', 'DEDENT', 'ID', 'STRING', 'EQUALS',
-              'LESS', 'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS',
-              'MINUS', 'TIMES', 'DIVIDE', 'INTEGERDIVIDE', 'INTEGER',
-              'FLOAT', 'DOT', 'COMMA', 'NOTEQUALS'] + list(reserved.values())
+              'NEWLINE', 'INDENT', 'DEDENT', 'STRING', 'EQUALS', 'LESS',
+              'GREATER', 'LESSEQUALS', 'GREATEREQUALS', 'PLUS', 'MINUS',
+              'TIMES', 'DIVIDE', 'INTEGERDIVIDE', 'INTEGER', 'FLOAT', 'DOT',
+              'COMMA', 'NOTEQUALS', 'LSQUARE', 'RSQUARE'] + \
+        list(reserved.values())
 
     # The constructor here builds the lexer. The re.MULTILINE flag is critical
     # in matching indents.
@@ -72,10 +73,13 @@ class LexerForNarratr:
         self.lexer = lex.lex(module=self, reflags=re.MULTILINE, **kwargs)
         self.indentstack = [0]
         self.dedenting = False
+        self.lasttoken = None
 
     # Regular expression rules for simple tokens are specified here.
     t_LCURLY = r'{'
     t_RCURLY = r'}'
+    t_LSQUARE = r'\['
+    t_RSQUARE = r'\]'
     t_LPARAN = r'\('
     t_RPARAN = r'\)'
     t_COLON = r':'
@@ -91,6 +95,22 @@ class LexerForNarratr:
     t_DIVIDE = r'/'
     t_INTEGERDIVIDE = r'//'
     t_COMMA = r','
+
+    # Comments are ignored. Comments are defined as a % follwed by any
+    # number of characters until a newline is encountered. If the token
+    # generated just before the comment was a newline, no additional
+    # newlines are generated. Else, one newline token is generated here.
+    def t_comments(self, t):
+        r'[ \t\r\f\v]*%[^\n]*\n'
+        if self.lasttoken:
+            if self.lasttoken.type == "NEWLINE":
+                pass
+            else:
+                t.type = "NEWLINE"
+                t.value = 1
+                return t
+        else:
+            pass
 
     # This rule matches an Identifier except for the reserved words defined
     # above. The reserved words will be matched to their own tokens.
@@ -161,7 +181,7 @@ class LexerForNarratr:
     # until the stack is fully dendented. This is because there is no white
     # space at the beginning of the line.
     def t_NEWLINE(self, t):
-        r'\n+[^ \t\r\f\v]?'
+        r'\n+[^ \t\r\f\v%]?'
         if t.value[-1] == '\n':
             t.value = len(t.value)
             t.lexer.lineno += t.value
@@ -192,12 +212,7 @@ class LexerForNarratr:
 
     # All white spaces not at the beginning of a logical line are ignored.
     def t_ignore_whitespace(self, t):
-        r'\s+'
-
-    # Ignoring all comments. Comments are defined as a % follwed by any
-    # number of characters until a newline is encountered.
-    def t_ignore_comments(self, t):
-        r'%[^\n]*'
+        r'[ \t\r\f\v]+'
 
     # This rule is triggered if an error is encountered. The lexer skips a line
     # after printing a message.
@@ -211,13 +226,14 @@ class LexerForNarratr:
 
     # This method provides an interface to the lexer's token() function
     def token(self):
-        return self.lexer.token()
+        self.lasttoken = self.lexer.token()
+        return self.lasttoken
 
     # This method prints all tokens scanned by the lexer. This method should be
     # called only after passing some input through the input(string) function.
     # This method is for testing purposes only.
     def printAllTokens(self):
-        nextToken = self.lexer.token()
+        nextToken = self.token()
         while nextToken:
             print nextToken
-            nextToken = self.lexer.token()
+            nextToken = self.token()
