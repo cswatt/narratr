@@ -112,7 +112,7 @@ def main():
     if not args.inert:
         generate_code(ast, outputfile)
     if verbose:
-        print "your game is ready--have fun!"
+        print "Your game is ready. Have fun!"
 
 if __name__ == "__main__":
     main()
