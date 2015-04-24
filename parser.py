@@ -239,7 +239,7 @@ class ParserForNarratr:
         '''moves_declaration : MOVES directionlist'''
         p[0] = Node(None, 'moves', p[1])
         p[0].type = 'moves_declaration'
- 
+
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
@@ -257,7 +257,7 @@ class ParserForNarratr:
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
         p[0] = Node(None, 'moveto', [p[2]])
-        p[0].type = 'moveto_statement'        
+        p[0].type = 'moveto_statement'
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
