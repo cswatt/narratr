@@ -116,11 +116,10 @@ class ParserForNarratr:
     def p_cleanup_block(self, p):
         '''cleanup_block : CLEANUP COLON suite
                          | CLEANUP COLON newlines'''
-        if isinstance(p[3], Node):
-            if p[3].type == 'suite':
-                p[0] = Node(None, "cleanup_block", [p[3]])
-            else:
-                p[0] = Node(None, "cleanup_block")
+        if isinstance(p[3], Node) and p[3].type == 'suite':
+            p[0] = Node(None, "cleanup_block", [p[3]])
+        else:
+            p[0] = Node(None, "cleanup_block")
 
     def p_suite(self, p):
         '''suite : simple_statement
@@ -204,6 +203,7 @@ class ParserForNarratr:
             if len(p) == 3:
                 children = [Node(p[2], "string", [])]
             p[0] = Node(None, "lose_statement", children)
+            p[0].type = 'lose_statement'
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
@@ -223,45 +223,66 @@ class ParserForNarratr:
             if p[1].type == 'moveto_statement':
                 p[0] = p[1]
                 p[0].type = 'moveto'
-            p[0].type = 'simple_statement'
+            p[0].type = 'flow_statement'
 
     def p_expression_statement(self, p):
         '''expression_statement : testlist IS testlist
                                 | GOD testlist IS testlist'''
+        p[0] = p[1]
+        p[0].type = "expression_statement"
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
+        p[0] = Node(p[1], 'break_statement', [])
+        p[0].type = 'break_statement'
 
     def p_continue_statement(self, p):
         '''continue_statement : CONTINUE'''
+        p[0] = Node(p[1], 'continue_statement', [])
+        p[0].type = 'continue_statement'
 
     def p_moves_declaration(self, p):
         '''moves_declaration : MOVES directionlist'''
-        p[0] = Node(None, 'moves', p[1])
+        p[0] = p[2]
         p[0].type = 'moves_declaration'
- 
+
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
                                 RPARAN'''
+        if p[1].type == 'direction':
+            p[1].children.append(Node(p[3], 'sceneid', []))
+            p[0] = Node(None, 'directionlist', [p[1]])
+        else:
+            new_direction = Node(p[3], 'direction', [p[5]])
+            p[0] = p[1]
+            p[0].children.append(new_direction)
+        p[0].type = 'directionlist'
 
     def p_direction(self, p):
         '''direction : LEFT
                      | RIGHT
                      | UP
                      | DOWN'''
-        print p[1]
-        p[0] = Node(None, p[1], [])
+        p[0] = Node(p[1], 'direction', [])
         p[0].type = 'direction'
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
         p[0] = Node(None, 'moveto', [p[2]])
-        p[0].type = 'moveto_statement'        
+        p[0].type = 'moveto_statement'
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
                     | test'''
+        if p[1].type == 'test':
+            p[0] = p[1]
+            p[0].type = 'testlist'
+        else:
+            p[0] = p[1]
+            new_test = Node(None, p[3], [])
+            p[0].children.append(new_test)
+            p[0].type = 'testlist'
 
     # If there is just one possible rule and one child, the type of the node
     # still needs to be updated because parent AST nodes may check the type to
@@ -296,10 +317,24 @@ class ParserForNarratr:
     def p_not_test(self, p):
         '''not_test : NOT not_test
                     | comparison'''
+        if len(p) == 3:
+            p[0] = Node(None, 'not', [p[2]])
+            p[0].type = 'test'
+        else:
+            p[0] = Node(None, 'not', [p[1]])
+            p[0].type = 'test'
 
     def p_comparison(self, p):
         '''comparison : comparison comparison_op expression
                       | expression'''
+        if p[1].type == 'comparison':
+            p[0] = p[1]
+            p[0].children.append( p[2])
+            p[0].children.append(p[3])
+        else:
+            p[0] = Node(None, 'comparison', [p[1]])
+        print p[0]
+        p[0].type = 'comparison'
 
     def p_expression(self, p):
         '''expression : arithmetic_expression'''
@@ -314,13 +349,15 @@ class ParserForNarratr:
                          | EQUALS
                          | NOTEQUALS
                          | NOT EQUALS'''
+        p[0] = Node(p[1], 'comparison_op', [])
+        p[0].type = 'comparison_op'
 
     def p_arithmetic_expression(self, p):
         '''arithmetic_expression : arithmetic_expression PLUS term
                                  | arithmetic_expression MINUS term
                                  | term'''
         if len(p) == 4:
-            p[0] = Node(None, p[2], [p[1], p[3]])
+            p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]])
         else:
             p[0] = p[1]
         p[0].type = 'arithmetic_expression'
@@ -330,15 +367,30 @@ class ParserForNarratr:
                 | term DIVIDE factor
                 | term INTEGERDIVIDE factor
                 | factor '''
+        if len(p) == 4:
+            p[0] = Node(p[2], 'term', [p[1], p[3]])
+        else:
+            p[0] = Node(p[1], 'term', [])
+        p[0].type = 'term'
 
     def p_factor(self, p):
         '''factor : PLUS factor
                   | MINUS factor
                   | power'''
+        if len(p) == 3:
+            p[0] = Node(None, p[1], [p[2]])
+        else:
+            p[0] = p[1]
+            p[0].type = 'factor'
 
     def p_power(self, p):
         '''power : power trailer
                  | atom'''
+        if len(p) == 3:
+            p[0] = Node(None, 'power', [p[1], ])
+        else:
+            p[0] = p[1]
+            p[0].type = 'power'
 
     def p_atom(self, p):
         '''atom : LPARAN test RPARAN
@@ -346,45 +398,92 @@ class ParserForNarratr:
                 | boolean
                 | STRING
                 | ID'''
+        if len(p) == 4:
+            p[0] = p[2]
+        elif p[1].type == 'number' or p[1].type == 'boolean':
+            p[0] = p[1]
+        else:
+            p[0] = Node(p[1], 'atom', [])
+        p[0].type = 'atom'
 
     def p_trailer(self, p):
         '''trailer : LPARAN RPARAN
                    | LPARAN args RPARAN
                    | DOT ID'''
+        if p[1].type == 'args':
+            p[0] = p[1]
+        else:
+            p[0] = Node(None, 'trailer', [p[1], p[2]])
+
+        p[0].type = 'trailer'
 
     def p_number(self, p):
         '''number : INTEGER
                   | FLOAT'''
+        p[0] = Node(p[1], 'number', [])
+        p[0].type = 'number'
 
     def p_boolean(self, p):
         '''boolean : TRUE
                    | FALSE'''
+        p[0] = Node(p[1], 'boolean', [])
+        p[0].type = 'boolean'
 
     def p_calllist(self, p):
         '''calllist : LPARAN args RPARAN
                     | LPARAN RPARAN'''
+        if len(p) == 4:
+            p[0] = p[2]
+        else:
+            p[0] = Node(None, 'calllist', [])
+        p[0].type = 'calllist'
 
     def p_args(self, p):
         '''args : args COMMA expression
                 | expression'''
+        if len(p) == 4:
+            p[0] = p[1]
+            p[0].children.append(p[3])
+        else:
+            p[0] = Node(None, 'args', [p[1]])
+        p[0].type = 'args'
 
     def p_block_statement(self, p):
         '''block_statement : if_statement
                            | while_statement'''
-        print p[1]
+        p[0] = p[1]
+        p[0].type = 'block_statement'
 
     def p_if_statement(self, p):
         '''if_statement : IF test COLON suite elif_statements ELSE COLON suite
                         | IF test COLON suite ELSE COLON suite
                         | IF test COLON suite elif_statements
                         | IF test COLON suite'''
+        if len(p) == 9:
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]])
+        elif len(p) == 8:
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]])
+        elif len(p) == 6:
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]])
+        else:
+            p[0] = Node(None, 'if_statement', [p[2], p[4]])
+        p[0].type = 'if_statement'
 
     def p_elif_statements(self, p):
         '''elif_statements : elif_statements ELIF test COLON suite
                            | ELIF test COLON suite'''
+        if p[1].type == 'elif_statements':
+            p[0] = p[1]
+            new_elif = Node(None, 'elif_statements', [p[3], [5]])
+            p[0].children.append(new_elif)
+        else:
+            p[0] = Node(None, 'elif_statements', [p[2], [4]])
+        p[0].type = 'elif_statements'
 
     def p_while_statement(self, p):
         '''while_statement : WHILE test COLON suite'''
+        p[0] = Node(p[2], 'while_statement', [p[4]])
+        p[0].type = 'while_statement'
 
     def p_error(self, p):
         if isinstance(p, str):

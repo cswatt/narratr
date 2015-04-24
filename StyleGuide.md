@@ -187,3 +187,118 @@ But sometimes, this is useful:
 ```
 x = x + 1                 # Compensate for border
 ```
+
+
+
+#Updated Sections
+##Introduction
+This document gives coding conventions for narratr
+##Code lay-out
+###Indentation
+Use 4 spaces per indentation level. For a scene, the setup, action, and cleanup must all begin on the same indentation level
+
+**Yes:**
+scene $1 { 
+    setup:
+    action:
+        say "THE MATRIX HAS YOU"				
+    cleanup: 
+} 
+
+**No:**
+scene $1 { 
+setup:
+action:
+say "THE MATRIX HAS YOU"				
+cleanup: 
+} 
+
+
+The closing brace/bracket/parenthesis on multi-line constructs may either line up under the first non-whitespace character of the last line of list, as in:
+my_list = [
+    1, 2, 3,
+    4, 5, 6,
+    ]
+result = some_function_that_takes_arguments(
+    'a', 'b', 'c',
+    'd', 'e', 'f',
+    )
+
+
+or it may be lined up under the first character of the line that starts the multi-line construct, as in:
+my_list = [
+    1, 2, 3,
+    4, 5, 6,
+]
+result = some_function_that_takes_arguments(
+    'a', 'b', 'c',
+    'd', 'e', 'f',
+)
+
+
+###Tabs or Spaces?
+Spaces are the preferred indentation method.
+Tabs should be used solely to remain consistent with code that is already indented with tabs.
+###Maximum Line Length
+Limit all lines to a maximum of __ characters.
+##String Quotes
+In narratr, single-quoted strings and double-quoted strings are the same. 
+
+##Comments
+Comments that contradict the code are worse than no comments. 
+If a comment is short, the period at the end can be omitted. Block comments generally consist of one or more paragraphs built out of complete sentences, and each sentence should end in a period.
+
+###Block Comments
+Block comments generally apply to some (or all) code that follows them, and are indented to the same level as that code. Each line of a block comment starts with a # and a single space (unless it is indented text inside the comment).
+Paragraphs inside a block comment are separated by a line containing a single # .
+
+##Naming Conventions
+###Descriptive: Naming Styles
+There are a lot of different naming styles. It helps to be able to recognize what naming style is being used, independently from what they are used for.
+The following naming styles are commonly distinguished:
+
+* b (single lowercase letter)
+* B (single uppercase letter)
+* lowercase
+* lower_case_with_underscores
+* UPPERCASE
+* UPPER_CASE_WITH_UNDERSCORES
+* CapitalizedWords
+* mixedCase 
+* Capitalized_Words_With_Underscores 
+
+###Prescriptive: Naming Conventions
+###Names to Avoid
+Never use the characters 'l' (lowercase letter el), 'O' (uppercase letter oh), or 'I' (uppercase letter eye) as single character variable names.
+In some fonts, these characters are indistinguishable from the numerals one and zero. When tempted to use 'l', use 'L' instead.
+###Global Variable Names
+(Let's hope that these variables are meant for use inside one module only.) The conventions are about the same as those for functions.
+Modules that are designed for use via from M import * should use the __all__ mechanism to prevent exporting globals, or use the older convention of prefixing such globals with an underscore (which you might want to do to indicate these globals are "module non-public").
+###Function Names
+Function names should be lowercase, with words separated by underscores as necessary to improve readability.
+mixedCase is allowed only in contexts where that's already the prevailing style (e.g. threading.py), to retain backwards compatibility.
+###Function and method arguments
+Always use self for the first argument to instance methods.
+Always use cls for the first argument to class methods.
+If a function argument's name clashes with a reserved keyword, it is generally better to append a single trailing underscore rather than use an abbreviation or spelling corruption. Thus class_ is better than clss . (Perhaps better is to avoid such clashes by using a synonym.)
+###Method Names and Instance Variables
+Use the function naming rules: lowercase with words separated by underscores as necessary to improve readability.
+Use one leading underscore only for non-public methods and instance variables.
+To avoid name clashes with subclasses, use two leading underscores to invoke Python's name mangling rules.
+Python mangles these names with the class name: if class Foo has an attribute named __a , it cannot be accessed by Foo.__a . (An insistent user could still gain access by calling Foo._Foo__a .) Generally, double leading underscores should be used only to avoid name conflicts with attributes in classes designed to be subclassed.
+Note: there is some controversy about the use of __names (see below).
+###Constants
+Constants are usually defined on a module level and written in all capital letters with underscores separating words. Examples include MAX_OVERFLOW and TOTAL .
+##Programming Recommendations
+* Comparisons to singletons like None should always be done with is or is not , never the equality operators.
+* Use is not operator rather than not ... is . While both expressions are functionally identical, the former is more readable and preferred.
+
+* **Yes:**
+	* if foo is not None:
+
+
+* **No:**
+	* if not foo is None:
+
+
+* Don't write string literals that rely on significant trailing whitespace. 
