@@ -23,7 +23,7 @@ import argparse
 
 
 def print_tree(node, indent):
-    prefix = "    "*indent
+    prefix = "    " * indent
     try:
         val = ""
 
@@ -37,12 +37,12 @@ def print_tree(node, indent):
                 if type(n) is dict:
                     print "    " + prefix + "(dictionary)"
                     for key, value in n.iteritems():
-                        print_tree(value, indent+2)
+                        print_tree(value, indent + 2)
                 else:
-                    print_tree(n, indent+1)
-        
+                    print_tree(n, indent + 1)
     except:
         print prefix + "[Something bad happened]"
+
 
 def parse(source):
     if verbose:
@@ -72,7 +72,7 @@ def read(path):
             source = f.read()
     except IOError as e:
         print "\nERROR: Couldn't read source file " + path
-        sys.exit(1)
+        exit(1)
     else:
         if verbose:
             print u'\u2713'
