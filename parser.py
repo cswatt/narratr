@@ -125,10 +125,10 @@ class ParserForNarratr:
     def p_suite(self, p):
         '''suite : simple_statement
                  | newlines INDENT statements DEDENT'''
-        if p[3].type == "statements":
-            p[0] = p[3]
-        else:
+        if p[1].type == "simple_statement":
             p[0] = p[1]
+        else:
+            p[0] = p[3]
         p[0].type = "suite"
 
     def p_statements(self, p):
