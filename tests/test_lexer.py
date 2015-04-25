@@ -1,4 +1,4 @@
-from lexer import LexerForNarratr
+import narratr.lexer as lexer
 import unittest
 
 
@@ -17,7 +17,7 @@ class TestLexer(unittest.TestCase):
 
         # look at what lexer outputs
         with open('sampleprograms/helloworld.ntr') as f:
-            m = LexerForNarratr()
+            m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()
             while t:
