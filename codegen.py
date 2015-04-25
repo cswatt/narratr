@@ -120,12 +120,14 @@ class CodeGen:
 
             elif c.type == "setup_block":
                 #add suite block node here
-                commands.append("def setup(self):\n")
+                commands.append("def setup(self):\n" + 
+                                "\n        direction = {}\n")
+
                 if len(c.children) > 0:
                     for child in c.children:
                         commands.append(self._process_statements(child, 1))
                         direction_sign = self._process_detect_direction(child)
-                commands.append("\n        self.action(" + ("direction" if (direction_sign) else "") + ")\n")
+                commands.append("\n        self.action(direction)\n")
 
             elif c.type == "cleanup_block":
                 commands.append("def cleanup(self):\n        pass\n") 
@@ -133,10 +135,23 @@ class CodeGen:
                     commands.append(self._process_statements(c.children[0], 2))
 
             elif c.type == "action_block":
-                commands.append("def action(self" + (" , direction" if (direction_sign) else "") + "):\n")
+                commands.append("def action(self, direction):\n")
+                commands.append("    response = \"\"\n        while(True):\n")
                 if len(c.children) > 0:
                     for child in c.children:
-                        commands.append(self._process_statements(child, 2))
+                        commands.append(self._process_statements(child, 2) +
+                                        "\n            response = get_response()\n"+
+                                        "            instruction = response.split()\n"+
+                                        "            if instruction[0] == 'move' :\n" +
+                                        "               if instruction[1] in direction :\n" +
+                                        "                   if direction.get(instruction[1]) == 1 :\n" +
+                                        "                       s_1_inst.setup()\n" +
+                                        "                       elif direction.get(instruction[1]) == 2 :\n" +
+                                        "                           s_2_inst.setup()\n" +
+                                        "               else:\n" +
+                                        "                   print 'Directions: left, right, up, down'"
+
+                                        )
                 #                "response = \"\"\n        while(True):\n" +
                 #                self._process_statements(c.children[0], 3) +
                 #                "\n            response = get_response()\n")
@@ -254,7 +269,7 @@ class CodeGen:
                 if len(child.children) > 0:
                     for exex in child.children:
                         if exex.type == "factor":
-                            commands += "\n" + "    "*2 + self._process_factor(exex, 2) + "\n"
+                            commands += "\n" + "    "*indentlevel + self._process_factor(exex, 2) + "\n"
         return commands
 
     #This function takes "factor" node as argument
