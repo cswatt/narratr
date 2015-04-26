@@ -78,7 +78,7 @@ class CodeGen:
     # state of 1. This should only be used internally.
     def _add_main(self, startstate=None):
         if self.main == "":
-            self.main = '''def get_response():
+            self.main = '''def get_response(caller, direction):
     response = raw_input(" -->> ")
     response = response.lower()
     response = response.translate(None,
@@ -87,6 +87,12 @@ class CodeGen:
     if response == "exit":
         print "== GAME TERMINATED =="
         exit(0)
+    elif response[:5] == "move " and len(response.split(" ")) == 2:
+        if response.split(" ")[1] in direction:
+            exec caller + "_inst.cleanup()"
+            exec "s_" + str(direction[response.split(" ")[1]]) + "_inst.setup()"
+        else:
+            print "\\"" + response.split(" ")[1] + "\\" is not a valid direction from this scene."
     else:
         return response\n\n'''
 
@@ -123,13 +129,13 @@ class CodeGen:
                 sid = c.value
 
             elif c.type == "setup_block":
-                commands.append("def setup(self):\n" +
-                                "\n        direction = {}\n")
+                commands.append("def setup(self):" +
+                                "\n        direction = {}")
 
                 if len(c.children) > 0:
                     for child in c.children:
                         commands.append(self._process_statements(child, 1))
-                commands.append("\n        self.action(direction)\n")
+                commands.append("    self.action(direction)\n")
 
             elif c.type == "cleanup_block":
                 commands.append("def cleanup(self):\n        pass\n")
@@ -137,33 +143,13 @@ class CodeGen:
                     commands.append(self._process_statements(c.children[0], 2))
 
             elif c.type == "action_block":
-                commands.append("def action(self, direction):\n")
-                commands.append("    response = \"\"\n        while(True):\n")
+                commands.append("def action(self, direction):")
+                commands.append("    response = \"\"\n        while True:")
                 if len(c.children) > 0:
                     for child in c.children:
                         commands.append(self._process_statements(child, 2) +
                                         "\n            " +
-                                        "response = get_response()\n" +
-                                        "            " +
-                                        "instruction = response.split()\n" +
-                                        "            " +
-                                        "if instruction[0] == 'move' :\n" +
-                                        "               " +
-                                        "if instruction[1] in direction :\n" +
-                                        "                   " +
-                                        "if direction.get(instruction[1])" +
-                                        " == 1 :\n" +
-                                        "                       " +
-                                        "s_1_inst.setup()\n" +
-                                        "                       " +
-                                        "elif direction.get(instruction[1]) " +
-                                        "== 2 :\n" +
-                                        "                           " +
-                                        "s_2_inst.setup()\n" +
-                                        "               else:\n" +
-                                        "                   " +
-                                        "print 'Directions: " +
-                                        "left, right, up, down'")
+                                        "response = get_response(self.__class__.__name__, direction)\n")
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
@@ -187,12 +173,12 @@ class CodeGen:
             if smt.value == "say":
                 commands += "    "*indentlevel + "print "
                 for testlist in smt.children:
-                    commands += self._process_testlist(testlist, 2) + "\n"
+                    commands += self._process_testlist(testlist, 2)
             elif smt.value == "exposition":
                 indent += 1
                 commands += "    "*indentlevel + "print "
                 for testlist in smt.children:
-                    commands += self._process_testlist(testlist, 2) + "\n"
+                    commands += self._process_testlist(testlist, 2)
 
             elif smt.value == "win":
                 print "win!!!!!"
@@ -210,12 +196,12 @@ class CodeGen:
                     for child in smt.children:
                         i = 0
                         if child.type == "direction":
-                            commands += 'direction = {"'
+                            commands += prefix + '    direction = {"'
                             commands += self._process_direction(child, 2)
                             if i != len(smt.children) - 1:
                                 commands += ', '
                             else:
-                                commands += "}\n"
+                                commands += "}"
 
             elif smt.value == "lose":
                 if len(smt.children) > 0:
