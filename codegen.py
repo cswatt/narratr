@@ -15,6 +15,7 @@
 #
 # -----------------------------------------------------------------------------
 
+
 class CodeGen:
     def __init__(self):
         self.frontmatter = "#!/usr/bin/env python\n"
@@ -110,7 +111,10 @@ class CodeGen:
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
     # of the input node and constructs the setup, cleanup, and action blocks
-    # using boilerplate code. This should only be used internally.
+    # using boilerplate code. This should only be used internally. In the
+    # action_block part, adding while(true) loop to get response and then
+    # process it. def achition is now taking direction as argument, direction
+    # is an empty dictionary by default.
     def _scene_gen(self, scene, sid):
         commands = []
         direction_sign = False
@@ -119,18 +123,16 @@ class CodeGen:
                 sid = c.value
 
             elif c.type == "setup_block":
-                #add suite block node here
-                commands.append("def setup(self):\n" + 
+                commands.append("def setup(self):\n" +
                                 "\n        direction = {}\n")
 
                 if len(c.children) > 0:
                     for child in c.children:
                         commands.append(self._process_statements(child, 1))
-                        direction_sign = self._process_detect_direction(child)
                 commands.append("\n        self.action(direction)\n")
 
             elif c.type == "cleanup_block":
-                commands.append("def cleanup(self):\n        pass\n") 
+                commands.append("def cleanup(self):\n        pass\n")
                 if len(c.children) > 0:
                     commands.append(self._process_statements(c.children[0], 2))
 
@@ -140,36 +142,34 @@ class CodeGen:
                 if len(c.children) > 0:
                     for child in c.children:
                         commands.append(self._process_statements(child, 2) +
-                                        "\n            response = get_response()\n"+
-                                        "            instruction = response.split()\n"+
-                                        "            if instruction[0] == 'move' :\n" +
-                                        "               if instruction[1] in direction :\n" +
-                                        "                   if direction.get(instruction[1]) == 1 :\n" +
-                                        "                       s_1_inst.setup()\n" +
-                                        "                       elif direction.get(instruction[1]) == 2 :\n" +
-                                        "                           s_2_inst.setup()\n" +
+                                        "\n            " +
+                                        "response = get_response()\n" +
+                                        "            " +
+                                        "instruction = response.split()\n" +
+                                        "            " +
+                                        "if instruction[0] == 'move' :\n" +
+                                        "               " +
+                                        "if instruction[1] in direction :\n" +
+                                        "                   " +
+                                        "if direction.get(instruction[1])" +
+                                        " == 1 :\n" +
+                                        "                       " +
+                                        "s_1_inst.setup()\n" +
+                                        "                       " +
+                                        "elif direction.get(instruction[1]) " +
+                                        "== 2 :\n" +
+                                        "                           " +
+                                        "s_2_inst.setup()\n" +
                                         "               else:\n" +
-                                        "                   print 'Directions: left, right, up, down'"
-
-                                        )
-                #                "response = \"\"\n        while(True):\n" +
-                #                self._process_statements(c.children[0], 3) +
-                #                "\n            response = get_response()\n")
+                                        "                   " +
+                                        "print 'Directions: " +
+                                        "left, right, up, down'")
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
             + "\n        pass\n\n    " + "\n    ".join(commands)
 
         return scene_code
-
-    #Takes a "suite" node, calls the function to process "statemant"    
-    def _process_suite(self , suite , indentlevel=1):
-        commands = []
-        if len(suite.children) > 0:
-            for smt in suite.children:
-                if smt.type == "statement":
-                    commands.append(self._process_statements(smt, 2))
-        return commands
 
     # Takes a "statements" node, calls a function to find the "statement"
     # nodes that descend from it, and then figures out what kind of statement
@@ -216,30 +216,18 @@ class CodeGen:
                                 commands += ', '
                             else:
                                 commands += "}\n"
-            
+
             elif smt.value == "lose":
                 if len(smt.children) > 0:
                     for testlist in smt.children:
                         self._process_testlist(testlist, 2)
 
-            elif smt.value == None:
+            elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
-                #commands.append("exit(0)")
-                #commands.append("sys.exit(0)")
 
         return commands
 
-
-    def _process_detect_direction(self, statement):
-        for smt in statement.children:
-            if smt.value == "flow":
-                if len(smt.children) > 0:
-                    for child in smt.children:
-                        if child.type == "direction":
-                            return True
-        return False
-
-    #This function takes "testlist" node as argument
+    # This function takes "testlist" node as argument
     def _process_testlist(self, testlist, indentlevel=1):
         commands = ''
 
@@ -258,10 +246,10 @@ class CodeGen:
                 commands += "    "*3 + "win"
         return commands
 
-    #This function takes "expression" node as argument
+    # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
         commands = ''
-        
+
         for child in exps.children:
             if child.type == "factor":
                 commands += '"' + child.value + '"'
@@ -269,10 +257,11 @@ class CodeGen:
                 if len(child.children) > 0:
                     for exex in child.children:
                         if exex.type == "factor":
-                            commands += "\n" + "    "*indentlevel + self._process_factor(exex, 2) + "\n"
+                            commands += "\n" + "    "*indentlevel
+                            commands += self._process_factor(exex, 2) + "\n"
         return commands
 
-    #This function takes "factor" node as argument
+    # This function takes "factor" node as argument
     def _process_factor(self, factors, indentlevel=2):
         commands = ""
         if len(factors.children) > 0:
@@ -284,9 +273,9 @@ class CodeGen:
                     commands += str(factor.value)
         return commands
 
-
-    #This function takes "direction" node as argument
-    #Building a dictionary for direction, using the direction as key and scene no as value
+    # This function takes "direction" node as argument
+    # Building a dictionary for direction, using the direction as key and
+    # scene number as value
     def _process_direction(self, direction, indentlevel=1):
         commands = ''
         commands += direction.value
@@ -294,5 +283,3 @@ class CodeGen:
         for scene in direction.children:
             commands += str(scene.value)
         return commands
-
-
