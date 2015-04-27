@@ -5,7 +5,7 @@ scene $1 {
 			say "Okay."
 
 		if (false):
-			say "Something bad happened."
+			say "Something bad."
 
 	cleanup:
 }
