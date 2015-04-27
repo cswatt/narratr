@@ -1,0 +1,9 @@
+scene $1 {
+	setup:
+	action:
+		words is "Oh, hello."
+		say words
+	cleanup:
+}
+
+start: $1

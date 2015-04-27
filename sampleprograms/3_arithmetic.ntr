@@ -1,0 +1,10 @@
+scene $1 {
+	setup:
+	action:
+		n is 1
+		n is n + 1
+		say "Do you like ponies? Me " + n
+	cleanup:
+}
+
+start: $1

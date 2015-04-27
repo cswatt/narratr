@@ -16,7 +16,7 @@ class TestLexer(unittest.TestCase):
                 correctlist.append(line.rstrip())
 
         # look at what lexer outputs
-        with open('sampleprograms/helloworld.ntr') as f:
+        with open('sampleprograms/0_helloworld.ntr') as f:
             m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()
@@ -35,7 +35,7 @@ class TestLexer(unittest.TestCase):
         tokenlist = []
 
         # look at what lexer outputs
-        with open('sampleprograms/andor.ntr') as f:
+        with open('sampleprograms/3_andor.ntr') as f:
             m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()
@@ -58,7 +58,7 @@ class TestLexer(unittest.TestCase):
         tokenlist = []
 
         # look at what lexer outputs
-        with open('sampleprograms/elseif.ntr') as f:
+        with open('sampleprograms/4_elseif.ntr') as f:
             m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()
@@ -81,7 +81,7 @@ class TestLexer(unittest.TestCase):
         tokenlist = []
 
         # look at what lexer outputs
-        with open('sampleprograms/exposition.ntr') as f:
+        with open('sampleprograms/4_exposition.ntr') as f:
             m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()
@@ -109,7 +109,7 @@ class TestLexer(unittest.TestCase):
                 correctlist.append(line.rstrip())
 
         # look at what lexer outputs
-        with open('sampleprograms/if.ntr') as f:
+        with open('sampleprograms/4_if.ntr') as f:
             m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()
@@ -133,7 +133,7 @@ class TestLexer(unittest.TestCase):
                 correctlist.append(line.rstrip())
 
         # look at what lexer outputs
-        with open('sampleprograms/truefalse.ntr') as f:
+        with open('sampleprograms/4_truefalse.ntr') as f:
             m = lexer.LexerForNarratr()
             m.input(f.read())
             t = m.token()

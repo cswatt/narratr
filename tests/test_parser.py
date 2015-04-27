@@ -13,7 +13,7 @@ class TestParser(unittest.TestCase):
 			correct_ast = f.read()
 
 		p = parser.ParserForNarratr()
-		with open('sampleprograms/helloworld.ntr') as f:
+		with open('sampleprograms/0_helloworld.ntr') as f:
 			ast = str(p.parse(f.read()))
 		self.assertEqual(ast, correct_ast, 
 						 "Hello World not parsed as expected")
@@ -24,7 +24,7 @@ class TestParser(unittest.TestCase):
 		ast = ""
 
 		p = parser.ParserForNarratr()
-		with open('sampleprograms/andor.ntr') as f:
+		with open('sampleprograms/3_andor.ntr') as f:
 			ast = str(p.parse(f.read()))
 
 	def test_parser_elseif(self):
@@ -33,7 +33,7 @@ class TestParser(unittest.TestCase):
 		ast = ""
 
 		p = parser.ParserForNarratr()
-		with open('sampleprograms/elseif.ntr') as f:
+		with open('sampleprograms/4_elseif.ntr') as f:
 			ast = str(p.parse(f.read()))
 
 	def test_parser_exposition(self):
@@ -46,7 +46,7 @@ class TestParser(unittest.TestCase):
 			correct_ast = f.read()
 
 		p = parser.ParserForNarratr()
-		with open('sampleprograms/exposition.ntr') as f:
+		with open('sampleprograms/4_exposition.ntr') as f:
 			ast = str(p.parse(f.read()))
 		self.assertEqual(ast, correct_ast, 
 						 "Exposition not parsed as expected")
@@ -57,7 +57,7 @@ class TestParser(unittest.TestCase):
 		ast = ""
 
 		p = parser.ParserForNarratr()
-		with open('sampleprograms/if.ntr') as f:
+		with open('sampleprograms/4_if.ntr') as f:
 			ast = str(p.parse(f.read()))
 
 	def test_parser_truefalse(self):
@@ -66,6 +66,5 @@ class TestParser(unittest.TestCase):
 		ast = ""
 
 		p = parser.ParserForNarratr()
-		with open('sampleprograms/truefalse.ntr') as f:
+		with open('sampleprograms/4_truefalse.ntr') as f:
 			ast = str(p.parse(f.read()))
-			

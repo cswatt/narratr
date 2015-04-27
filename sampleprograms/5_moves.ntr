@@ -1,0 +1,22 @@
+scene $1 {
+	setup:
+		moves right($2)
+	action:
+	cleanup:
+}
+
+scene $2{
+	setup:
+		moves left($1), right($3)
+	action:
+	cleanup:
+}
+
+scene $3{
+	setup:
+		moves left($2)
+	action:
+	cleanup:
+}
+
+start: $1

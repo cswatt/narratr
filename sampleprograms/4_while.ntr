@@ -1,0 +1,12 @@
+scene $1 {
+	setup:
+	action:
+		n is 0
+		while n < 3:
+			say "boop."
+			n is n + 1
+		say "should have 3 boops."
+	cleanup:
+}
+
+start: $1

@@ -1,0 +1,15 @@
+scene $1 {
+	setup:
+	action:
+		if (1 < 2):
+			say "Okay."
+		if (2 > 1):
+			say "Okay."
+		if (1 <= 1):
+			say "Okay."
+		if (1 >= 1):
+			say "Okay."
+	cleanup:
+}
+
+start: $1
