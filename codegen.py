@@ -90,9 +90,11 @@ class CodeGen:
     elif response[:5] == "move " and len(response.split(" ")) == 2:
         if response.split(" ")[1] in direction:
             exec caller + "_inst.cleanup()"
-            exec "s_" + str(direction[response.split(" ")[1]]) + "_inst.setup()"
+            exec "s_" + str(direction[response.split(" ")[1]])
+                + "_inst.setup()"
         else:
-            print "\\"" + response.split(" ")[1] + "\\" is not a valid direction from this scene."
+            print "\\"" + response.split(" ")[1] + "\\" is not a " +
+                "valid direction from this scene."
     else:
         return response\n\n'''
 
@@ -105,14 +107,14 @@ class CodeGen:
                 self.startstate = startstate.value
             else:
                 print "WARNING: You specified a start state that does not "\
-                        + "exist. Defaulting to Scene 1."
+                    + "exist. Defaulting to Scene 1."
                 self.startstate = 1
 
             self.main += "if __name__ == '__main__':\n    s_"\
                 + str(self.startstate) + "_inst.setup()"
         else:
             print "WARNING: You wrote multiple start states. State "\
-                    + str(self.startstate) + " will be used."
+                + str(self.startstate) + " will be used."
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
@@ -149,7 +151,9 @@ class CodeGen:
                     for child in c.children:
                         commands.append(self._process_statements(child, 2) +
                                         "\n            " +
-                                        "response = get_response(self.__class__.__name__, direction)\n")
+                                        "response = get_response(" +
+                                        "self.__class__.__name__, direction)" +
+                                        "\n")
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
