@@ -90,11 +90,11 @@ class CodeGen:
     elif response[:5] == "move " and len(response.split(" ")) == 2:
         if response.split(" ")[1] in direction:
             exec caller + "_inst.cleanup()"
-            exec "s_" + str(direction[response.split(" ")[1]])
+            exec "s_" + str(direction[response.split(" ")[1]])\
                 + "_inst.setup()"
         else:
-            print "\\"" + response.split(" ")[1] + "\\" is not a " +
-                "valid direction from this scene."
+            print "\\"" + response.split(" ")[1] + "\\" is not a "\
+                + "valid direction from this scene."
     else:
         return response\n\n'''
 
