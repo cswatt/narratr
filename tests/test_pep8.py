@@ -74,6 +74,13 @@ class TestCodeFormat(unittest.TestCase):
         self.assertEqual(result.total_errors, 0,
                          "Found code style errors (and warnings).")
 
+    def test_pep8_conformance_parser_other(self):
+        """Test that parser_other test conforms to PEP8."""
+        pep8style = pep8.StyleGuide(quiet=False)
+        result = pep8style.check_files(['tests/test_parser_other.py'])
+        self.assertEqual(result.total_errors, 0,
+                         "Found code style errors (and warnings).")
+
     def test_pep8_conformance_pep8test(self):
         """Test that pep8 test conforms to PEP8."""
         pep8style = pep8.StyleGuide(quiet=False)

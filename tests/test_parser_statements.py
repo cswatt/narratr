@@ -45,3 +45,12 @@ class TestParserForStatements(unittest.TestCase):
         p = parser.ParserForNarratr()
         with open('sampleprograms/4_truefalse.ntr') as f:
             ast = str(p.parse(f.read()))
+
+    def test_parser_while(self):
+
+        """Test that parser can parse while."""
+        ast = ""
+
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_while.ntr') as f:
+            ast = str(p.parse(f.read()))
