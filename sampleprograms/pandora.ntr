@@ -1,0 +1,25 @@
+scene $1 {
+    setup:
+        exposition "Once upon a time in a faraway land, there was a girl named Pandora."
+        moves right($2)
+    action:
+    cleanup:
+}
+
+scene $2 {
+    setup:
+        exposition "Pandora had a special secret. She had a box that contained all of the world's secrets. No one could open it."
+        moves left($1), right($3)
+    action:
+    cleanup:
+}
+
+scene $3 {
+    setup:
+        exposition "Welcome to Pandora's Box. All the world's fears and worries have been released. Thank you for your contribution to society."
+        moves left($2)
+    action:
+        evils is 666//365
+        say evils + " evils have been released into the world."
+    cleanup:
+}
