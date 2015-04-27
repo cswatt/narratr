@@ -18,6 +18,7 @@ import sys
 import lexer
 import parser
 import traceback
+import argparse
 
 def show_tokens(filename):
 	tokenlist = []
@@ -29,9 +30,11 @@ def show_tokens(filename):
 	    while t:
 	        tokenlist.append(str(t))
 	        t = m.token()
-	# for f in tokenlist:
-	# 	print f
-	pretty_print_tokens(tokenlist)
+	if verbose:
+		for f in tokenlist:
+			print f
+	else:
+		pretty_print_tokens(tokenlist)
 
 def pretty_print_tokens(tokenlist):
 	from csv import reader
@@ -49,11 +52,22 @@ def show_ast(filename):
 		print ast
 	except:
 		print "Yo that did not parse."
-		traceback.print_exc()
+		if verbose:
+			traceback.print_exc()
 
 def main():
-	show_tokens(sys.argv[1])
-	show_ast(sys.argv[1])
+	parser = argparse.ArgumentParser()
+	parser.add_argument('-v', '--verbose', action="store_true", default=False)
+	parser.add_argument('source', action="store")
+	args = parser.parse_args(sys.argv[1:])
+
+	global verbose
+	verbose = args.verbose
+
+	source = args.source
+
+	show_tokens(source)
+	show_ast(source)
 
 if __name__ == "__main__":
 	main()
