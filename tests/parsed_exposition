@@ -1,0 +1,1 @@
+Node(None, 'program', [Node(None, 'blocks', [{1: Node(1, 'scene_block', [Node(None, 'setup_block', [Node(None, 'suite', [Node('exposition', 'statement', [Node(None, 'testlist', [Node(None, 'test', [Node(None, 'expression', [Node('Sadness is infinite.', 'factor', [])])])])])])]), None, Node(None, 'cleanup_block', [])])}, {}, Node(1, 'start_state', [])])])
