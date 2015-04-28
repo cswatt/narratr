@@ -19,6 +19,7 @@ import lexer
 import parser
 import traceback
 import argparse
+import codegen
 
 def show_tokens(filename):
 	tokenlist = []
@@ -46,14 +47,18 @@ def show_ast(filename):
 	ast = ""
 	p = parser.ParserForNarratr()
 	print "\n------------------- ast ---------------------"
-	try:
-		with open(filename) as f:
-			ast = str(p.parse(f.read()))
-		print ast
-	except:
-		print "Yo that did not parse."
-		if verbose:
-			traceback.print_exc()
+	
+	with open(filename) as f:
+		ast = p.parse(f.read())
+	print str(ast)
+	return ast
+
+def show_code(ast):
+	c = codegen.CodeGen()
+	print "\n------------------- idk what this is ---------------------"
+	c.process(ast)
+	print "\n------------------- code ---------------------"
+	c.construct()
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -67,7 +72,13 @@ def main():
 	source = args.source
 
 	show_tokens(source)
-	show_ast(source)
+	try:
+		ast = show_ast(source)
+		show_code(ast)
+	except:
+		print "Yo that did not parse."
+		if verbose:
+			traceback.print_exc()
 
 if __name__ == "__main__":
 	main()
