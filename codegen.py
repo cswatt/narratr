@@ -78,7 +78,8 @@ class CodeGen:
     # state of 1. This should only be used internally.
     def _add_main(self, startstate=None):
         if self.main == "":
-            self.main = '''def get_response(caller, direction):
+            self.main = "pocket = []\n"
+            self.main += '''def get_response(caller, direction):
     response = raw_input(" -->> ")
     response = response.lower()
     response = response.translate(None,

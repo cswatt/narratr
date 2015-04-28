@@ -224,16 +224,18 @@ class ParserForNarratr:
             p[0].type = 'flow_statement'
 
     def p_expression_statement(self, p):
-        '''expression_statement : testlist IS testlist
-                                | GOD testlist IS testlist
+        '''expression_statement : ID IS testlist
+                                | GOD ID IS testlist
                                 | testlist'''
-        if not isinstance(p[1], Node):
-            p[0] = p[4]
-        elif len(p) == 4:
-            p[0] = p[3]
-        else:
+        if isinstance(p[1], Node):
             p[0] = p[1]
-        p[0].type = "expression_statement"
+            p[0].type = "expression_statement"
+        elif p[1] == "god":
+            pass
+        else:
+            # todo: add to symbol table
+            children = [Node(p[1], "id"), p[3]]
+            p[0] = Node("is", "expression_statement", children)
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
