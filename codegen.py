@@ -131,33 +131,48 @@ class CodeGen:
                 sid = c.value
 
             elif c.type == "setup_block":
-                commands.append("def setup(self):" +
-                                "\n        direction = {}")
-
-                if len(c.children) > 0:
-                    for child in c.children:
-                        commands.append(self._process_statements(child, 2))
-                commands.append("    self.action(direction)\n")
+                commands += self._process_setup_block(c)
 
             elif c.type == "cleanup_block":
-                commands.append("def cleanup(self):\n        pass\n")
-                if len(c.children) > 0:
-                    commands.append(self._process_statements(c.children[0], 2))
+                commands += self._process_cleanup_block(c)
 
             elif c.type == "action_block":
-                commands.append("def action(self, direction):")
-                commands.append("    response = \"\"\n        while True:")
-                if len(c.children) > 0:
-                    for child in c.children:
-                        commands.append(self._process_statements(child, 3))
-                commands.append("        response = get_response(" +
-                                "self.__class__.__name__, direction)\n")
+                commands += self._process_action_block(c)
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
             + "\n        pass\n\n    " + "\n    ".join(commands)
 
         return scene_code
+
+    def _process_setup_block(self, c):
+        commands = []
+        commands.append("def setup(self):" +
+                        "\n        direction = {}")
+
+        if len(c.children) > 0:
+            for child in c.children:
+                commands.append(self._process_statements(child, 2))
+        commands.append("    self.action(direction)\n")
+        return commands
+        
+    def _process_cleanup_block(self, c):
+        commands = []
+        commands.append("def cleanup(self):\n        pass\n")
+        if len(c.children) > 0:
+            commands.append(self._process_statements(c.children[0], 2))
+        return commands
+        
+    def _process_action_block(self, c):
+        commands = []
+        commands.append("def action(self, direction):")
+        commands.append("    response = \"\"\n        while True:")
+        if len(c.children) > 0:
+            for child in c.children:
+                commands.append(self._process_statements(child, 3))
+        commands.append("        response = get_response(" +
+                        "self.__class__.__name__, direction)\n")
+        return commands
 
     # Takes a "statements" node, calls a function to find the "statement"
     # nodes that descend from it, and then figures out what kind of statement
