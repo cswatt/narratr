@@ -77,12 +77,12 @@ class ParserForNarratr:
                           RCURLY
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
-        # This is set, but it still needs symbol table (SCENEID).
         if isinstance(p[6], Node) and p[6].type == 'setup_block':
             children = [p[6], p[7], p[8]]
         elif isinstance(p[5], Node) and p[5].type == 'setup_block':
             children = [p[5], p[6], p[7]]
         p[0] = Node(p[2], "scene_block", children)
+        self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
@@ -92,6 +92,7 @@ class ParserForNarratr:
         else:
             children = [p[3]]
         p[0] = Node(p[2], "item_block", children)
+        # self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
