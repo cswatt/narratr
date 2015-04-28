@@ -9,7 +9,16 @@ Let's use nose!
 
 And then just run `nosetests`
 
+If you wanna see how an ntr file is lexed/parsed/etc., here's a tool:
+`python examine.py whatever.ntr`
+
+Add a `-v` for verbose.
+
 ## Other resources
+
+Tutorial - https://www.overleaf.com/2447303gvvhrc#/6374436/
+
+LRM - https://www.overleaf.com/2405314nbgbrz#/6231244/
 
 Whitepaper - https://drive.google.com/open?id=0B7xCVUksODqXSmpkTUhMa0tYR1E&authuser=0
 
