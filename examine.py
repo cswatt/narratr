@@ -20,6 +20,15 @@ import parser
 import traceback
 import argparse
 import codegen
+import contextlib
+import cStringIO
+
+@contextlib.contextmanager
+def nostdout():
+	save_stdout = sys.stdout
+	sys.stdout = cStringIO.StringIO()
+	yield
+	sys.stdout = save_stdout
 
 def show_tokens(filename):
 	tokenlist = []
@@ -47,18 +56,26 @@ def show_ast(filename):
 	ast = ""
 	p = parser.ParserForNarratr()
 	print "\n------------------- ast ---------------------"
-	
-	with open(filename) as f:
-		ast = p.parse(f.read())
-	print str(ast)
-	return ast
+	try:
+		with open(filename) as f:
+			ast = p.parse(f.read())
+		print str(ast)
+		return ast
+	except:
+		print "Yo that did not parse."
+		if verbose:
+			traceback.print_exc()
 
 def show_code(ast):
-	c = codegen.CodeGen()
-	print "\n------------------- idk what this is ---------------------"
-	c.process(ast)
 	print "\n------------------- code ---------------------"
-	c.construct()
+	try:
+		c = codegen.CodeGen()
+		c.process(ast)
+		c.construct()
+	except:
+		print "Codegen did not gen the code."
+		if verbose:
+			traceback.print_exc()
 
 def main():
 	parser = argparse.ArgumentParser()
@@ -72,13 +89,9 @@ def main():
 	source = args.source
 
 	show_tokens(source)
-	try:
-		ast = show_ast(source)
-		show_code(ast)
-	except:
-		print "Yo that did not parse."
-		if verbose:
-			traceback.print_exc()
+	ast = show_ast(source)
+	show_code(ast)
+	
 
 if __name__ == "__main__":
 	main()
