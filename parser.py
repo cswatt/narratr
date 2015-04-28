@@ -189,11 +189,12 @@ class ParserForNarratr:
     def p_win_statement(self, p):
         '''win_statement : WIN
                          | WIN testlist'''
-        if len(p) == 2:
-            children = []
-        if len(p) == 3:
-            children = p[2]
-        p[0] = Node(None, "win_statement", children)
+        if p[1] == "win":
+            if len(p) == 2:
+                children = []
+            if len(p) == 3:
+                children = [p[2]]
+            p[0] = Node(None, "win_statement", children)
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
@@ -202,9 +203,8 @@ class ParserForNarratr:
             if len(p) == 2:
                 children = []
             if len(p) == 3:
-                children = p[2]
+                children = [p[2]]
             p[0] = Node(None, "lose_statement", children)
-            p[0].type = 'lose_statement'
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
