@@ -301,23 +301,23 @@ class ParserForNarratr:
     def p_or_test(self, p):
         '''or_test : or_test OR and_test
                    | and_test'''
-        if len(p) == 4:
-            children = [p[1], p[3]]
-            p[0] = Node(None, 'or', children)
+        if p[1].type == 'and_test':
+            p[0] = p[1]
             p[0].type = 'or_test'
         else:
-            p[0] = p[1]
+            children = [p[1], p[3]]
+            p[0] = Node(None, 'or', children)
             p[0].type = 'or_test'
 
     def p_and_test(self, p):
         '''and_test : and_test AND not_test
                     | not_test'''
-        if len(p) == 4:
-            children = [p[1], p[3]]
-            p[0] = Node(None, 'and', children)
+        if p[1].type == 'not_test':
+            p[0] = p[1]
             p[0].type = 'and_test'
         else:
-            p[0] = p[1]
+            children = [p[1], p[3]]
+            p[0] = Node(None, 'and', children)
             p[0].type = 'and_test'
 
     def p_not_test(self, p):
@@ -362,10 +362,10 @@ class ParserForNarratr:
         '''arithmetic_expression : arithmetic_expression PLUS term
                                  | arithmetic_expression MINUS term
                                  | term'''
-        if len(p) == 4:
-            p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]])
-        else:
+        if p[1].type == 'term':
             p[0] = p[1]
+        else:
+            p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]])
         p[0].type = 'arithmetic_expression'
 
     def p_term(self, p):
