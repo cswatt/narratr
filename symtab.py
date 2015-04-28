@@ -37,6 +37,11 @@ class SymTabEntry:
         self.scope = scope
         self.god = god
 
+    def __repr__(self):
+        return "[" + str(self.symbol) + ", " + str(self.value) + ", " \
+                + str(self.symboltype) + ", " + str(self.scope) + ", " \
+                + str(self.god)
+
 
 class SymTab:
     def __init__(self):
@@ -79,3 +84,10 @@ class SymTab:
                             "scope. Nothing to update")
         else:
             self.overwrite(SymTabEntry(symbol, value, symboltype, scope, god))
+
+    # String representation of the Symbol Table
+    def __repr__(self):
+        items = []
+        for key, value in self.table:
+            items.add(str(key) + " : " value.__repr__())
+        return "\n".join(items)
