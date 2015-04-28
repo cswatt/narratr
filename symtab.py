@@ -44,9 +44,9 @@ class SymTab:
 
     # Uses the scope and symbol to construct the internal key representation.
     def getKey(self, symbol, scope):
-        if scope == self.POCKET:
+        if scope == POCKET:
             key = "POCKET." + str(symbol)
-        elif scope == self.GLOBAL:
+        elif scope == GLOBAL:
             key = "GLOBAL." + str(symbol)
         else:
             key = str(scope) + "." + str(symbol)
@@ -54,7 +54,7 @@ class SymTab:
     # Overwrites an existing entry in the Symbol Table.
     def overwrite(self, entry):
         if isinstance(entry, SymTabEntry):
-            self.table[self.getKey(symbol, scope)] = entry
+            self.table[self.getKey(entry.symbol, entry.scope)] = entry
         else:
             raise Exception("Insert needs a valid Symbol Table entry.")
 
