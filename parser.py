@@ -18,6 +18,7 @@
 import ply.yacc as yacc
 from lexer import LexerForNarratr
 from node import Node
+from symtab import SymTabEntry, SymTab
 
 
 class ParserForNarratr:
@@ -26,6 +27,7 @@ class ParserForNarratr:
         self.lexer = LexerForNarratr()
         self.tokens = self.lexer.tokens
         self.parser = yacc.yacc(module=self, **kwargs)
+        self.symtab = SymTab()
 
     def p_program(self, p):
         "program : newlines_optional blocks"
@@ -231,9 +233,11 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = "expression_statement"
         elif p[1] == "god":
-            pass
+            # self.symtab.insert(p[2], p[4], symboltype, scope, True)
+            children = [Node(p[2], "god_id"), p[4]]
+            p[0] = Node("is", "expression_statement", children)
         else:
-            # todo: add to symbol table
+            # self.symtab.insert(p[1], p[4], symboltype, scope, True)
             children = [Node(p[1], "id"), p[3]]
             p[0] = Node("is", "expression_statement", children)
 
