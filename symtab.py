@@ -40,7 +40,7 @@ class SymTabEntry:
     def __repr__(self):
         return "[" + str(self.symbol) + ", " + str(self.value) + ", " \
                 + str(self.symboltype) + ", " + str(self.scope) + ", " \
-                + str(self.god)
+                + str(self.god) + "]"
 
 
 class SymTab:
@@ -55,6 +55,7 @@ class SymTab:
             key = "GLOBAL." + str(symbol)
         else:
             key = str(scope) + "." + str(symbol)
+        return key
 
     # Overwrites an existing entry in the Symbol Table.
     def overwrite(self, entry):
@@ -88,6 +89,6 @@ class SymTab:
     # String representation of the Symbol Table
     def __repr__(self):
         items = []
-        for key, value in self.table:
-            items.add(str(key) + " : " value.__repr__())
+        for key in self.table:
+            items.append(str(key) + " : " + self.table[key].__repr__())
         return "\n".join(items)

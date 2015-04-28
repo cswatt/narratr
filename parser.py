@@ -92,7 +92,7 @@ class ParserForNarratr:
         else:
             children = [p[3]]
         p[0] = Node(p[2], "item_block", children)
-        # self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
+        self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
@@ -253,7 +253,7 @@ class ParserForNarratr:
         p[0].type = 'continue_statement'
 
     def p_moves_declaration(self, p):
-        '''moves_declaration : MOVES'''
+        '''moves_declaration : MOVES directionlist'''
         p[0] = p[2]
         p[0].type = 'moves_declaration'
 
@@ -343,7 +343,6 @@ class ParserForNarratr:
             p[0].children.append(p[3])
         else:
             p[0] = Node(None, 'comparison', [p[1]])
-        # print p[0]
         p[0].type = 'comparison'
 
     def p_expression(self, p):

@@ -33,9 +33,7 @@ scene $4 {
   cleanup:
     say "The ponies don't fit in your pocket so now" + ponies.length + "ponies are gonna follow you around. Almost makes up for not having any money."
 }
-...
 
 item pony(pony_id){
   id is pony_id
 }
-...
