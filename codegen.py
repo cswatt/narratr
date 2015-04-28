@@ -126,7 +126,6 @@ class CodeGen:
     def _scene_gen(self, scene, sid):
         commands = []
         direction_sign = False
-        print scene.children
         for c in scene.children:
             if c.type == "SCENEID":
                 sid = c.value
