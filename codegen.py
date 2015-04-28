@@ -149,11 +149,9 @@ class CodeGen:
                 commands.append("    response = \"\"\n        while True:")
                 if len(c.children) > 0:
                     for child in c.children:
-                        commands.append(self._process_statements(child, 3) +
-                                        "\n            " +
-                                        "response = get_response(" +
-                                        "self.__class__.__name__, direction)" +
-                                        "\n")
+                        commands.append(self._process_statements(child, 3))
+                commands.append("        response = get_response(" +
+                                "self.__class__.__name__, direction)\n")
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
