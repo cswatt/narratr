@@ -99,25 +99,23 @@ class ParserForNarratr:
     def p_setup_block(self, p):
         '''setup_block : SETUP COLON suite
                        | SETUP COLON newlines'''
-        if isinstance(p[3], Node):
-            if p[3].type == "suite":
-                p[0] = Node(None, "setup_block", [p[3]])
-            else:
-                p[0] = Node(None, "setup_block")
+        if isinstance(p[3], Node) and p[3].type == "suite":
+            p[0] = Node(None, "setup_block", [p[3]])
+        else:
+            p[0] = Node(None, "setup_block")
 
     def p_action_block(self, p):
         '''action_block : ACTION COLON suite
                         | ACTION COLON newlines'''
-        if isinstance(p[3], Node):
-            if p[3].type == "suite":
-                p[0] = Node(None, "action_block", [p[3]])
-            else:
-                p[0] = Node(None, "action_block")
+        if isinstance(p[3], Node) and p[3].type == "suite":
+            p[0] = Node(None, "action_block", [p[3]])
+        else:
+            p[0] = Node(None, "action_block")
 
     def p_cleanup_block(self, p):
         '''cleanup_block : CLEANUP COLON suite
                          | CLEANUP COLON newlines'''
-        if isinstance(p[3], Node) and p[3].type == 'suite':
+        if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "cleanup_block", [p[3]])
         else:
             p[0] = Node(None, "cleanup_block")
