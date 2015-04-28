@@ -76,6 +76,19 @@ class CodeGen:
     # warning and keeps the start state declared higher in the program. If
     # called without a node, it triggers the default action, which is a start
     # state of 1. This should only be used internally.
+    # ABOUT THE RESPONSE CODE: the default response code, which is dropped
+    # into a function called get_response(), waits for user input. When it
+    # it receives this input, it strips the case (i.e. everything is made
+    # lower case), removes all punctuation except double quotes (to allow
+    # the programmer to add conversational capabilities), converts all
+    # whitespace characters into a single space, and then checks for specific
+    # situations we agree with the programmer to handle by default. 'exit'
+    # will terminate the game (there is no current way to save game state),
+    # and "move" followed by a single token will check the dictionary of
+    # directions (which it takes as an argument) for an applicable direction.
+    # If it does not appear in the dictionary, an error is reported so the user
+    # is not confused.  If it does appear, it moves calls the cleanup function
+    # of the previous scene and goes to the setup function of the called scene.
     def _add_main(self, startstate=None):
         if self.main == "":
             self.main = "pocket = []\n"
@@ -99,6 +112,7 @@ class CodeGen:
     else:
         return response\n\n'''
 
+            # Create an instance of each scene that has been declared.
             for s in self.scene_nums:
                 self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
 
@@ -146,6 +160,10 @@ class CodeGen:
 
         return scene_code
 
+    # Code for adding a setup block. Takes as input a single "setup block"
+    # node. Adds boilerplate code (function definition, empty dictionary for
+    # direction, and at the end, the code to move to the action block), and
+    # sends the child nodes to _process_statements() to generate their code.
     def _process_setup_block(self, c):
         commands = []
         commands.append("def setup(self):" +
@@ -157,13 +175,30 @@ class CodeGen:
         commands.append("    self.action(direction)\n")
         return commands
 
+    # Code for adding a cleanup block. Takes as input a single "cleanup block"
+    # node. Adds boilerplate code (function definition and "pass" if necessary,
+    # explained below), then sends the child nodes to _process_statements() to
+    # generate their code. "pass" is required in the scenario that there are no
+    # child nodes, in which case Python syntactically requires code, we need to
+    # be able to execute the function, but we don't want anything to happen. #
+    # "pass" is a Python command that does nothing, so it fits the bill.
     def _process_cleanup_block(self, c):
         commands = []
-        commands.append("def cleanup(self):\n        pass\n")
+        commands.append("def cleanup(self):")
         if len(c.children) > 0:
             commands.append(self._process_statements(c.children[0], 2))
+        else:
+            commands.append("    pass")
         return commands
 
+    # Code for adding an action block. Takes as input a single "action block"
+    # node. Adds boilerplate code (function definition, initialize "response"
+    # as an empty string so it does not trip up the REPL loop, and add a "while
+    # True:" loop to get the REPL loop). The action block itself takes the
+    # direction dictionary for that scene as a parameter so it can pass it to
+    # the get_response() function. It also passes the name of the class so
+    # get_response() knows which scene's cleanup block to call if the user is
+    # trying to move between scenes.
     def _process_action_block(self, c):
         commands = []
         commands.append("def action(self, direction):")
