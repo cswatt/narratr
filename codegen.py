@@ -156,14 +156,14 @@ class CodeGen:
                 commands.append(self._process_statements(child, 2))
         commands.append("    self.action(direction)\n")
         return commands
-        
+
     def _process_cleanup_block(self, c):
         commands = []
         commands.append("def cleanup(self):\n        pass\n")
         if len(c.children) > 0:
             commands.append(self._process_statements(c.children[0], 2))
         return commands
-        
+
     def _process_action_block(self, c):
         commands = []
         commands.append("def action(self, direction):")
