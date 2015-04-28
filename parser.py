@@ -76,20 +76,19 @@ class ParserForNarratr:
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
         # This is set, but it still needs symbol table (SCENEID).
-        if p[6].type == 'setup_block':
+        if isinstance(p[6], Node) and p[6].type == 'setup_block':
             children = [p[6], p[7], p[8]]
-        elif p[5].type == 'setup_block':
+        elif isinstance(p[5], Node) and p[5].type == 'setup_block':
             children = [p[5], p[6], p[7]]
         p[0] = Node(p[2], "scene_block", children)
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
                       | ITEM ID calllist LCURLY suite RCURLY'''
-        if isinstance(p[3], Node):
-            if p[5].type == "suite":
+        if isinstance(p[5], Node) and p[5].type == "suite":
                 children = [p[3], p[5]]
-            else:
-                children = [p[3]]
+        else:
+            children = [p[3]]
         p[0] = Node(p[2], "item_block", children)
 
     def p_start_state(self, p):
@@ -247,7 +246,7 @@ class ParserForNarratr:
         p[0].type = 'continue_statement'
 
     def p_moves_declaration(self, p):
-        '''moves_declaration : MOVES directionlist'''
+        '''moves_declaration : MOVES'''
         p[0] = p[2]
         p[0].type = 'moves_declaration'
 
