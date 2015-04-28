@@ -90,10 +90,10 @@ class CodeGen:
     elif response[:5] == "move " and len(response.split(" ")) == 2:
         if response.split(" ")[1] in direction:
             exec caller + "_inst.cleanup()"
-            exec "s_" + str(direction[response.split(" ")[1]])\
+            exec "s_" + str(direction[response.split(" ")[1]])\\
                 + "_inst.setup()"
         else:
-            print "\\"" + response.split(" ")[1] + "\\" is not a "\
+            print "\\"" + response.split(" ")[1] + "\\" is not a "\\
                 + "valid direction from this scene."
     else:
         return response\n\n'''
@@ -126,6 +126,7 @@ class CodeGen:
     def _scene_gen(self, scene, sid):
         commands = []
         direction_sign = False
+        print scene.children
         for c in scene.children:
             if c.type == "SCENEID":
                 sid = c.value
@@ -136,7 +137,7 @@ class CodeGen:
 
                 if len(c.children) > 0:
                     for child in c.children:
-                        commands.append(self._process_statements(child, 1))
+                        commands.append(self._process_statements(child, 2))
                 commands.append("    self.action(direction)\n")
 
             elif c.type == "cleanup_block":
@@ -149,7 +150,7 @@ class CodeGen:
                 commands.append("    response = \"\"\n        while True:")
                 if len(c.children) > 0:
                     for child in c.children:
-                        commands.append(self._process_statements(child, 2) +
+                        commands.append(self._process_statements(child, 3) +
                                         "\n            " +
                                         "response = get_response(" +
                                         "self.__class__.__name__, direction)" +
@@ -175,27 +176,25 @@ class CodeGen:
         indent = 1
         for smt in statement.children:
             if smt.value == "say":
-                commands += "    "*indentlevel + "print "
+                commands += prefix + "print "
                 for testlist in smt.children:
                     commands += self._process_testlist(testlist, 2)
             elif smt.value == "exposition":
-                indent += 1
-                commands += "    "*indentlevel + "print "
+                commands += prefix + "print "
                 for testlist in smt.children:
                     commands += self._process_testlist(testlist, 2)
-
-            elif smt.value == "win":
-                print "win!!!!!"
-                print smt
+            elif smt.value in ["win", "lose"]:
+                commands += prefix + "print "
                 if len(smt.children) > 0:
                     for testlist in smt.children:
-                        self._process_testlist(testlist, 2)
+                        commands += self._process_testlist(testlist, 2)
+                commands += prefix + "exit(0)"
 
             elif smt.value == "expression":
                 print "match the expression"
 
             elif smt.value == "flow":
-                commands += "    "*indent
+                commands += "    "*indentlevel
                 if len(smt.children) > 0:
                     for child in smt.children:
                         i = 0
@@ -215,7 +214,11 @@ class CodeGen:
             elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
 
-        return commands
+        # We need to remove the leading whitespace and first tab because of
+        # the list constructed by _scene_gen(). It's possible this will mess
+        # with the block statements later on, in which case this modification
+        # should instead be made in that function.
+        return commands[5:]
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist, indentlevel=1):
