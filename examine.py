@@ -60,17 +60,17 @@ def show_ast(filename):
 		with open(filename) as f:
 			ast = p.parse(f.read())
 		print str(ast)
-		return ast
+		return ast, p.symtab
 	except:
 		print "Yo that did not parse."
 		if verbose:
 			traceback.print_exc()
 
-def show_code(ast):
+def show_code(ast, symtab):
 	print "\n------------------- code ---------------------"
 	try:
 		c = codegen.CodeGen()
-		c.process(ast)
+		c.process(ast, symtab)
 		c.construct()
 	except:
 		print "Codegen did not gen the code."
@@ -89,8 +89,8 @@ def main():
 	source = args.source
 
 	show_tokens(source)
-	ast = show_ast(source)
-	show_code(ast)
+	ast, symtab = show_ast(source)
+	show_code(ast, symtab)
 	
 
 if __name__ == "__main__":
