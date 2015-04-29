@@ -251,11 +251,10 @@ class CodeGen:
                 commands += "    "*indentlevel
                 if len(smt.children) > 0:
                     for child in smt.children:
-                        i = 0
                         if child.type == "direction":
-                            commands += prefix + '    direction = {"'
+                            commands += ' direction = {"'
                             commands += self._process_direction(child, 2)
-                            if i != len(smt.children) - 1:
+                            if (len(smt.children) - 1) != 0:
                                 commands += ', '
                             else:
                                 commands += "}"
