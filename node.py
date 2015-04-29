@@ -22,7 +22,7 @@ class Node:
     #   v           the value of the node
     #   t           the variable type, defined by Lexer/Parser
     #   c           a list of children nodes (Optional)
-    #   v_type      the type of the value (int, float, string, boolean, id).   
+    #   v_type      the type of the value (int, float, string, boolean, id).
     #               Technically optional, but include for all new nodes.
     #   lineno      The line number at which the node appears. Technically
     #               optional, but include for all new nodes.
