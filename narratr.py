@@ -43,8 +43,10 @@ def print_tree(node, indent):
     except:
         print prefix + "[Something bad happened]"
 
+
 def print_symtab(symtab):
     print symtab
+
 
 def parse(source):
     if verbose:
@@ -96,7 +98,7 @@ def main():
     argparser.add_argument('-i', '--inert', action="store_true",
                            help='does not try to use code generator')
     argparser.add_argument('-s', '--symtab', action='store_true',
-                           help = 'print the symbol table')
+                           help='print the symbol table')
     args = argparser.parse_args(sys.argv[1:])
 
     global verbose
