@@ -26,9 +26,12 @@ def print_tree(node, indent):
     prefix = "    " * indent
     try:
         val = ""
-
         if node.value is not None:
-            val = " (" + str(node.value) + ")"
+            val += " (value: " + str(node.value) + ") "
+        if node.v_type is not None:
+            val += "(value type: " + str(node.v_type) + ")"
+        if node.lineno is not None:
+            val += "(line num: " + str(node.lineno) + ")"
 
         print prefix + node.type + val
 
