@@ -477,10 +477,13 @@ class ParserForNarratr:
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
                 | LSQUARE testlist RSQUARE'''
-        if p[2].type == 'testlist':
+        if isinstance(p[2], Node) and p[2].type == 'testlist':
             p[0] = p[2]
             p[0].type = 'list'
             p[0].v_type = 'list'
+            p[0].lineno = p.lineno(1)
+        else:
+            p[0] = Node(None, "list", [], "list", p.lineno(1))
 
     def p_number_int(self, p):
         '''number : INTEGER'''
