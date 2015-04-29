@@ -363,6 +363,10 @@ class ParserForNarratr:
         p[0] = Node(p[1], 'comparison_op', [])
         p[0].type = 'comparison_op'
 
+    # In the first two productions for this rule, we need to ensure that
+    # the two sides are combinable. We overload to PLUS operator to string
+    # concatenation (which only allows two strings), and we allow floats
+    # and integers to be combined freely.
     def p_arithmetic_expression(self, p):
         '''arithmetic_expression : arithmetic_expression PLUS term
                                  | arithmetic_expression MINUS term
@@ -370,7 +374,7 @@ class ParserForNarratr:
         if p[1].type == 'term':
             p[0] = p[1]
         else:
-            # Extra condition for plus: allow string concatenation
+            # Extra condition for '+': allow string concatenation.
             if p[2] == "+":
                 if p[1].v_type == "string":
                     if p[3].v_type == "string":
@@ -379,6 +383,16 @@ class ParserForNarratr:
                     else:
                         self.p_error("Type error at line " + str(p.lineno(2)) +
                                      ": cannot add type to string")
+
+            # Reject any expression trying to subtract strings.
+            elif p[2] == "-":
+                if p[1].v_type == "string" or p[3].v_type == "string":
+                    self.p_error("Type error at line" + str(p.lineno(2)) +
+                                 ": minus not a valid operator on strings")
+
+            # Check numbers for number interoperability. If they are of
+            # differing types, the result is always the more general of
+            # the two data types (i.e. float).
             if p[1].v_type == "integer":
                 if p[3].v_type == "integer":
                     p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
