@@ -289,7 +289,7 @@ class ParserForNarratr:
         '''testlist : testlist COMMA test
                     | test'''
         if p[1].type == 'test':
-            p[0] = Node(None, 'testlist', [p[1]])
+            p[0] = Node(None, 'testlist', [p[1]], p[1].v_type)
             p[0].type = 'testlist'
         else:
             p[0] = p[1]
@@ -344,7 +344,7 @@ class ParserForNarratr:
             p[0].children.append(p[2])
             p[0].children.append(p[3])
         else:
-            p[0] = Node(None, 'comparison', [p[1]])
+            p[0] = Node(None, 'comparison', [p[1]], p[1].v_type)
         p[0].type = 'comparison'
 
     def p_expression(self, p):
@@ -382,15 +382,16 @@ class ParserForNarratr:
                                     [p[1], p[3]], "string", p.lineno(2))
                     else:
                         self.p_error("Type error at line " + str(p.lineno(2)) +
-                                     ": cannot add type to string")
+                                     ": cannot add " + p[3].vtype
+                                     + " to string")
 
             # Reject any expression trying to subtract strings.
             elif p[2] == "-":
                 if p[1].v_type == "string" or p[3].v_type == "string":
-                    self.p_error("Type error at line" + str(p.lineno(2)) +
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
                                  ": minus not a valid operator on strings")
 
-            # Check numbers for number interoperability. If they are of
+            # Check numbers for interoperability. If they are of
             # differing types, the result is always the more general of
             # the two data types (i.e. float).
             if p[1].v_type == "integer":
@@ -562,13 +563,20 @@ class ParserForNarratr:
             if branch.value == "expression":
                 for i, child in enumerate(branch.children):
                     if child.type == "id":
-                        self.symtab.insert(child.value, branch.children[i+1],
-                                           "id", scope, False)
+                        try:
+                            self.symtab.insert(child.value,
+                                               branch.children[i+1],
+                                               branch.children[i+1].v_type,
+                                               scope, False)
+                        except:
+                            pass
                     if child.type == "god_id":
                         self.symtab.insert(child.value, branch.children[i+1],
-                                           "id", scope, True)
-        for child in branch.children:
-            self.pass_down(child, scope)
+                                           branch.children[i+1].v_type, scope,
+                                           True)
+        if isinstance(branch, Node):
+            for child in branch.children:
+                self.pass_down(child, scope)
 
     def p_error(self, p):
         if isinstance(p, str):
