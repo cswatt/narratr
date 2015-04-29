@@ -83,6 +83,7 @@ class ParserForNarratr:
             children = [p[5], p[6], p[7]]
         p[0] = Node(p[2], "scene_block", children)
         self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
+        self.pass_down(p[0], p[2])
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
@@ -93,6 +94,7 @@ class ParserForNarratr:
             children = [p[3]]
         p[0] = Node(p[2], "item_block", children)
         self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
+        self.pass_down(p[0], p[2])
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
@@ -401,20 +403,24 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = 'power'
 
-    def p_atom(self, p):
+    def p_atom_node(self, p):
         '''atom : LPARAN test RPARAN
                 | list
                 | number
-                | boolean
-                | STRING
-                | ID'''
+                | boolean'''
         if len(p) == 4:
             p[0] = p[2]
         elif isinstance(p[1], Node):
             p[0] = p[1]
-        else:
-            p[0] = Node(p[1], 'atom', [])
         p[0].type = 'atom'
+
+    def p_atom_string(self, p):
+        '''atom : STRING'''
+        p[0] = Node(p[1], 'atom', [], "string")
+
+    def p_atom_id(self, p):
+        '''atom : ID'''
+        p[0] = Node(p[1], 'atom', [], "id")
 
     def p_trailer(self, p):
         '''trailer : LPARAN RPARAN
@@ -433,18 +439,20 @@ class ParserForNarratr:
         if p[2].type == 'testlist':
             p[0] = p[2]
             p[0].type = 'list'
+            p[0].v_type = 'list'
 
-    def p_number(self, p):
-        '''number : INTEGER
-                  | FLOAT'''
-        p[0] = Node(p[1], 'number', [])
-        p[0].type = 'number'
+    def p_number_int(self, p):
+        '''number : INTEGER'''
+        p[0] = Node(p[1], 'number', [], "integer")
+
+    def p_number_float(self, p):
+        '''number : FLOAT'''
+        p[0] = Node(p[1], 'number', [], "float")
 
     def p_boolean(self, p):
         '''boolean : TRUE
                    | FALSE'''
-        p[0] = Node(p[1], 'boolean', [])
-        p[0].type = 'boolean'
+        p[0] = Node(p[1], 'boolean', [], "boolean")
 
     def p_calllist(self, p):
         '''calllist : LPARAN args RPARAN
@@ -501,6 +509,26 @@ class ParserForNarratr:
         '''while_statement : WHILE test COLON suite'''
         p[0] = Node(p[2], 'while_statement', [p[4]])
         p[0].type = 'while_statement'
+
+    # In order to create SymTab entries (in particular, in order to know
+    # the appropriate scope) for named entities discovered below a main
+    # branch (i.e. variables in a scene), we need to travel back down
+    # the branches once we get to the main branch. This function does so,
+    # creating symtab entries as it goes. It is called recursively on
+    # every branch, looking for named entities. It takes as its argument
+    # a branch and the scope to be assigned to all found named entities.
+    def pass_down(self, branch, scope):
+        if isinstance(branch, Node) and branch.type == "statement":
+            if branch.value == "expression":
+                for i, child in enumerate(branch.children):
+                    if child.type == "id":
+                        self.symtab.insert(child.value, branch.children[i+1],
+                                           "id", scope, False)
+                    if child.type == "god_id":
+                        self.symtab.insert(child.value, branch.children[i+1],
+                                           "id", scope, True)
+        for child in branch.children:
+            self.pass_down(child, scope)
 
     def p_error(self, p):
         if isinstance(p, str):
