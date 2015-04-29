@@ -236,11 +236,9 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = "expression_statement"
         elif p[1] == "god":
-            # self.symtab.insert(p[2], p[4], symboltype, scope, True)
             children = [Node(p[2], "god_id"), p[4]]
             p[0] = Node("is", "expression_statement", children)
         else:
-            # self.symtab.insert(p[1], p[4], symboltype, scope, True)
             children = [Node(p[1], "id"), p[3]]
             p[0] = Node("is", "expression_statement", children)
 
@@ -382,14 +380,14 @@ class ParserForNarratr:
                                     [p[1], p[3]], "string", p.lineno(2))
                     else:
                         self.p_error("Type error at line " + str(p.lineno(2)) +
-                                     ": cannot add " + p[3].vtype
-                                     + " to string")
+                                     ": cannot add '" + p[3].v_type +
+                                     "' to 'string'")
 
             # Reject any expression trying to subtract strings.
             elif p[2] == "-":
                 if p[1].v_type == "string" or p[3].v_type == "string":
                     self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": minus not a valid operator on strings")
+                                 ": minus is not a valid operator on strings")
 
             # Check numbers for interoperability. If they are of
             # differing types, the result is always the more general of
@@ -403,14 +401,16 @@ class ParserForNarratr:
                                 "float", p.lineno(2))
                 else:
                     self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot add type to integer")
+                                 ": cannot add '" + p[3].v_type +
+                                 "' to 'integer'")
             elif p[1].v_type == "float":
                 if p[3].v_type in ["integer", "float"]:
                     p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
                                 "float", p.lineno(2))
                 else:
                     self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot add type to float")
+                                 ": cannot add '" + p[3].v_type +
+                                 "' to 'float'")
 
         p[0].type = 'arithmetic_expression'
 
@@ -571,9 +571,14 @@ class ParserForNarratr:
                         except:
                             pass
                     if child.type == "god_id":
-                        self.symtab.insert(child.value, branch.children[i+1],
-                                           branch.children[i+1].v_type, scope,
-                                           True)
+                        try:
+                            self.symtab.insert(child.value,
+                                               branch.children[i+1],
+                                               branch.children[i+1].v_type,
+                                               scope, True)
+                        except:
+                            pass
+
         if isinstance(branch, Node):
             for child in branch.children:
                 self.pass_down(child, scope)
