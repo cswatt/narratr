@@ -43,22 +43,25 @@ def print_tree(node, indent):
     except:
         print prefix + "[Something bad happened]"
 
+def print_symtab(symtab):
+    print symtab
 
 def parse(source):
     if verbose:
         print "parsing...",
     p = parser.ParserForNarratr()
     ast = p.parse(source)
+    symtab = p.symtab
     if verbose:
         print u'\u2713'
-    return ast
+    return ast, symtab
 
 
-def generate_code(ast, outfile="stdout"):
+def generate_code(ast, symtab, outfile):
     if verbose:
         print "generating code...",
     c = CodeGen()
-    c.process(ast)
+    c.process(ast, symtab)
     c.construct(outfile)
     if verbose:
         print u'\u2713'
@@ -92,6 +95,8 @@ def main():
                            ' [input file].py')
     argparser.add_argument('-i', '--inert', action="store_true",
                            help='does not try to use code generator')
+    argparser.add_argument('-s', '--symtab', action='store_true',
+                           help = 'print the symbol table')
     args = argparser.parse_args(sys.argv[1:])
 
     global verbose
@@ -103,14 +108,19 @@ def main():
         outputfile = args.output[0]
 
     source = read(args.source)
-    ast = parse(source)
+    ast, symtab = parse(source)
     if args.tree:
         print "\n------------------- AST ---------------------"
         print_tree(ast, 0)
         print "------------------- /AST ---------------------\n"
 
+    if args.symtab:
+        print "\n------------------- SymTab ---------------------"
+        print_symtab(symtab)
+        print "------------------- /Symtab ---------------------\n"
+
     if not args.inert:
-        generate_code(ast, outputfile)
+        generate_code(ast, symtab, outputfile)
     if verbose:
         print "Your game is ready. Have fun!"
 

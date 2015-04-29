@@ -24,9 +24,15 @@ class CodeGen:
         self.items = []
         self.main = ""
 
-    # This function iterates through all the nodes of the tree since we know
-    # the structure already
-    def process(self, node):
+    # This function takes as its arguments the root node of the AST and the
+    # symbol table. It saves the symbol table to a class variable (so it is
+    # accessible anywhere in the code using self), and looks through the AST
+    # to identify the high level nodes (i.e. scenes, items, and startstate),
+    # sending the appropriate nodes to the appropriate functions for
+    # processing. Note we know the structure of the AST, so we don't need
+    # DFS or other tree searching algorithms, which improves efficiency.
+    def process(self, node, symtab):
+        self.symtab = symtab
         for c in node.children:
             if c.type == "blocks":
                 for bc in c.children:
