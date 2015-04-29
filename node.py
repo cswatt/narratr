@@ -18,14 +18,20 @@
 
 # Class for nodes in the narratr AST.
 class Node:
-    # Constructor requires:
+    # Constructor takes:
     #   v           the value of the node
     #   t           the variable type, defined by Lexer/Parser
     #   c           a list of children nodes (Optional)
-    def __init__(self, v, t, c=[]):
+    #   v_type      the type of the value (int, float, string, id). Technically
+    #               optional, but include for all new nodes.
+    #   lineno      The line number at which the node appears. Technically
+    #               optional, but include for all new nodes.
+    def __init__(self, v, t, c=[], v_type=None, lineno=None):
         self.value = v
         self.type = t
         self.children = c
+        self.v_type = v_type
+        self.lineno = lineno
 
     # This method is helpful for string representations
     def __repr__(self):
