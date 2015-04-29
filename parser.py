@@ -370,7 +370,33 @@ class ParserForNarratr:
         if p[1].type == 'term':
             p[0] = p[1]
         else:
-            p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]])
+            # Extra condition for plus: allow string concatenation
+            if p[2] == "+":
+                if p[1].v_type == "string":
+                    if p[3].v_type == "string":
+                        p[0] = Node(p[2], 'arithmetic_expression',
+                                    [p[1], p[3]], "string", p.lineno(2))
+                    else:
+                        self.p_error("Type error at line " + str(p.lineno(2)) +
+                                     ": cannot add type to string")
+            if p[1].v_type == "integer":
+                if p[3].v_type == "integer":
+                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
+                                "integer", p.lineno(2))
+                elif p[3].v_type == "float":
+                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
+                                "float", p.lineno(2))
+                else:
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
+                                 ": cannot add type to integer")
+            elif p[1].v_type == "float":
+                if p[3].v_type in ["integer", "float"]:
+                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
+                                "float", p.lineno(2))
+                else:
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
+                                 ": cannot add type to float")
+
         p[0].type = 'arithmetic_expression'
 
     def p_term(self, p):
@@ -381,7 +407,7 @@ class ParserForNarratr:
         if len(p) == 4:
             p[0] = Node(p[2], 'term', [p[1], p[3]])
         else:
-            p[0] = Node(None, 'term', [p[1]])
+            p[0] = Node(None, 'term', [p[1]], p[1].v_type)
         p[0].type = 'term'
 
     def p_factor(self, p):
