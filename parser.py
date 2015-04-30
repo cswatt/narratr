@@ -82,7 +82,12 @@ class ParserForNarratr:
         elif isinstance(p[5], Node) and p[5].type == 'setup_block':
             children = [p[5], p[6], p[7]]
         p[0] = Node(p[2], "scene_block", children)
-        self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
+        try:
+            self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
+        except:
+            self.p_error("Error at line " + str(p.lineno(1)) +
+                         ": A scene with the id '" + str(p[2]) + "' already" +
+                         " exists.")
         self.pass_down(p[0], p[2])
 
     def p_item_block(self, p):
@@ -93,7 +98,12 @@ class ParserForNarratr:
         else:
             children = [p[3]]
         p[0] = Node(p[2], "item_block", children)
-        self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
+        try:
+            self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
+        except:
+            self.p_error("Error at line " + str(p.lineno(1)) +
+                         ": An item with the id '" + str(p[2]) + "' already" +
+                         " exists.")
         self.pass_down(p[0], p[2])
 
     def p_start_state(self, p):
