@@ -58,7 +58,7 @@ class CodeGen:
     def construct(self, outputfile="stdout"):
         # defaults to scene labeled "1" (assume exists)
         if self.main == "":
-            self._add_main()
+            raise Exception("No start scene specified")
 
         if outputfile == "stdout":
             print self.frontmatter
@@ -95,7 +95,7 @@ class CodeGen:
     # If it does not appear in the dictionary, an error is reported so the user
     # is not confused.  If it does appear, it moves calls the cleanup function
     # of the previous scene and goes to the setup function of the called scene.
-    def _add_main(self, startstate=None):
+    def _add_main(self, startstate):
         if self.main == "":
             self.main = "pocket = []\n"
             self.main += '''def get_response(caller, direction):
@@ -122,20 +122,16 @@ class CodeGen:
             for s in self.scene_nums:
                 self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
 
-            if startstate is None:
-                self.startstate = 1
-            elif startstate.value in self.scene_nums:
+            if startstate.value in self.scene_nums:
                 self.startstate = startstate.value
             else:
-                print "WARNING: You specified a start state that does not "\
-                    + "exist. Defaulting to Scene 1."
-                self.startstate = 1
+                raise Exception("Start scene $" + str(startstate.value) 
+                                + " does not exist")
 
             self.main += "if __name__ == '__main__':\n    s_"\
                 + str(self.startstate) + "_inst.setup()"
         else:
-            print "WARNING: You wrote multiple start states. State "\
-                + str(self.startstate) + " will be used."
+            raise Exception("Multiple start scene declarations.")
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
