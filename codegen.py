@@ -234,7 +234,8 @@ class CodeGen:
             elif smt.value == "expression":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "id":
-                        self._process_assign(smt.children, 2)
+                        commands += prefix
+                        commands += self._process_assign(smt.children, 2)
 
             elif smt.value == "flow":
                 commands += "    "*indentlevel
@@ -323,11 +324,11 @@ class CodeGen:
 
         return commands
 
-    def _process_action(self, expr, indentlevel):
+    def _process_action(self, expr, indentlevel=1):
         commands = ''
         if len(expr.children) > 0:
             if expr.type == 'suite' and expr.value is None:
-                commands += '    '*indentlevel + self._process_statements(expr)
+                commands += self._process_statements(expr, indentlevel)
             elif expr.type == 'suite' and expr.value is "else":
                 commands += '    '*(indentlevel-1) + "else:\n"
                 commands += '    '*(indentlevel+1)
@@ -342,22 +343,26 @@ class CodeGen:
         if len(smt.children) > 1:
             for child in smt.children:
                 if child.type == 'test':
+                    commands += '\n'
                     commands += self._process_whilecondition(child, 3)
                 elif child.type == "suite":
                     commands += '    '
-                    commands += self._process_action(child, 3)
+                    commands += self._process_action(child, 4)
         return commands
 
     def _process_whilecondition(self, cond, indentlevel=1):
         commands = ''
         if len(cond.children) > 0:
-            commands += '    '*indentlevel + " while "
+            commands += '    '*indentlevel + "while "
             commands += self._process_factor(cond, 1)
-            commands += ': \n'
+            commands += ":\n"
         return commands
 
     def _process_assign(self, ass, indentlevel=1):
         commands = ''
+        commands += ass[0].value + " = "
+        commands += self._process_testlist(ass[1], 2)
+        return commands
 
     # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
@@ -366,8 +371,18 @@ class CodeGen:
             if child.type == "factor" and child.value is None:
                 commands += self._process_factor(child)
 
-            elif child.type == "factor":
-                commands += '"' + child.value + '"\n'
+            elif child.type == "factor" and child.v_type == "string":
+                commands += '"' + child.value + '"'
+
+            elif child.type == "factor" and child.v_type == "integer":
+                commands += str(child.value)
+
+            elif child.type == "arithmetic_expression":
+                commands += child.children[0].value + ' '
+                commands += exps.value + ' '
+
+            elif child.type == "term" and child.v_type == "integer":
+                commands += str(child.children[0].value) + ' '
 
             elif child.type == "expression" and child.value is None:
                 if len(child.children) > 0:
