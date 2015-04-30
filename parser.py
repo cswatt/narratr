@@ -337,11 +337,11 @@ class ParserForNarratr:
     def p_not_test(self, p):
         '''not_test : NOT not_test
                     | comparison'''
-        if len(p) == 3:
-            p[0] = Node(None, 'not', [p[2]])
+        if isinstance(p[1], Node) and p[1].type == 'comparison':
+            p[0] = p[1]
             p[0].type = 'not_test'
         else:
-            p[0] = p[1]
+            p[0] = Node(None, 'not', [p[2]])
             p[0].type = 'not_test'
 
     def p_comparison(self, p):
@@ -473,16 +473,16 @@ class ParserForNarratr:
         '''factor : PLUS factor
                   | MINUS factor
                   | power'''
-        if len(p) == 3:
-            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type)
-        else:
+        if p[1].type == 'power':
             p[0] = p[1]
             p[0].type = 'factor'
+        else:
+            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type)
 
     def p_power(self, p):
         '''power : power trailer
                  | atom'''
-        if len(p) == 3:
+        if p[1] == 'power':
             p[0] = Node(None, 'power', [p[1], p[2]])
         else:
             p[0] = p[1]
@@ -493,10 +493,10 @@ class ParserForNarratr:
                 | list
                 | number
                 | boolean'''
-        if len(p) == 4:
-            p[0] = p[2]
-        elif isinstance(p[1], Node):
+        if isinstance(p[1], Node):
             p[0] = p[1]
+        else:
+            p[0] = p[2]
         p[0].type = 'atom'
 
     def p_atom_string(self, p):
@@ -545,7 +545,7 @@ class ParserForNarratr:
     def p_calllist(self, p):
         '''calllist : LPARAN args RPARAN
                     | LPARAN RPARAN'''
-        if len(p) == 4:
+        if isinstance(p[2], Node):
             p[0] = p[2]
         else:
             p[0] = Node(None, 'calllist', [])
@@ -554,7 +554,7 @@ class ParserForNarratr:
     def p_args(self, p):
         '''args : args COMMA expression
                 | expression'''
-        if len(p) == 4:
+        if p[1].type == 'args':
             p[0] = p[1]
             p[0].children.append(p[3])
         else:
@@ -585,7 +585,7 @@ class ParserForNarratr:
             p[8].value = 'else'
         elif len(p) == 8:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]])
-            p[7].value = 'else'            
+            p[7].value = 'else'
         elif len(p) == 6:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]])
             p[4].value = 'elif'
