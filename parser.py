@@ -435,7 +435,7 @@ class ParserForNarratr:
     def p_power(self, p):
         '''power : power trailer
                  | atom'''
-        if p[1] == 'power':
+        if p[1].type == 'power':
             p[0] = Node(None, 'power', [p[1], p[2]])
         else:
             p[0] = p[1]
@@ -463,8 +463,11 @@ class ParserForNarratr:
     def p_trailer(self, p):
         '''trailer : calllist
                    | DOT ID'''
-        p[0] = Node(None, 'trailer', [p[1], p[2]])
-        p[0].type = 'trailer'
+        if isinstance(p[1], Node) and p[1].type == "calllist":
+            p[0] = p[1]
+            p[0].type = 'trailer'
+        else:
+            p[0] = Node(None, 'trailer', [p[1], p[2]])
 
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
