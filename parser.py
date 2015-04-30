@@ -436,7 +436,8 @@ class ParserForNarratr:
         '''power : power trailer
                  | atom'''
         if p[1].type == 'power':
-            p[0] = Node(None, 'power', [p[1], p[2]])
+            p[1].children.append(p[2])
+            p[0] = p[1]
         else:
             p[0] = p[1]
             p[0].type = 'power'
@@ -467,7 +468,7 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = 'trailer'
         else:
-            p[0] = Node(None, 'trailer', [p[1], p[2]])
+            p[0] = Node(None, 'trailer', [Node(p[1], 'dot', []), Node(p[2], 'id',  [])])
 
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
