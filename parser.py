@@ -466,8 +466,8 @@ class ParserForNarratr:
             if p[2] == "//":
                 p[0].v_type = "integer"
         else:
-            p[0] = p[1]
-            p[0].type = "term"
+            p[0] = Node(None, 'term', [p[1]], p[1].v_type)
+            p[0].type = 'term'
 
     def p_factor(self, p):
         '''factor : PLUS factor
