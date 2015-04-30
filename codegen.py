@@ -8,7 +8,7 @@
 # Smith, Cecilia Watt
 #
 # File Created: 01 April 2015
-# Primary Authors: Jonah Smith, Yelin Hong
+# Primary Authors: Jonah Smith, Yelin Hong, Shloka Kini
 #
 # Any questions, bug reports and complaints are to be directed at the primary
 # author.

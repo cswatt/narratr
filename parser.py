@@ -8,7 +8,8 @@
 # Smith, Cecilia Watt
 #
 # File Created: 21 March 2015
-# Primary Author: Nivvedan Senthamil Selvan <nivvedan.s@columbia.edu>
+# Primary Authors: Nivvedan Senthamil Selvan <nivvedan.s@columbia.edu>,
+# Jonah Smith, Shloka Kini
 #
 # Any questions, bug reports and complaints are to be directed at the primary
 # author.
@@ -191,7 +192,7 @@ class ParserForNarratr:
 
     def p_say_statement(self, p):
         '''say_statement : SAY testlist'''
-        p[0] = Node(None, "say_statement", [p[2]])
+        p[0] = Node(None, "say_statement", [p[2]], lineno=p.lineno(1))
 
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION testlist'''
@@ -206,7 +207,7 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "win_statement", children)
+            p[0] = Node(None, "win_statement", children, lineno=p.lineno(1))
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
@@ -216,7 +217,7 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "lose_statement", children)
+            p[0] = Node(None, "lose_statement", children, lineno=p.lineno(1))
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
@@ -275,7 +276,7 @@ class ParserForNarratr:
                                 RPARAN'''
         if p[1].type == 'direction':
             p[1].children.append(Node(p[3], 'sceneid', [], lineno=p.lineno(3)))
-            p[0] = Node(None, 'directionlist', [p[1]])
+            p[0] = Node(None, 'directionlist', [p[1]], lineno=p.lineno(1))
         else:
             p[3].children.append(Node(p[5], 'sceneid', [], lineno=p.lineno(5)))
             p[1].children.append(p[3])
@@ -292,14 +293,15 @@ class ParserForNarratr:
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
-        p[0] = Node(None, 'moveto', [p[2]])
+        p[0] = Node(None, 'moveto', [p[2]], lineno=p.lineno(1))
         p[0].type = 'moveto_statement'
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
                     | test'''
         if p[1].type == 'test':
-            p[0] = Node(None, 'testlist', [p[1]], p[1].v_type)
+            p[0] = Node(None, 'testlist', [p[1]], p[1].v_type,
+                        lineno=p.lineno(1))
             p[0].type = 'testlist'
         else:
             p[0] = p[1]
@@ -322,7 +324,7 @@ class ParserForNarratr:
             p[0].type = 'or_test'
         else:
             children = [p[1], p[3]]
-            p[0] = Node(None, 'or', children)
+            p[0] = Node(None, 'or', children, lineno=p.lineno(2))
             p[0].type = 'or_test'
 
     def p_and_test(self, p):
@@ -333,7 +335,7 @@ class ParserForNarratr:
             p[0].type = 'and_test'
         else:
             children = [p[1], p[3]]
-            p[0] = Node(None, 'and', children)
+            p[0] = Node(None, 'and', children, lineno=p.lineno(2))
             p[0].type = 'and_test'
 
     def p_not_test(self, p):
@@ -343,7 +345,7 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = 'not_test'
         else:
-            p[0] = Node(None, 'not', [p[2]])
+            p[0] = Node(None, 'not', [p[2]], lineno=p.lineno(1))
             p[0].type = 'not_test'
 
     def p_comparison(self, p):
@@ -354,7 +356,8 @@ class ParserForNarratr:
             p[0].children.append(p[2])
             p[0].children.append(p[3])
         else:
-            p[0] = Node(None, 'comparison', [p[1]], p[1].v_type)
+            p[0] = Node(None, 'comparison', [p[1]], p[1].v_type,
+                        lineno=p.lineno(1))
         p[0].type = 'comparison'
 
     def p_expression(self, p):
@@ -421,7 +424,7 @@ class ParserForNarratr:
             if p[2] == "//":
                 p[0].v_type = "integer"
         else:
-            p[0] = Node(None, 'term', [p[1]], p[1].v_type)
+            p[0] = Node(None, 'term', [p[1]], p[1].v_type, lineno=p.lineno(1))
             p[0].type = 'term'
 
     def p_factor(self, p):
@@ -472,7 +475,8 @@ class ParserForNarratr:
             p[0].type = 'trailer'
         else:
             p[0] = Node(None, 'trailer',
-                        [Node(p[1], 'dot', []), Node(p[2], 'id',  [])])
+                        [Node(p[1], 'dot', [], lineno=p.lineno(1)),
+                            Node(p[2], 'id',  [], lineno=p.lineno(2))])
 
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
@@ -504,7 +508,7 @@ class ParserForNarratr:
         if isinstance(p[2], Node):
             p[0] = p[2]
         else:
-            p[0] = Node(None, 'calllist', [])
+            p[0] = Node(None, 'calllist', [], lineno=p.lineno(1))
         p[0].type = 'calllist'
 
     def p_args(self, p):
@@ -514,7 +518,7 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].children.append(p[3])
         else:
-            p[0] = Node(None, 'args', [p[1]])
+            p[0] = Node(None, 'args', [p[1]], lineno=p.lineno(1))
         p[0].type = 'args'
 
     def p_block_statement(self, p):
@@ -536,17 +540,20 @@ class ParserForNarratr:
                         | IF test COLON suite elif_statements
                         | IF test COLON suite'''
         if len(p) == 9:
-            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]])
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]],
+                        lineno=p.lineno(1))
             p[4].value = 'elif'
             p[8].value = 'else'
         elif len(p) == 8:
-            p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]])
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]],
+                        lineno=p.lineno(1))
             p[7].value = 'else'
         elif len(p) == 6:
-            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]])
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]],
+                        lineno=p.lineno(1))
             p[4].value = 'elif'
         else:
-            p[0] = Node(None, 'if_statement', [p[2], p[4]])
+            p[0] = Node(None, 'if_statement', [p[2], p[4]], lineno=p.lineno(1))
         p[0].type = 'if_statement'
 
     def p_elif_statements(self, p):
@@ -554,10 +561,12 @@ class ParserForNarratr:
                            | ELIF test COLON suite'''
         if p[1].type == 'elif_statements':
             p[0] = p[1]
-            new_elif = Node(None, 'elif_statements', [p[3], [5]])
+            new_elif = Node(None, 'elif_statements', [p[3], [5]],
+                            lineno=p.lineno(2))
             p[0].children.append(new_elif)
         else:
-            p[0] = Node(None, 'elif_statements', [p[2], [4]])
+            p[0] = Node(None, 'elif_statements', [p[2], [4]],
+                        lineno=p.lineno(1))
         p[0].type = 'elif_statements'
 
     def p_while_statement(self, p):
