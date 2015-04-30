@@ -212,14 +212,6 @@ class CodeGen:
                         "self.__class__.__name__, direction)\n")
         return commands
 
-    # Takes a "statements" node, calls a function to find the "statement"
-    # nodes that descend from it, and then figures out what kind of statement
-    # it is and takes the appropriate action. Many of the new features we add
-    # to the language will just be a matter of adding to this function.
-    # Returns a string of statements that descended from the "statements"
-    # node. This function should only be used internally. Indent level
-    # specifies how many indents should appear before statements in the
-    # sequence.
     def _process_statements(self, statement, indentlevel=1):
         commands = ''
         prefix = "\n" + "    "*indentlevel
