@@ -463,15 +463,7 @@ class ParserForNarratr:
     def p_trailer(self, p):
         '''trailer : calllist
                    | DOT ID'''
-<<<<<<< Updated upstream
-        if isinstance(p[2], Node) and p[2].type == 'args':
-            p[0] = p[2]
-        else:
-            p[0] = Node(None, 'trailer', [p[1], p[2]])
-
-=======
         p[0] = Node(None, 'trailer', [p[1], p[2]])
->>>>>>> Stashed changes
         p[0].type = 'trailer'
 
     def p_list(self, p):
