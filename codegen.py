@@ -56,7 +56,6 @@ class CodeGen:
     # purposes, and should not be used in the production compiler, as the
     # line breaks are only approximations.
     def construct(self, outputfile="stdout"):
-        # defaults to scene labeled "1" (assume exists)
         if self.main == "":
             raise Exception("No start scene specified")
 
