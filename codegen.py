@@ -250,14 +250,19 @@ class CodeGen:
             elif smt.value == "flow":
                 commands += "    "*indentlevel
                 if len(smt.children) > 0:
+                    i = 0
                     for child in smt.children:
                         if child.type == "direction":
-                            commands += ' direction = {"'
+                            if i == 0:
+                                commands += ' direction = {"'
+                            else:
+                                commands += '"'
                             commands += self._process_direction(child, 2)
-                            if (len(smt.children) - 1) != 0:
+                            if (len(smt.children) - 1) != i:
                                 commands += ', '
                             else:
                                 commands += "}"
+                        i += 1
 
             elif smt.value == "lose":
                 if len(smt.children) > 0:
@@ -276,7 +281,7 @@ class CodeGen:
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist, indentlevel=1):
         commands = ''
-
+        print testlist
         for test in testlist.children:
             if test.type == "test":
                 for child in test.children:
