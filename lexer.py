@@ -103,14 +103,12 @@ class LexerForNarratr:
     def t_comments(self, t):
         r'[ \t\r\f\v]*%[^\n]*\n'
         if self.lasttoken:
-            if self.lasttoken.type == "NEWLINE":
-                pass
-            else:
+            if self.lasttoken.type != "NEWLINE":
                 t.type = "NEWLINE"
                 t.value = 1
+                t.lexer.lineno += t.value
                 return t
-        else:
-            pass
+        t.lexer.lineno += 1
 
     # This rule matches an Identifier except for the reserved words defined
     # above. The reserved words will be matched to their own tokens.
