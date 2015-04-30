@@ -2,6 +2,7 @@ scene $1 {
 	setup:
 		exposition "Sadness is infinite."
 	action:
+		win
 	cleanup:
 }
 

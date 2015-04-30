@@ -1,8 +1,9 @@
 scene $1 {
 	setup:
-	action:
 		if (1 == 1):
 			say "Okay."
+	action:
+		win
 	cleanup:
 }
 

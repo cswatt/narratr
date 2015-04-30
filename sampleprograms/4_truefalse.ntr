@@ -1,12 +1,12 @@
 scene $1 {
 	setup:
-	action:
 		if (true):
 			say "Okay."
 
 		if (false):
 			say "Something bad."
-
+	action:
+		win
 	cleanup:
 }
 

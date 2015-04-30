@@ -1,8 +1,9 @@
 scene $1 {
 	setup:
-	action:
 		words is "Oh, hello."
 		say words
+	action:
+		win
 	cleanup:
 }
 

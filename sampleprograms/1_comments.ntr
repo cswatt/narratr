@@ -1,8 +1,9 @@
 scene $1 {
 	setup:
-	action:
 		say "Hello."
+	action:
 		% today i dreamt of a dark sea
+		win
 	cleanup:
 }
 
