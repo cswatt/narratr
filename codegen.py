@@ -325,7 +325,7 @@ class CodeGen:
         if len(cond.children) > 1:
             if cond.children[0].type == "and_test":
                 if cond.children[1].type == "not_test":
-                    commands += "\n        if "
+                    commands += "        if "
                     commands += self._process_expression(cond.children[0], 2)
                     commands += ' and '
                     commands += self._process_expression(cond.children[1], 2)
@@ -337,10 +337,15 @@ class CodeGen:
 
         return commands
 
-    def _process_action(self, expr, indentlevel=1):
+    def _process_action(self, expr, indentlevel):
         commands = ''
-        if len(expr.children) > 0 and expr.type == 'suite':
-            commands += '    '*indentlevel + self._process_statements(expr)
+        if len(expr.children) > 0:
+            if expr.type == 'suite' and expr.value is None:
+                commands += '    '*indentlevel + self._process_statements(expr)
+            elif expr.type == 'suite' and expr.value is "else":
+                commands += '    '*(indentlevel-1) + "else:\n"
+                commands += '    '*(indentlevel+1)
+                commands += self._process_statements(expr)
         return commands
 
     # This function taks the node which has "block_statement" type and
