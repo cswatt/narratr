@@ -196,7 +196,7 @@ class ParserForNarratr:
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION testlist'''
         if p[1] == "exposition":
-            p[0] = Node(None, "exposition", [p[2]])
+            p[0] = Node(None, "exposition", [p[2]], lineno=p.lineno(1))
 
     def p_win_statement(self, p):
         '''win_statement : WIN
