@@ -19,7 +19,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Hello, World!\n'
-        self.assertEqual(real_output, expected_output, "Hello World is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Hello World is messed up.")
 
     def test_codegen_comments(self):
 
@@ -34,7 +35,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Hello.\n'
-        self.assertEqual(real_output, expected_output, "Comments is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Comments is messed up.")
 
     def test_codegen_andor(self):
 
@@ -49,7 +51,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Okay.\nOkay.\n'
-        self.assertEqual(real_output, expected_output, "And/or is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "And/or is messed up.")
 
     def test_codegen_arithmetic(self):
 
@@ -64,7 +67,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = '2\n'
-        self.assertEqual(real_output, expected_output, "Arithmetic is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Arithmetic is messed up.")
 
     def test_codegen_assignment(self):
 
@@ -79,7 +83,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Oh, hello.\n'
-        self.assertEqual(real_output, expected_output, "Assignment is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Assignment is messed up.")
 
     def test_codegen_comparison(self):
 
@@ -94,7 +99,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Okay.\nOkay.\nOkay.\nOkay.\n'
-        self.assertEqual(real_output, expected_output, "Comparison is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Comparison is messed up.")
 
     def test_codegen_elseif(self):
 
@@ -109,7 +115,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Okay.\n'
-        self.assertEqual(real_output, expected_output, "Else/if is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Else/if is messed up.")
 
     def test_codegen_exposition(self):
 
@@ -124,7 +131,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Sadness is infinite.\n'
-        self.assertEqual(real_output, expected_output, "Exposition is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "Exposition is messed up.")
 
     def test_codegen_if(self):
 
@@ -139,7 +147,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Okay.\n'
-        self.assertEqual(real_output, expected_output, "If is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "If is messed up.")
 
     def test_codegen_truefalse(self):
 
@@ -154,7 +163,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Okay.\n'
-        self.assertEqual(real_output, expected_output, "True/False is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "True/False is messed up.")
 
     def test_codegen_while(self):
 
@@ -169,7 +179,8 @@ class TestCodeGen(unittest.TestCase):
 
         real_output = subprocess.check_output(['python', 'temp.py'])
         expected_output = 'Okay.\nOkay.\nOkay.\n'
-        self.assertEqual(real_output, expected_output, "While is messed up.")
+        self.assertEqual(real_output, expected_output,
+                         "While is messed up.")
 
     def test_codegen_moves(self):
 
