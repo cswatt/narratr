@@ -389,6 +389,9 @@ class ParserForNarratr:
                     if p[3].v_type == "string":
                         p[0] = Node(p[2], 'arithmetic_expression',
                                     [p[1], p[3]], "string", p.lineno(2))
+                    elif p[3].v_type == "id":
+                        p[0] = Node(p[2], 'arithmetic_expression',
+                                    [p[1], p[3]], "id", p.lineno(2))
                     else:
                         self.combination_error(p)
 
