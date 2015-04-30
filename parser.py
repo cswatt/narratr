@@ -564,7 +564,14 @@ class ParserForNarratr:
     def p_block_statement(self, p):
         '''block_statement : if_statement
                            | while_statement'''
-        p[0] = p[1]
+
+        if isinstance(p[1], Node):
+            if p[1].type == 'if_statement':
+                p[0] = p[1]
+                p[0].value = 'if'
+            elif p[1].type == 'while_statement':
+                p[0] = p[1]
+                p[0].value = 'while'
         p[0].type = 'block_statement'
 
     def p_if_statement(self, p):

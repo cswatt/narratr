@@ -254,7 +254,7 @@ class CodeGen:
                     for child in smt.children:
                         if child.type == "direction":
                             if i == 0:
-                                commands += ' direction = {"'
+                                commands += 'direction = {"'
                             else:
                                 commands += '"'
                             commands += self._process_direction(child, 2)
@@ -269,7 +269,15 @@ class CodeGen:
                     for testlist in smt.children:
                         self._process_testlist(testlist, 2)
 
+            elif smt.value == "if":
+                commands += self._process_ifstatement(smt, 2)
+
+            elif smt.value == "while":
+                self._process_whilestatement(smt, 2)
+
             elif smt.value is None:
+                print "none value for statement"
+                print smt
                 commands += self._process_testlist(smt, 2)
 
         # We need to remove the leading whitespace and first tab because of
@@ -281,7 +289,6 @@ class CodeGen:
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist, indentlevel=1):
         commands = ''
-        print testlist
         for test in testlist.children:
             if test.type == "test":
                 for child in test.children:
@@ -297,19 +304,66 @@ class CodeGen:
                 commands += "    "*3 + "win"
         return commands
 
+    # This function takes the node which has "block_statement" type and
+    # "if" value. For an if statement, it generally contains two kinds
+    # of nodes, one is test which shows the condition, the other is suite
+    # which shows the action
+    def _process_ifstatement(self, smt, indentlevel=1):
+        commands = ''
+        if len(smt.children) > 1:
+            for child in smt.children:
+                if child.type == "test":
+                    commands += self._process_condition(child, 3)
+                    print len(child.children)
+                elif child.type == "suite":
+                    commands += '    '
+                    commands += self._process_action(child, 3)
+        return commands
+
+    def _process_condition(self, cond, indentlevel=1):
+        commands = ''
+        if len(cond.children) > 1:
+            if cond.children[0].type == "and_test":
+                if cond.children[1].type == "not_test":
+                    commands += "\n        if "
+                    commands += self._process_expression(cond.children[0], 2)
+                    commands += ' and '
+                    commands += self._process_expression(cond.children[1], 2)
+                    commands += ':\n'
+        else:
+            commands += '    '*indentlevel + "if "
+            commands += self._process_expression(cond.children[0], 1)
+            commands += ': \n'
+
+        return commands
+
+    def _process_action(self, expr, indentlevel=1):
+        commands = ''
+        if len(expr.children) > 0 and expr.type == 'suite':
+            commands += '    '*indentlevel + self._process_statements(expr)
+        return commands
+
+    # This function taks the node which has "block_statement" type and
+    # "while" value. The "while" node has similar structure with if
+    # statement and is needed to be seperated
+    def _process_whilestatement(self, smt, indentlevel=1):
+        print "WHILE"
+
     # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
         commands = ''
-
         for child in exps.children:
-            if child.type == "factor":
-                commands += '"' + child.value + '"'
-            if child.type == "expression":
+            if child.type == "factor" and child.value is None:
+                commands += self._process_factor(child)
+
+            elif child.type == "factor":
+                commands += '"' + child.value + '"\n'
+
+            if child.type == "expression" and child.value is None:
                 if len(child.children) > 0:
                     for exex in child.children:
                         if exex.type == "factor":
-                            commands += "\n" + "    "*indentlevel
-                            commands += self._process_factor(exex, 2) + "\n"
+                            commands += self._process_factor(exex, 2)
         return commands
 
     # This function takes "factor" node as argument
