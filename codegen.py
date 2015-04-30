@@ -8,7 +8,7 @@
 # Smith, Cecilia Watt
 #
 # File Created: 01 April 2015
-# Primary Authors: Jonah Smith, Yelin Hong
+# Primary Authors: Jonah Smith, Yelin Hong, Shloka Kini
 #
 # Any questions, bug reports and complaints are to be directed at the primary
 # author.
@@ -56,7 +56,6 @@ class CodeGen:
     # purposes, and should not be used in the production compiler, as the
     # line breaks are only approximations.
     def construct(self, outputfile="stdout"):
-        # defaults to scene labeled "1" (assume exists)
         if self.main == "":
             raise Exception("No start scene specified")
 
@@ -212,14 +211,6 @@ class CodeGen:
                         "self.__class__.__name__, direction)\n")
         return commands
 
-    # Takes a "statements" node, calls a function to find the "statement"
-    # nodes that descend from it, and then figures out what kind of statement
-    # it is and takes the appropriate action. Many of the new features we add
-    # to the language will just be a matter of adding to this function.
-    # Returns a string of statements that descended from the "statements"
-    # node. This function should only be used internally. Indent level
-    # specifies how many indents should appear before statements in the
-    # sequence.
     def _process_statements(self, statement, indentlevel=1):
         commands = ''
         prefix = "\n" + "    "*indentlevel
@@ -241,7 +232,9 @@ class CodeGen:
                 commands += prefix + "exit(0)"
 
             elif smt.value == "expression":
-                print "match the expression"
+                if len(smt.children) > 0:
+                    if smt.children[0].type == "id":
+                        self._process_assign(smt.children, 2)
 
             elif smt.value == "flow":
                 commands += "    "*indentlevel
@@ -269,11 +262,9 @@ class CodeGen:
                 commands += self._process_ifstatement(smt, 2)
 
             elif smt.value == "while":
-                self._process_whilestatement(smt, 2)
+                commands += self._process_whilestatement(smt, 2)
 
             elif smt.value is None:
-                print "none value for statement"
-                print smt
                 commands += self._process_testlist(smt, 2)
 
         # We need to remove the leading whitespace and first tab because of
@@ -309,14 +300,13 @@ class CodeGen:
         if len(smt.children) > 1:
             for child in smt.children:
                 if child.type == "test":
-                    commands += self._process_condition(child, 3)
-                    print len(child.children)
+                    commands += self._process_ifcondition(child, 3)
                 elif child.type == "suite":
                     commands += '    '
                     commands += self._process_action(child, 3)
         return commands
 
-    def _process_condition(self, cond, indentlevel=1):
+    def _process_ifcondition(self, cond, indentlevel=1):
         commands = ''
         if len(cond.children) > 1:
             if cond.children[0].type == "and_test":
@@ -348,7 +338,26 @@ class CodeGen:
     # "while" value. The "while" node has similar structure with if
     # statement and is needed to be seperated
     def _process_whilestatement(self, smt, indentlevel=1):
-        print "WHILE"
+        commands = ''
+        if len(smt.children) > 1:
+            for child in smt.children:
+                if child.type == 'test':
+                    commands += self._process_whilecondition(child, 3)
+                elif child.type == "suite":
+                    commands += '    '
+                    commands += self._process_action(child, 3)
+        return commands
+
+    def _process_whilecondition(self, cond, indentlevel=1):
+        commands = ''
+        if len(cond.children) > 0:
+            commands += '    '*indentlevel + " while "
+            commands += self._process_factor(cond, 1)
+            commands += ': \n'
+        return commands
+
+    def _process_assign(self, ass, indentlevel=1):
+        commands = ''
 
     # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
@@ -360,7 +369,7 @@ class CodeGen:
             elif child.type == "factor":
                 commands += '"' + child.value + '"\n'
 
-            if child.type == "expression" and child.value is None:
+            elif child.type == "expression" and child.value is None:
                 if len(child.children) > 0:
                     for exex in child.children:
                         if exex.type == "factor":
