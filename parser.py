@@ -464,7 +464,7 @@ class ParserForNarratr:
         '''trailer : LPARAN RPARAN
                    | LPARAN args RPARAN
                    | DOT ID'''
-        if p[2].type == 'args':
+        if isinstance(p[2], Node) and p[2].type == 'args':
             p[0] = p[2]
         else:
             p[0] = Node(None, 'trailer', [p[1], p[2]])

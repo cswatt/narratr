@@ -97,7 +97,7 @@ class CodeGen:
     # of the previous scene and goes to the setup function of the called scene.
     def _add_main(self, startstate):
         if self.main == "":
-            self.main = "pocket = []\n"
+            self.main = "pocket = {}\n"
             self.main += '''def get_response(caller, direction):
     response = raw_input(" -->> ")
     response = response.lower()
