@@ -327,7 +327,7 @@ class CodeGen:
                     commands += self._process_expression(cond.children[1], 2)
                     commands += ':\n'
         else:
-            commands += '    '*indentlevel + "if "
+            commands += '    '*indentlevel + " if "
             commands += self._process_expression(cond.children[0], 1)
             commands += ': \n'
 
@@ -373,10 +373,15 @@ class CodeGen:
         if len(factors.children) > 0:
             if len(factors.children) == 3:
                 for factor in factors.children[0].children:
-                    commands += str(factor.value)
+                    commands += str(factor.value) + ' '
                 commands += factors.children[1].value
                 for factor in factors.children[2].children:
-                    commands += str(factor.value)
+                    commands += ' ' + str(factor.value)
+            elif factors.children[0].v_type == "boolean":
+                if factors.children[0].children[0].value == "true":
+                    commands += "True"
+                elif factors.children[0].children[0].value == "false":
+                    commands += "False"
         return commands
 
     # This function takes "direction" node as argument
