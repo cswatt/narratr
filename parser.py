@@ -122,7 +122,7 @@ class ParserForNarratr:
         '''action_block : ACTION COLON suite
                         | ACTION COLON newlines'''
         if isinstance(p[3], Node) and p[3].type == "suite":
-            p[0] = Node(None, "action_block", [p[3]],lineno=p.lineno(1))
+            p[0] = Node(None, "action_block", [p[3]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, "action_block", lineno=p.lineno(1))
 
@@ -247,10 +247,12 @@ class ParserForNarratr:
             p[0].type = "expression_statement"
         elif p[1] == "god":
             children = [Node(p[2], "god_id"), p[4]]
-            p[0] = Node("is", "expression_statement", children, lineno=p.lineno(3))
+            p[0] = Node("is", "expression_statement", children,
+                        lineno=p.lineno(3))
         else:
             children = [Node(p[1], "id"), p[3]]
-            p[0] = Node("is", "expression_statement", children, lineno=p.lineno(2))
+            p[0] = Node("is", "expression_statement", children,
+                        lineno=p.lineno(2))
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
@@ -368,7 +370,7 @@ class ParserForNarratr:
                          | EQUALS
                          | NOTEQUALS
                          | NOT EQUALS'''
-        p[0] = Node(p[1], 'comparison_op', [],lineno=p.lineno(1))
+        p[0] = Node(p[1], 'comparison_op', [], lineno=p.lineno(1))
         p[0].type = 'comparison_op'
 
     # In the first two productions for this rule, we need to ensure that
@@ -430,7 +432,8 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = 'factor'
         else:
-            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type, lineno=p.lineno(1))
+            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
+                        lineno=p.lineno(1))
 
     def p_power(self, p):
         '''power : power trailer
@@ -468,7 +471,8 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = 'trailer'
         else:
-            p[0] = Node(None, 'trailer', [Node(p[1], 'dot', []), Node(p[2], 'id',  [])])
+            p[0] = Node(None, 'trailer',
+                        [Node(p[1], 'dot', []), Node(p[2], 'id',  [])])
 
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
