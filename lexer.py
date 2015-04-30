@@ -147,7 +147,7 @@ class LexerForNarratr:
     # This rule matches string literals. String literals are enclosed only
     # within double quotes.
     def t_STRING(self, t):
-        r'\".*\"'
+        r'\"(?:\\.|[^\"\\])*\"'
         t.value = t.value[1:-1]
         return t
 
