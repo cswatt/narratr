@@ -461,14 +461,17 @@ class ParserForNarratr:
         p[0] = Node(p[1], 'atom', [], "id", lineno=p.lineno(1))
 
     def p_trailer(self, p):
-        '''trailer : LPARAN RPARAN
-                   | LPARAN args RPARAN
+        '''trailer : calllist
                    | DOT ID'''
-        if p[2].type == 'args':
+<<<<<<< Updated upstream
+        if isinstance(p[2], Node) and p[2].type == 'args':
             p[0] = p[2]
         else:
             p[0] = Node(None, 'trailer', [p[1], p[2]])
 
+=======
+        p[0] = Node(None, 'trailer', [p[1], p[2]])
+>>>>>>> Stashed changes
         p[0].type = 'trailer'
 
     def p_list(self, p):
