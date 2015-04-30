@@ -275,9 +275,9 @@ class ParserForNarratr:
             p[1].children.append(Node(p[3], 'sceneid', []))
             p[0] = Node(None, 'directionlist', [p[1]])
         else:
-            new_direction = Node(p[3], 'direction', [p[5]])
+            p[3].children.append(Node(p[5], 'sceneid', []))
+            p[1].children.append(p[3])
             p[0] = p[1]
-            p[0].children.append(new_direction)
         p[0].type = 'directionlist'
 
     def p_direction(self, p):
