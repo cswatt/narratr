@@ -407,9 +407,9 @@ class ParserForNarratr:
                 | factor '''
         if p[1].type == "term":
             # Reject anything with strings
-            if p[1].v_type in ["string", "list"] or\
-                p[3].v_type in ["string", "list"]:
-                    self.combination_error(p)
+            if (p[1].v_type in ["string", "list"] or
+                    p[3].v_type in ["string", "list"]):
+                self.combination_error(p)
 
             p[0] = self.combination_rules(p, 'term')
 
