@@ -81,7 +81,7 @@ class ParserForNarratr:
             children = [p[6], p[7], p[8]]
         elif isinstance(p[5], Node) and p[5].type == 'setup_block':
             children = [p[5], p[6], p[7]]
-        p[0] = Node(p[2], "scene_block", children)
+        p[0] = Node(p[2], "scene_block", children, lineno=p.lineno(2))
         try:
             self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
         except:
@@ -97,7 +97,7 @@ class ParserForNarratr:
                 children = [p[3], p[5]]
         else:
             children = [p[3]]
-        p[0] = Node(p[2], "item_block", children)
+        p[0] = Node(p[2], "item_block", children, lineno=p.lineno(2))
         try:
             self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
         except:
@@ -108,31 +108,31 @@ class ParserForNarratr:
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
-        p[0] = Node(p[3], "start_state")
+        p[0] = Node(p[3], "start_state", lineno=p.lineno(3))
 
     def p_setup_block(self, p):
         '''setup_block : SETUP COLON suite
                        | SETUP COLON newlines'''
         if isinstance(p[3], Node) and p[3].type == "suite":
-            p[0] = Node(None, "setup_block", [p[3]])
+            p[0] = Node(None, "setup_block", [p[3]], lineno=p.lineno(1))
         else:
-            p[0] = Node(None, "setup_block")
+            p[0] = Node(None, "setup_block", lineno=p.lineno(1))
 
     def p_action_block(self, p):
         '''action_block : ACTION COLON suite
                         | ACTION COLON newlines'''
         if isinstance(p[3], Node) and p[3].type == "suite":
-            p[0] = Node(None, "action_block", [p[3]])
+            p[0] = Node(None, "action_block", [p[3]],lineno=p.lineno(1))
         else:
-            p[0] = Node(None, "action_block")
+            p[0] = Node(None, "action_block", lineno=p.lineno(1))
 
     def p_cleanup_block(self, p):
         '''cleanup_block : CLEANUP COLON suite
                          | CLEANUP COLON newlines'''
         if isinstance(p[3], Node) and p[3].type == "suite":
-            p[0] = Node(None, "cleanup_block", [p[3]])
+            p[0] = Node(None, "cleanup_block", [p[3]], lineno=p.lineno(1))
         else:
-            p[0] = Node(None, "cleanup_block")
+            p[0] = Node(None, "cleanup_block", lineno=p.lineno(1))
 
     def p_suite(self, p):
         '''suite : simple_statement
@@ -247,19 +247,19 @@ class ParserForNarratr:
             p[0].type = "expression_statement"
         elif p[1] == "god":
             children = [Node(p[2], "god_id"), p[4]]
-            p[0] = Node("is", "expression_statement", children)
+            p[0] = Node("is", "expression_statement", children, lineno=p.lineno(3))
         else:
             children = [Node(p[1], "id"), p[3]]
-            p[0] = Node("is", "expression_statement", children)
+            p[0] = Node("is", "expression_statement", children, lineno=p.lineno(2))
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
-        p[0] = Node(p[1], 'break_statement', [])
+        p[0] = Node(p[1], 'break_statement', [], lineno=p.lineno(1))
         p[0].type = 'break_statement'
 
     def p_continue_statement(self, p):
         '''continue_statement : CONTINUE'''
-        p[0] = Node(p[1], 'continue_statement', [])
+        p[0] = Node(p[1], 'continue_statement', [], lineno=p.lineno(1))
         p[0].type = 'continue_statement'
 
     def p_moves_declaration(self, p):
@@ -272,10 +272,10 @@ class ParserForNarratr:
                          | directionlist COMMA direction LPARAN SCENEID \
                                 RPARAN'''
         if p[1].type == 'direction':
-            p[1].children.append(Node(p[3], 'sceneid', []))
+            p[1].children.append(Node(p[3], 'sceneid', [], lineno=p.lineno(3)))
             p[0] = Node(None, 'directionlist', [p[1]])
         else:
-            p[3].children.append(Node(p[5], 'sceneid', []))
+            p[3].children.append(Node(p[5], 'sceneid', [], lineno=p.lineno(5)))
             p[1].children.append(p[3])
             p[0] = p[1]
         p[0].type = 'directionlist'
@@ -285,7 +285,7 @@ class ParserForNarratr:
                      | RIGHT
                      | UP
                      | DOWN'''
-        p[0] = Node(p[1], 'direction', [])
+        p[0] = Node(p[1], 'direction', [], lineno=p.lineno(1))
         p[0].type = 'direction'
 
     def p_moveto_statement(self, p):
@@ -368,7 +368,7 @@ class ParserForNarratr:
                          | EQUALS
                          | NOTEQUALS
                          | NOT EQUALS'''
-        p[0] = Node(p[1], 'comparison_op', [])
+        p[0] = Node(p[1], 'comparison_op', [],lineno=p.lineno(1))
         p[0].type = 'comparison_op'
 
     # In the first two productions for this rule, we need to ensure that
@@ -443,16 +443,16 @@ class ParserForNarratr:
         if p[1].type == "term":
             if p[1].v_type == "integer":
                 if p[3].v_type == "integer":
-                    p[0] = Node(p[2], 'term', [p[1], p[3]], "integer")
+                    p[0] = Node(p[2], 'term', [p[1], p[3]], "integer", lineno=p.lineno(2))
                 elif p[3].v_type == "float":
-                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float")
+                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float", lineno=p.lineno(2))
                 else:
                     self.p_error("Type error at line " + str(p.lineno(2)) +
                                  ": cannot combine '" + p[1].v_type +
                                  "' with '" + p[3].v_type + "'")
             elif p[1].v_type == "float":
                 if p[3].v_type in ["integer", "float"]:
-                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float")
+                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float", lineno=p.lineno(2))
                 else:
                     self.p_error("Type error at line " + str(p.lineno(2)) +
                                  ": cannot combine '" + p[1].v_type +
@@ -477,7 +477,7 @@ class ParserForNarratr:
             p[0] = p[1]
             p[0].type = 'factor'
         else:
-            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type)
+            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type, lineno=p.lineno(1))
 
     def p_power(self, p):
         '''power : power trailer
@@ -501,11 +501,11 @@ class ParserForNarratr:
 
     def p_atom_string(self, p):
         '''atom : STRING'''
-        p[0] = Node(p[1], 'atom', [], "string")
+        p[0] = Node(p[1], 'atom', [], "string", lineno=p.lineno(1))
 
     def p_atom_id(self, p):
         '''atom : ID'''
-        p[0] = Node(p[1], 'atom', [], "id")
+        p[0] = Node(p[1], 'atom', [], "id", lineno=p.lineno(1))
 
     def p_trailer(self, p):
         '''trailer : LPARAN RPARAN
@@ -531,16 +531,16 @@ class ParserForNarratr:
 
     def p_number_int(self, p):
         '''number : INTEGER'''
-        p[0] = Node(p[1], 'number', [], "integer")
+        p[0] = Node(p[1], 'number', [], "integer", lineno=p.lineno(1))
 
     def p_number_float(self, p):
         '''number : FLOAT'''
-        p[0] = Node(p[1], 'number', [], "float")
+        p[0] = Node(p[1], 'number', [], "float", lineno=p.lineno(1))
 
     def p_boolean(self, p):
         '''boolean : TRUE
                    | FALSE'''
-        p[0] = Node(p[1], 'boolean', [], "boolean")
+        p[0] = Node(p[1], 'boolean', [], "boolean", lineno=p.lineno(1))
 
     def p_calllist(self, p):
         '''calllist : LPARAN args RPARAN
@@ -606,7 +606,7 @@ class ParserForNarratr:
 
     def p_while_statement(self, p):
         '''while_statement : WHILE test COLON suite'''
-        p[0] = Node(p[2], 'while_statement', [p[4]])
+        p[0] = Node(p[2], 'while_statement', [p[4]], lineno=p.lineno(2))
         p[0].type = 'while_statement'
 
     # In order to create SymTab entries (in particular, in order to know
