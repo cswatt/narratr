@@ -562,7 +562,7 @@ class ParserForNarratr:
 
     def p_while_statement(self, p):
         '''while_statement : WHILE test COLON suite'''
-        p[0] = Node(p[2], 'while_statement', [p[4]], lineno=p.lineno(2))
+        p[0] = Node(p[2], 'while_statement', [p[2], p[4]], lineno=p.lineno(2))
         p[0].type = 'while_statement'
 
     # In order to create SymTab entries (in particular, in order to know
