@@ -390,50 +390,15 @@ class ParserForNarratr:
                         p[0] = Node(p[2], 'arithmetic_expression',
                                     [p[1], p[3]], "string", p.lineno(2))
                     else:
-                        self.p_error("Type error at line " + str(p.lineno(2)) +
-                                     ": cannot combine '" + p[1].v_type +
-                                     "' with '" + p[3].v_type + "'")
+                        self.combination_error(p)
 
             # Reject any expression trying to subtract strings.
             elif p[2] == "-":
                 if p[1].v_type == "string" or p[3].v_type == "string":
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": minus is not a valid operator on strings")
+                    self.combination_error(p)
 
-            # Check numbers for interoperability. If they are of
-            # differing types, the result is always the more general of
-            # the two data types (i.e. float).
-            if p[1].v_type == "integer":
-                if p[3].v_type == "integer":
-                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
-                                "integer", p.lineno(2))
-                elif p[3].v_type == "float":
-                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
-                                "float", p.lineno(2))
-                else:
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot combine '" + p[1].v_type +
-                                 "' with '" + p[3].v_type + "'")
-            elif p[1].v_type == "float":
-                if p[3].v_type in ["integer", "float"]:
-                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
-                                "float", p.lineno(2))
-                else:
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot combine '" + p[1].v_type +
-                                 "' with '" + p[3].v_type + "'")
-            elif p[1].v_type == "list":
-                if p[3].v_type == "list":
-                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
-                                "list", p.lineno(2))
-                else:
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot combine '" + p[1].v_type +
-                                 "' with '" + p[3].v_type + "'")
-            elif p[1].v_type == "boolean":
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot combine '" + p[1].v_type +
-                                 "' with '" + p[3].v_type + "'")
+            if p[0] is None:
+                p[0] = self.combination_rules(p, 'arithmetic_expression')
 
     def p_term(self, p):
         '''term : term TIMES factor
@@ -441,27 +406,12 @@ class ParserForNarratr:
                 | term INTEGERDIVIDE factor
                 | factor '''
         if p[1].type == "term":
-            if p[1].v_type == "integer":
-                if p[3].v_type == "integer":
-                    p[0] = Node(p[2], 'term', [p[1], p[3]], "integer", lineno=p.lineno(2))
-                elif p[3].v_type == "float":
-                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float", lineno=p.lineno(2))
-                else:
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot combine '" + p[1].v_type +
-                                 "' with '" + p[3].v_type + "'")
-            elif p[1].v_type == "float":
-                if p[3].v_type in ["integer", "float"]:
-                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float", lineno=p.lineno(2))
-                else:
-                    self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot combine '" + p[1].v_type +
-                                 "' with '" + p[3].v_type + "'")
-            else:
-                self.p_error("Type error at line " + str(p.lineno(2)) +
-                             ": cannot combine '" + p[1].v_type +
-                             "' with '" + p[3].v_type + "'")
+            # Reject anything with strings
+            if (p[1].v_type in ["string", "list"] or
+                    p[3].v_type in ["string", "list"]):
+                self.combination_error(p)
 
+            p[0] = self.combination_rules(p, 'term')
             # For integer division, we can just reset the v_type
             if p[2] == "//":
                 p[0].v_type = "integer"
@@ -640,6 +590,46 @@ class ParserForNarratr:
         if isinstance(branch, Node):
             for child in branch.children:
                 self.pass_down(child, scope)
+
+    # Check numbers for interoperability. If they are of
+    # differing types, the result is always the more general of
+    # the two data types (i.e. float).
+    def combination_rules(self, p, n_type):
+        # Keep anything for "id", we'll have to check existance and resolve
+        # type later.
+        if p[1].v_type == "id" or p[3].v_type == "id":
+            p[0] = Node(p[2], n_type, [p[1], p[3]], "id", p.lineno(2))
+        elif p[1].v_type == "integer":
+            if p[3].v_type == "integer":
+                p[0] = Node(p[2], n_type, [p[1], p[3]],
+                            "integer", p.lineno(2))
+            elif p[3].v_type == "float":
+                p[0] = Node(p[2], n_type, [p[1], p[3]],
+                            "float", p.lineno(2))
+            else:
+                self.combination_error(p)
+        elif p[1].v_type == "float":
+            if p[3].v_type in ["integer", "float"]:
+                p[0] = Node(p[2], n_type, [p[1], p[3]],
+                            "float", p.lineno(2))
+            else:
+                self.combination_error(p)
+        elif p[1].v_type == "list":
+            if p[3].v_type == "list":
+                p[0] = Node(p[2], n_type, [p[1], p[3]],
+                            "list", p.lineno(2))
+            else:
+                self.combination_error(p)
+
+        elif p[1].v_type == "boolean":
+                self.combination_error(p)
+
+        return p[0]
+
+    def combination_error(self, p):
+        self.p_error("Type error at line " + str(p.lineno(2)) +
+                     ": cannot combine '" + p[1].v_type +
+                     "' with '" + p[3].v_type + "'")
 
     def p_error(self, p):
         if isinstance(p, str):
