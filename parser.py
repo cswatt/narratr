@@ -371,6 +371,7 @@ class ParserForNarratr:
                                  | term'''
         if p[1].type == 'term':
             p[0] = p[1]
+            p[0].type = 'arithmetic_expression'
         else:
             # Extra condition for '+': allow string concatenation.
             if p[2] == "+":
@@ -380,8 +381,8 @@ class ParserForNarratr:
                                     [p[1], p[3]], "string", p.lineno(2))
                     else:
                         self.p_error("Type error at line " + str(p.lineno(2)) +
-                                     ": cannot add '" + p[3].v_type +
-                                     "' to 'string'")
+                                     ": cannot combine '" + p[1].v_type +
+                                     "' with '" + p[3].v_type + "'")
 
             # Reject any expression trying to subtract strings.
             elif p[2] == "-":
@@ -401,26 +402,59 @@ class ParserForNarratr:
                                 "float", p.lineno(2))
                 else:
                     self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot add '" + p[3].v_type +
-                                 "' to 'integer'")
+                                 ": cannot combine '" + p[1].v_type +
+                                 "' with '" + p[3].v_type + "'")
             elif p[1].v_type == "float":
                 if p[3].v_type in ["integer", "float"]:
                     p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
                                 "float", p.lineno(2))
                 else:
                     self.p_error("Type error at line " + str(p.lineno(2)) +
-                                 ": cannot add '" + p[3].v_type +
-                                 "' to 'float'")
-
-        p[0].type = 'arithmetic_expression'
+                                 ": cannot combine '" + p[1].v_type +
+                                 "' with '" + p[3].v_type + "'")
+            elif p[1].v_type == "list":
+                if p[3].v_type == "list":
+                    p[0] = Node(p[2], 'arithmetic_expression', [p[1], p[3]],
+                                "list", p.lineno(2))
+                else:
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
+                                 ": cannot combine '" + p[1].v_type +
+                                 "' with '" + p[3].v_type + "'")
+            elif p[1].v_type == "boolean":
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
+                                 ": cannot combine '" + p[1].v_type +
+                                 "' with '" + p[3].v_type + "'")
 
     def p_term(self, p):
         '''term : term TIMES factor
                 | term DIVIDE factor
                 | term INTEGERDIVIDE factor
                 | factor '''
-        if len(p) == 4:
-            p[0] = Node(p[2], 'term', [p[1], p[3]])
+        if p[1].type == "term":
+            if p[1].v_type == "integer":
+                if p[3].v_type == "integer":
+                    p[0] = Node(p[2], 'term', [p[1], p[3]], "integer")
+                elif p[3].v_type == "float":
+                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float")
+                else:
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
+                                 ": cannot combine '" + p[1].v_type +
+                                 "' with '" + p[3].v_type + "'")
+            elif p[1].v_type == "float":
+                if p[3].v_type in ["integer", "float"]:
+                    p[0] = Node(p[2], 'term', [p[1], p[3]], "float")
+                else:
+                    self.p_error("Type error at line " + str(p.lineno(2)) +
+                                 ": cannot combine '" + p[1].v_type +
+                                 "' with '" + p[3].v_type + "'")
+            else:
+                self.p_error("Type error at line " + str(p.lineno(2)) +
+                             ": cannot combine '" + p[1].v_type +
+                             "' with '" + p[3].v_type + "'")
+
+            # For integer division, we can just reset the v_type
+            if p[2] == "//":
+                p[0].v_type = "integer"
         else:
             p[0] = Node(None, 'term', [p[1]], p[1].v_type)
         p[0].type = 'term'
@@ -430,7 +464,7 @@ class ParserForNarratr:
                   | MINUS factor
                   | power'''
         if len(p) == 3:
-            p[0] = Node(p[1], 'factor', [p[2]])
+            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type)
         else:
             p[0] = p[1]
             p[0].type = 'factor'
