@@ -1,0 +1,6 @@
+scene $1 {
+	setup: say "boop"
+	action:
+	cleanup:
+
+start: $1

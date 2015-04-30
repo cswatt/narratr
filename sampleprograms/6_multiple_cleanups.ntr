@@ -1,0 +1,8 @@
+scene $1 {
+	setup:
+	action:
+	cleanup:
+	cleanup:
+}
+
+start: $1
