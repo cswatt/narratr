@@ -125,8 +125,8 @@ class CodeGen:
             if startstate.value in self.scene_nums:
                 self.startstate = startstate.value
             else:
-                raise Exception("Start scene $" + str(startstate.value) 
-                                + " does not exist")
+                raise Exception("Start scene $" + str(startstate.value) +
+                                " does not exist")
 
             self.main += "if __name__ == '__main__':\n    s_"\
                 + str(self.startstate) + "_inst.setup()"
@@ -374,7 +374,8 @@ class CodeGen:
             if len(factors.children) == 3:
                 for factor in factors.children[0].children:
                     commands += str(factor.value) + ' '
-                commands += factors.children[1].value
+                if factors.children[1].type == "comparison_op":
+                    commands += factors.children[1].value
                 for factor in factors.children[2].children:
                     commands += ' ' + str(factor.value)
             elif factors.children[0].v_type == "boolean":
