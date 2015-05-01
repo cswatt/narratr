@@ -379,61 +379,83 @@ class CodeGen:
     # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
         commands = ''
-        for child in exps.children:
-            if child.type == "factor" and child.v_type == "list":
-                commands += "["
-                count = 0
-                for lchild in child.children:
-                    commands += self._process_expression(lchild.children[0])
-                    count += 1
-                    if count != len(child.children):
-                        commands += ', '
-                commands += "]"
+        if exps.value in ["*", "/", "//"]:
+            if len(exps.children) > 1:
+                if exps.children[0].v_type == "integer":
+                    term1 = str(exps.children[0].children[0].value)
+                else:
+                    term1 = (exps.children[0].children[0].value)
+                commands += term1
+                commands += ' ' + exps.value + ' '
+                if exps.children[1].v_type == "integer":
+                    term2 = str(exps.children[1].value)
+                else:
+                    term2 = exps.children[1].value
+                commands += term2
 
-            elif child.type == "factor" and child.value == "list":
-                commands += "nlist"
-                if len(child.children) > 0:
-                    for fchild in child.children:
-                        if fchild.type == "trailer":
-                            if len(fchild.children) > 0:
-                                fcount = 0
-                                for ffchild in fchild.children:
-                                    if ffchild.type == "dot":
-                                        commands += ffchild.value
-                                    elif ffchild.type == "id":
-                                        if ffchild.value == "add":
-                                            commands += "append("
-                                    elif ffchild.type == "expression":
-                                        t = ffchild
-                                        temp = self._process_expression(t)
-                                        commands += temp
-                                        fcount += 1
-                                        if fcount != len(fchild.children):
-                                            commands += ', '
-                                        else:
-                                            commands += ')'
+        else:
+            for child in exps.children:
+                if child.type == "factor" and child.v_type == "list":
+                    commands += "["
+                    count = 0
+                    for lchild in child.children:
+                        tl = lchild.children[0]
+                        commands += self._process_expression(tl)
+                        count += 1
+                        if count != len(child.children):
+                            commands += ', '
+                    commands += "]"
 
-            elif child.type == "factor" and child.value is None:
-                commands += self._process_factor(child)
+                elif child.type == "factor" and child.value == "list":
+                    commands += "nlist"
+                    if len(child.children) > 0:
+                        for fchild in child.children:
+                            if fchild.type == "trailer":
+                                if len(fchild.children) > 0:
+                                    fcount = 0
+                                    for ffchild in fchild.children:
+                                        if ffchild.type == "dot":
+                                            commands += ffchild.value
+                                        elif ffchild.type == "id":
+                                            if ffchild.value == "add":
+                                                commands += "append("
+                                        elif ffchild.type == "expression":
+                                            t = ffchild
+                                            temp = self._process_expression(t)
+                                            commands += temp
+                                            fcount += 1
+                                            if fcount != len(fchild.children):
+                                                commands += ', '
+                                            else:
+                                                commands += ')'
 
-            elif child.type == "factor" and child.v_type == "string":
-                commands += '"' + child.value + '"'
+                elif child.type == "factor" and child.v_type == "id":
+                    commands += child.value
 
-            elif child.type == "factor" and child.v_type == "integer":
-                commands += str(child.value)
+                elif child.type == "factor" and child.value is None:
+                    commands += self._process_factor(child)
 
-            elif child.type == "arithmetic_expression":
-                commands += child.children[0].value + ' '
-                commands += exps.value + ' '
+                elif child.type == "factor" and child.v_type == "string":
+                    commands += '"' + child.value + '"'
 
-            elif child.type == "term" and child.v_type == "integer":
-                commands += str(child.children[0].value) + ' '
+                elif child.type == "factor" and child.v_type == "integer":
+                    commands += str(child.value)
 
-            elif child.type == "expression" and child.value is None:
-                if len(child.children) > 0:
-                    for exex in child.children:
-                        if exex.type == "factor":
-                            commands += self._process_factor(exex, 2)
+                elif child.type == "arithmetic_expression":
+                    if child.v_type == "integer":
+                        commands += str(child.children[0].value) + ' '
+                    else:
+                        commands += child.children[0].value + ' '
+                    commands += exps.value + ' '
+
+                elif child.type == "term" and child.v_type == "integer":
+                    commands += str(child.children[0].value) + ' '
+
+                elif child.type == "expression" and child.value is None:
+                    if len(child.children) > 0:
+                        for exex in child.children:
+                            if exex.type == "factor":
+                                commands += self._process_factor(exex, 2)
         return commands
 
     # This function takes "factor" node as argument
