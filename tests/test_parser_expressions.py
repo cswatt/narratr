@@ -39,3 +39,7 @@ class TestParserForExpressions(unittest.TestCase):
         p = parser.ParserForNarratr()
         with open('sampleprograms/3_comparison.ntr') as f:
             ast = str(p.parse(f.read()))
+
+    def test_parser_precedence(self):
+
+        pass

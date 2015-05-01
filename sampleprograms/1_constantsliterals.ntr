@@ -1,0 +1,14 @@
+scene $1 {
+	setup:
+		a is 1 + 2
+		b is 1.1 + 2.2
+		c is "Hello."
+		say a
+		say b
+		say c
+	action:
+		win
+	cleanup:
+}
+
+start: $1

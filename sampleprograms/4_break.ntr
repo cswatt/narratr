@@ -1,0 +1,12 @@
+scene $1 {
+	setup:
+		while (true):
+			say "Okay."
+			break
+		say "Okay."
+	action:
+		win
+	cleanup:
+}
+
+start: $1

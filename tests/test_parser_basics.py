@@ -20,3 +20,25 @@ class TestParser(unittest.TestCase):
         p = parser.ParserForNarratr()
         with open('sampleprograms/1_comments.ntr') as f:
             ast = str(p.parse(f.read()))
+
+    def test_parser_costantsliterals(self):
+
+        """Test that parser can parse constants, literals."""
+        ast = ""
+
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/1_constantsliterals.ntr') as f:
+            ast = str(p.parse(f.read()))
+
+    def test_parser_derived(self):
+
+        pass
+
+    def test_parser_list(self):
+
+        """Test that parser can parse list."""
+        ast = ""
+
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/2_list.ntr') as f:
+            ast = str(p.parse(f.read()))

@@ -1,0 +1,10 @@
+scene $1 {
+	setup:
+		for n is 0; n < 3; n is n + 1:
+			say n
+	action:
+		win
+	cleanup:
+}
+
+start: $1

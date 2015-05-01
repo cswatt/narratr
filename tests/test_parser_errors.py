@@ -76,15 +76,6 @@ class TestParserForErrors(unittest.TestCase):
         with open('sampleprograms/6_multiple_setups.ntr') as f:
             self.assertRaises(Exception, lambda: p.parse(f.read()))
 
-    def test_parser_nonexistent_start_scene(self):
-
-        """Test that parser has error when parsing nonexistent_start_scene."""
-        ast = ""
-
-        p = parser.ParserForNarratr()
-        with open('sampleprograms/6_nonexistent_start_scene.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
-
     def test_parser_rogue_semicolon(self):
 
         """Test that parser has error when parsing rogue_semicolon."""

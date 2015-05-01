@@ -4,6 +4,24 @@ import unittest
 
 class TestParserForStatements(unittest.TestCase):
 
+    def test_parser_break(self):
+
+        """Test that parser can parse break"""
+        ast = ""
+
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_break.ntr') as f:
+            ast = str(p.parse(f.read()))
+
+    def test_parser_continue(self):
+
+        """Test that parser can parse continue."""
+        ast = ""
+
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_continue.ntr') as f:
+            ast = str(p.parse(f.read()))
+
     def test_parser_elseif(self):
 
         """Test that parser can parse else/if."""
@@ -20,6 +38,15 @@ class TestParserForStatements(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/4_exposition.ntr') as f:
+            ast = str(p.parse(f.read()))
+
+    def test_parser_for(self):
+
+        """Test that parser can parse for."""
+        ast = ""
+
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_for.ntr') as f:
             ast = str(p.parse(f.read()))
 
     def test_parser_if(self):

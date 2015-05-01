@@ -225,10 +225,8 @@ class CodeGen:
                 for testlist in smt.children:
                     commands += self._process_testlist(testlist, 2)
             elif smt.value in ["win", "lose"]:
-                if len(smt.children) > 0:
-                    commands += prefix + "print "
-                    for testlist in smt.children:
-                        commands += self._process_testlist(testlist, 2)
+                commands += prefix + "print "
+                commands += '"' + smt.value + '"'
                 commands += prefix + "exit(0)"
             elif smt.value == "is":
                 if len(smt.children) > 0:
@@ -239,6 +237,9 @@ class CodeGen:
                     if smt.children[0].type == "id":
                         commands += prefix
                         commands += self._process_assign(smt.children, 2)
+                    elif smt.children[0].type == "test":
+                        commands += prefix
+                        commands += self._process_testlist(smt)
 
             elif smt.value == "flow":
                 commands += "    "*indentlevel
@@ -247,7 +248,7 @@ class CodeGen:
                     for child in smt.children:
                         if child.type == "direction":
                             if i == 0:
-                                commands += 'direction = {"'
+                                commands += '\ndirection = {"'
                             else:
                                 commands += '"'
                             commands += self._process_direction(child, 2)
@@ -277,15 +278,16 @@ class CodeGen:
         commands = ''
         for test in testlist.children:
             if test.type == "test":
-                for child in test.children:
-                    if child.type == "expression":
-                        commands += self._process_expression(child, 2)
-                    if child.type == "and_test":
-                        commands += self._process_expression(child, 2)
-                    if child.type == "not_test":
-                        commands += self._process_expression(child, 2)
-                    if child.type == "or_test":
-                        commands += self._process_expression(child, 2)
+                if len(test.children) > 0:
+                    for child in test.children:
+                        if child.type == "expression":
+                            commands += self._process_expression(child, 2)
+                        if child.type == "and_test":
+                            commands += self._process_expression(child, 2)
+                        if child.type == "not_test":
+                            commands += self._process_expression(child, 2)
+                        if child.type == "or_test":
+                            commands += self._process_expression(child, 2)
             elif test.type == "suite":
                 commands += "    "*3 + "win"
         return commands
@@ -301,8 +303,8 @@ class CodeGen:
                 if child.type == "test":
                     commands += self._process_ifcondition(child, 3)
                 elif child.type == "suite":
-                    commands += '    '
-                    commands += self._process_action(child, 3)
+                    commands += "\n" + '    '
+                    commands += self._process_action(child, 4)
         return commands
 
     def _process_ifcondition(self, cond, indentlevel=1):
@@ -310,15 +312,22 @@ class CodeGen:
         if len(cond.children) > 1:
             if cond.children[0].type == "and_test":
                 if cond.children[1].type == "not_test":
-                    commands += "        if "
+                    commands += "\n" + "    "*indentlevel + "if "
                     commands += self._process_expression(cond.children[0], 2)
                     commands += ' and '
                     commands += self._process_expression(cond.children[1], 2)
-                    commands += ':\n'
+                    commands += ':'
+            elif cond.children[0].type == "or_test":
+                if cond.children[1].type == "and_test":
+                    commands += "\n" + "    "*indentlevel + "if "
+                    commands += self._process_expression(cond.children[0], 2)
+                    commands += ' or '
+                    commands += self._process_expression(cond.children[1], 2)
+                    commands += ':'
         else:
-            commands += '    '*indentlevel + " if "
+            commands += "\n" + "    "*indentlevel + "if "
             commands += self._process_expression(cond.children[0], 1)
-            commands += ': \n'
+            commands += ':'
 
         return commands
 
@@ -341,25 +350,28 @@ class CodeGen:
         if len(smt.children) > 1:
             for child in smt.children:
                 if child.type == 'test':
-                    commands += '\n'
                     commands += self._process_whilecondition(child, 3)
                 elif child.type == "suite":
-                    commands += '    '
+                    commands += "\n" + '    '
                     commands += self._process_action(child, 4)
         return commands
 
     def _process_whilecondition(self, cond, indentlevel=1):
         commands = ''
         if len(cond.children) > 0:
-            commands += '    '*indentlevel + "while "
+            commands += "\n" + '    '*indentlevel + "while "
             commands += self._process_factor(cond, 1)
-            commands += ":\n"
+            commands += ":"
         return commands
 
     def _process_assign(self, ass, indentlevel=1):
         commands = ''
-        commands += ass[0].value + " = "
-        commands += self._process_testlist(ass[1], 2)
+        if ass[0].value == "list":
+            commands += "nlist" + " = "
+            commands += self._process_testlist(ass[1], 2)
+        else:
+            commands += ass[0].value + " = "
+            commands += self._process_testlist(ass[1], 2)
         return commands
 
     def _process_god_assign(self, ass, indentlevel=1):
@@ -371,28 +383,83 @@ class CodeGen:
     # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
         commands = ''
-        for child in exps.children:
-            if child.type == "factor" and child.value is None:
-                commands += self._process_factor(child)
+        if exps.value in ["*", "/", "//"]:
+            if len(exps.children) > 1:
+                if exps.children[0].v_type == "integer":
+                    term1 = str(exps.children[0].children[0].value)
+                else:
+                    term1 = (exps.children[0].children[0].value)
+                commands += term1
+                commands += ' ' + exps.value + ' '
+                if exps.children[1].v_type == "integer":
+                    term2 = str(exps.children[1].value)
+                else:
+                    term2 = exps.children[1].value
+                commands += term2
 
-            elif child.type == "factor" and child.v_type == "string":
-                commands += '"' + child.value + '"'
+        else:
+            for child in exps.children:
+                if child.type == "factor" and child.v_type == "list":
+                    commands += "["
+                    count = 0
+                    for lchild in child.children:
+                        tl = lchild.children[0]
+                        commands += self._process_expression(tl)
+                        count += 1
+                        if count != len(child.children):
+                            commands += ', '
+                    commands += "]"
 
-            elif child.type == "factor" and child.v_type == "integer":
-                commands += str(child.value)
+                elif child.type == "factor" and child.value == "list":
+                    commands += "nlist"
+                    if len(child.children) > 0:
+                        for fchild in child.children:
+                            if fchild.type == "trailer":
+                                if len(fchild.children) > 0:
+                                    fcount = 0
+                                    for ffchild in fchild.children:
+                                        if ffchild.type == "dot":
+                                            commands += ffchild.value
+                                        elif ffchild.type == "id":
+                                            if ffchild.value == "add":
+                                                commands += "append("
+                                        elif ffchild.type == "expression":
+                                            t = ffchild
+                                            temp = self._process_expression(t)
+                                            commands += temp
+                                            fcount += 1
+                                            if fcount != len(fchild.children):
+                                                commands += ', '
+                                            else:
+                                                commands += ')'
 
-            elif child.type == "arithmetic_expression":
-                commands += child.children[0].value + ' '
-                commands += exps.value + ' '
+                elif child.type == "factor" and child.v_type == "id":
+                    commands += child.value
 
-            elif child.type == "term" and child.v_type == "integer":
-                commands += str(child.children[0].value) + ' '
+                elif child.type == "factor" and child.value is None:
+                    commands += self._process_factor(child)
 
-            elif child.type == "expression" and child.value is None:
-                if len(child.children) > 0:
-                    for exex in child.children:
-                        if exex.type == "factor":
-                            commands += self._process_factor(exex, 2)
+                elif child.type == "factor" and child.v_type == "string":
+                    commands += '"' + child.value + '"'
+
+                elif child.type == "factor" and child.v_type == "integer":
+                    commands += str(child.value)
+
+                elif child.type == "arithmetic_expression":
+                    if child.v_type == "integer":
+                        commands += str(child.children[0].value) + ' '
+                    else:
+                        commands += child.children[0].value + ' '
+                    commands += exps.value + ' '
+
+                elif child.type == "term" and child.v_type == "integer":
+                    commands += str(child.children[0].value) + ' '
+
+                elif child.type == "expression" and child.value is None:
+                    if len(child.children) > 0:
+                        for exex in child.children:
+                            if exex.type == "factor":
+                                commands += self._process_factor(exex, 2)
         return commands
 
     # This function takes "factor" node as argument
