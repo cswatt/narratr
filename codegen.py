@@ -231,7 +231,8 @@ class CodeGen:
             elif smt.value == "is":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "god_id":
-                        self.main = self._process_god_assign(smt.children,2) + self.main
+                        self.main = self._process_god_assign(smt.children, 2)\
+                                    + self.main
             elif smt.value == "expression":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "id":
@@ -434,7 +435,10 @@ class CodeGen:
                                                 commands += ')'
 
                 elif child.type == "factor" and child.v_type == "id":
-                    commands += child.value
+                    if child.value == "pocket":
+                        commands += self._process_pocket(child, indentlevel)
+                    else:
+                        commands += child.value
 
                 elif child.type == "factor" and child.value is None:
                     commands += self._process_factor(child)
@@ -489,4 +493,49 @@ class CodeGen:
         commands += '": '
         for scene in direction.children:
             commands += str(scene.value)
+        return commands
+
+    def _process_pocket(self, pocket_node, indentlevel=1):
+        commands = '    ' * indentlevel
+        add = get = remove = False
+        for i, child in enumerate(pocket_node.children):
+            if i == 0:
+                if child.children[1].value == "add":
+                    add = True
+                    commands += "pocket["
+                elif child.children[1].value == "get":
+                    get = True
+                    pass
+                elif child.children[1].value == "remove":
+                    remove = True
+                    pass
+                else:
+                    raise Exception("Invalid operation on line " +
+                                    str(child.children[1].lineno) +
+                                    ": cannot '" +
+                                    str(child.children[1].value) +
+                                    "' the pocket.")
+            elif i == 1:
+                if add:
+                    if len(child.children) != 2:
+                        raise Exception("Line " + str(pocket_node.lineno) +
+                                        ": Adding to the pocket requires" +
+                                        " exactly two arguments. " +
+                                        str(len(child.children)) + " given.")
+                    commands += self._process_expression(child.children[0])
+                    commands += "] = "
+                    commands += self._process_expression(child.children[1])
+                elif get:
+                    if len(child.children) != 1:
+                        raise Exception("Line " + str(pocket_node.lineno) +
+                                        ": Getting a value from pocket"
+                                        " requires exactly one argument. " +
+                                        str(len(child.children)) + " given.")
+                    commands += "pocket["
+                    commands += self._process_expression(child.children[0])
+                    commands += "]"
+                elif remove:
+                    pass
+                pass
+        print commands
         return commands
