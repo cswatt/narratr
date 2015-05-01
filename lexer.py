@@ -213,9 +213,13 @@ class LexerForNarratr:
         r'[ \t\r\f\v]+'
 
     # This rule is triggered if an error is encountered. The lexer skips a line
-    # after printing a message.
+    # after raising an exception.
     def t_error(self, t):
-        print "Illegal character '%s'" % t.value[0]
+        if isinstance(t, str):
+            raise Exception(t)
+        else:
+            raise Exception("Illegal token '" + str(p) + "' at line " +
+                            t.lexer.lineno)
         t.lexer.skip(1)
 
     # This method provides an interface to the lexer's input(string) function
