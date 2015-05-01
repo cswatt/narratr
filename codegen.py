@@ -537,5 +537,4 @@ class CodeGen:
                 elif remove:
                     pass
                 pass
-        print commands
         return commands
