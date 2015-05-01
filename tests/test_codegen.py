@@ -202,4 +202,3 @@ class TestCodeGen(unittest.TestCase):
         symtab = p.symtab
         c = codegen.CodeGen()
         self.assertRaises(Exception, lambda: c.process(ast, symtab))
-
