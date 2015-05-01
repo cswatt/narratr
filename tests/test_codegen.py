@@ -38,6 +38,36 @@ class TestCodeGen(unittest.TestCase):
         self.assertEqual(real_output, expected_output,
                          "Comments is messed up.")
 
+    def test_codegen_conliterals(self):
+
+        """Test that Constant/Literals code can be generated and is correct"""
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/1_constantsliterals.ntr') as f:
+            ast = p.parse(f.read())
+        symtab = p.symtab
+        c = codegen.CodeGen()
+        c.process(ast, symtab)
+        c.construct('temp.py')
+
+        real_output = subprocess.check_output(['python', 'temp.py'])
+        expected_output = '3\n3.3\nHello.\n'
+        self.assertEqual(real_output, expected_output,
+                         "Constants/Literals is messed up.")
+
+    def test_codegen_derived(self):
+        pass
+
+    def test_codegen_list(self):
+
+        """Test that List code can be generated"""
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/1_constantsliterals.ntr') as f:
+            ast = p.parse(f.read())
+        symtab = p.symtab
+        c = codegen.CodeGen()
+        c.process(ast, symtab)
+        c.construct()
+
     def test_codegen_andor(self):
 
         """Test that And/Or code can be generated and is correct"""
@@ -66,7 +96,7 @@ class TestCodeGen(unittest.TestCase):
         c.construct('temp.py')
 
         real_output = subprocess.check_output(['python', 'temp.py'])
-        expected_output = '2\n'
+        expected_output = '2\n4\n4\n3\n3\n'
         self.assertEqual(real_output, expected_output,
                          "Arithmetic is messed up.")
 
@@ -102,6 +132,38 @@ class TestCodeGen(unittest.TestCase):
         self.assertEqual(real_output, expected_output,
                          "Comparison is messed up.")
 
+    def test_codegen_break(self):
+
+        """Test that Break code can be generated and is correct"""
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_break.ntr') as f:
+            ast = p.parse(f.read())
+        symtab = p.symtab
+        c = codegen.CodeGen()
+        c.process(ast, symtab)
+        c.construct('temp.py')
+
+        real_output = subprocess.check_output(['python', 'temp.py'])
+        expected_output = 'Okay.\nOkay.\n'
+        self.assertEqual(real_output, expected_output,
+                         "Break is messed up.")
+
+    def test_codegen_continue(self):
+
+        """Test that Continue code can be generated and is correct"""
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_continue.ntr') as f:
+            ast = p.parse(f.read())
+        symtab = p.symtab
+        c = codegen.CodeGen()
+        c.process(ast, symtab)
+        c.construct('temp.py')
+
+        real_output = subprocess.check_output(['python', 'temp.py'])
+        expected_output = '0\n2\n'
+        self.assertEqual(real_output, expected_output,
+                         "Continue is messed up.")
+
     def test_codegen_elseif(self):
 
         """Test that Else/If code can be generated and is correct"""
@@ -133,6 +195,22 @@ class TestCodeGen(unittest.TestCase):
         expected_output = 'Sadness is infinite.\n'
         self.assertEqual(real_output, expected_output,
                          "Exposition is messed up.")
+
+    def test_codegen_for(self):
+
+        """Test that For code can be generated and is correct"""
+        p = parser.ParserForNarratr()
+        with open('sampleprograms/4_for.ntr') as f:
+            ast = p.parse(f.read())
+        symtab = p.symtab
+        c = codegen.CodeGen()
+        c.process(ast, symtab)
+        c.construct('temp.py')
+
+        real_output = subprocess.check_output(['python', 'temp.py'])
+        expected_output = '0\n1\n2\n'
+        self.assertEqual(real_output, expected_output,
+                         "For is messed up.")
 
     def test_codegen_if(self):
 

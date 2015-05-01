@@ -1,0 +1,11 @@
+scene $1 {
+	setup:
+		list is ["apple", "banana", "orange"]
+		list.add("peach")
+		say list
+	action:
+		win
+	cleanup:
+}
+
+start: $1

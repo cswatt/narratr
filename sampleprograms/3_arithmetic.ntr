@@ -3,6 +3,14 @@ scene $1 {
 		n is 1
 		n is n + 1
 		say n
+		n is 6 - 2
+		say n
+		n is 2 * 2
+		say n
+		n is 9 / 3
+		say n
+		n is 10//3
+		say n
 	action:
 		win
 	cleanup:

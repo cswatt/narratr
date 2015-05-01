@@ -1,0 +1,13 @@
+scene $1 {
+	setup:
+		n is 0
+		while (n < 3):
+			if (n == 1):
+				continue
+			say n
+	action:
+		win
+	cleanup:
+}
+
+start: $1
