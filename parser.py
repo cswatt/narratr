@@ -21,7 +21,8 @@ from lexer import LexerForNarratr
 from node import Node
 from symtab import SymTabEntry, SymTab
 
-#Error checking: make sure when item added to list, the item is of the same type as the rest of the list
+#Error checking: make sure when item added to list, the item is of the same
+# type as the rest of the list
 
 class ParserForNarratr:
 
@@ -315,7 +316,8 @@ class ParserForNarratr:
         '''moveto_statement : MOVETO SCENEID'''
         p[0] = Node(None, 'moveto', [p[2]], lineno=p.lineno(1))
         p[0].type = 'moveto_statement'
-        #make sure both moveto and scene id are found and make sure sceneid is integer
+        #make sure both moveto and scene id are found and make sure sceneid is
+        # integer
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
@@ -453,7 +455,8 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'term', [p[1]], p[1].v_type, lineno=p.lineno(1))
             p[0].type = 'term'
-        #look for the terms, times, divide, and integerdivide in the ones longer than factor
+        # Look for the terms, times, divide, and integerdivide in the ones
+        # longer than factor
 
     def p_factor(self, p):
         '''factor : PLUS factor
@@ -462,6 +465,8 @@ class ParserForNarratr:
         if p[1].type == 'power':
             p[0] = p[1]
             p[0].type = 'factor'
+            if p[0].value == "str":
+                p[0].v_type = "string"
         else:
             p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
                         lineno=p.lineno(1))
