@@ -1,7 +1,7 @@
 scene $1 {
 	setup:
 		list is ["apple", "banana", "orange"]
-		list.add("peach")
+		list.add("peach", "pear")
 		say list
 	action:
 		win
