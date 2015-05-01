@@ -6,8 +6,10 @@ class s_1:
 
     def setup(self):
         direction = {}
-        print "Hello, World!"
-
+        n = 0
+            while n < 3:
+                print "Okay."
+                n = n + 1 
         self.action(direction)
 
     def action(self, direction):

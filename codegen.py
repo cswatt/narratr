@@ -230,7 +230,10 @@ class CodeGen:
                     for testlist in smt.children:
                         commands += self._process_testlist(testlist, 2)
                 commands += prefix + "exit(0)"
-
+            elif smt.value == "is":
+                if len(smt.children) > 0:
+                    if smt.children[0].type == "god_id":
+                        self.main = self._process_god_assign(smt.children,2) + self.main
             elif smt.value == "expression":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "id":
@@ -253,11 +256,6 @@ class CodeGen:
                             else:
                                 commands += "}"
                         i += 1
-
-            elif smt.value == "lose":
-                if len(smt.children) > 0:
-                    for testlist in smt.children:
-                        self._process_testlist(testlist, 2)
 
             elif smt.value == "if":
                 commands += self._process_ifstatement(smt, 2)
@@ -359,6 +357,12 @@ class CodeGen:
         return commands
 
     def _process_assign(self, ass, indentlevel=1):
+        commands = ''
+        commands += ass[0].value + " = "
+        commands += self._process_testlist(ass[1], 2)
+        return commands
+
+    def _process_god_assign(self, ass, indentlevel=1):
         commands = ''
         commands += ass[0].value + " = "
         commands += self._process_testlist(ass[1], 2)
