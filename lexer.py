@@ -218,8 +218,8 @@ class LexerForNarratr:
         if isinstance(t, str):
             raise Exception(t)
         else:
-            raise Exception("Illegal token '" + str(p) + "' at line " +
-                            t.lexer.lineno)
+            raise Exception("Illegal token '" + t.value[0] + "' at line " +
+                            str(t.lexer.lineno))
         t.lexer.skip(1)
 
     # This method provides an interface to the lexer's input(string) function
