@@ -225,8 +225,10 @@ class CodeGen:
                 for testlist in smt.children:
                     commands += self._process_testlist(testlist, 2)
             elif smt.value in ["win", "lose"]:
-                commands += prefix + "print "
-                commands += '"' + smt.value + '"'
+                if len(smt.children) > 0:
+                    for testlist in smt.children:
+                        commands += prefix + "print "
+                        commands += self._process_testlist(testlist, 2)
                 commands += prefix + "exit(0)"
             elif smt.value == "is":
                 if len(smt.children) > 0:
