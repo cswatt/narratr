@@ -226,18 +226,20 @@ class ParserForNarratr:
                           | moveto_statement'''
         if isinstance(p[1], Node):
             if p[1].type == 'break_statement':
+                temp_node = p[1]
+                temp_node.value = 'break'
+            elif p[1].type == 'continue_statement':
+                temp_node = p[1]
+                temp_node.value = 'continue'
+            elif p[1].type == 'moves_declaration':
                 p[0] = p[1]
-                p[0].value = 'break'
-            if p[1].type == 'continue_statement':
-                p[0] = p[1]
-                p[0].value = 'continue'
-            if p[1].type == 'moves_declaration':
-                p[0] = p[1]
-                p[0].value = 'moves'
-            if p[1].type == 'moveto_statement':
-                p[0] = p[1]
-                p[0].type = 'moveto'
-            p[0].type = 'flow_statement'
+                p[0].value = 'move'
+                p[0].type = 'flow_statement'
+                return p[0]
+            elif p[1].type == 'moveto_statement':
+                temp_node = p[1]
+                temp_node.type = 'moveto'
+            p[0] = Node(None, "flow_statement", [temp_node])
 
     def p_expression_statement(self, p):
         '''expression_statement : ID IS testlist
