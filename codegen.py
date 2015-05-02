@@ -97,7 +97,7 @@ class CodeGen:
     def _add_main(self, startstate):
         if self.main == "":
             self.main = "pocket = {}\n"
-            self.main += '''def get_response(caller, direction):
+            self.main += '''def get_response(direction):
     response = raw_input(" -->> ")
     response = response.lower()
     response = response.translate(None,
@@ -108,9 +108,8 @@ class CodeGen:
         exit(0)
     elif response[:5] == "move " and len(response.split(" ")) == 2:
         if response.split(" ")[1] in direction:
-            exec caller + "_inst.cleanup()"
-            exec "s_" + str(direction[response.split(" ")[1]])\\
-                + "_inst.setup()"
+            return ["s_" + str(direction[response.split(" ")[1]])\\
+                + "_inst.setup()"]
         else:
             print "\\"" + response.split(" ")[1] + "\\" is not a "\\
                 + "valid direction from this scene."
@@ -127,8 +126,9 @@ class CodeGen:
                 raise Exception("Start scene $" + str(startstate.value) +
                                 " does not exist")
 
-            self.main += "if __name__ == '__main__':\n    s_"\
-                + str(self.startstate) + "_inst.setup()"
+            self.main += "if __name__ == '__main__':\n    next = s_"\
+                + str(self.startstate) + "_inst.setup()\n    while True:\n"\
+                + "        exec 'next = ' + next"
         else:
             raise Exception("Multiple start scene declarations.")
 
@@ -173,7 +173,7 @@ class CodeGen:
         if len(c.children) > 0:
             for child in c.children:
                 commands.append(self._process_statements(child, 2))
-        commands.append("    self.action(direction)\n")
+        commands.append("    return self.action(direction)\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
@@ -208,7 +208,10 @@ class CodeGen:
             for child in c.children:
                 commands.append(self._process_statements(child, 3))
         commands.append("        response = get_response(" +
-                        "self.__class__.__name__, direction)\n")
+                        "direction)\n            " +
+                        "if isinstance(response, list):" +
+                        "\n                self.cleanup()\n" +
+                        "                return response[0]")
         return commands
 
     def _process_statements(self, statement, indentlevel=1):
