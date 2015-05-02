@@ -92,8 +92,11 @@ class CodeGen:
     # and "move" followed by a single token will check the dictionary of
     # directions (which it takes as an argument) for an applicable direction.
     # If it does not appear in the dictionary, an error is reported so the user
-    # is not confused.  If it does appear, it moves calls the cleanup function
-    # of the previous scene and goes to the setup function of the called scene.
+    # is not confused.  If it does appear, it encodes the next scene's function
+    # call within a list so that it can easily be identified by the caller
+    # function, which will return that piece of code. This is a centerpiece of
+    # our approach to avoiding an overflow of activation records in large
+    # games.
     def _add_main(self, startstate):
         if self.main == "":
             self.main = "pocket = {}\n"
