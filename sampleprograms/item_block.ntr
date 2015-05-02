@@ -1,0 +1,26 @@
+scene $1 {
+  setup:
+    exposition "You are in an infinitely large room. The gentle smell of manure and princess glitter envelops the space."
+    moves right($2)
+
+    new_pony is pony(0)
+    
+    n_visits is n_visits + 1
+
+    say "You received ponies, but you've lost all your coins."
+
+  action:
+  cleanup:
+    say "The ponies don't fit in your pocket so now" + ponies.length + "ponies are gonna follow you around. Almost makes up for not having any money."
+}
+
+scene $2 {
+  setup:
+    moves left($1)
+  action:
+  cleanup:
+}
+
+item pony(pony_id){
+  id is pony_id
+}
