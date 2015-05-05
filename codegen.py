@@ -22,6 +22,7 @@ class CodeGen:
         self.scenes = []
         self.scene_nums = []
         self.items = []
+        self.item_names = []
         self.main = ""
 
     # This function takes as its arguments the root node of the AST and the
@@ -41,7 +42,7 @@ class CodeGen:
                             if s_i.type == "scene_block":
                                 self._add_scene(self._scene_gen(s_i, key))
                             elif s_i.type == "item_block":
-                                pass
+                                self._add_item(self._item_gen(s_i, key))
                     elif bc.type == "start_state":
                         self._add_main(bc)
 
@@ -75,6 +76,11 @@ class CodeGen:
     # takes a string *with correct indentation*.
     def _add_scene(self, scene):
         self.scenes.append(scene)
+
+    # This function is used internally to add a item to the item list. It
+    # takes a string *with correct indentation*.
+    def _add_item(self, scene):
+        self.items.append(item)
 
     # This function generates the code for a start state given a start state
     # node. If start state code has already been generated, it produces a
@@ -160,6 +166,30 @@ class CodeGen:
             + "\n        pass\n\n    " + "\n    ".join(commands)
 
         return scene_code
+
+    def _item_gen(self, item, iid):
+        commands = []
+        for c in item.children:
+            if c.type == "ID":
+                iid = c.value
+
+            elif c.type == "item_block":
+                commands += self._process_item_block(c)
+
+        self.item_names.append(iid)
+        item_code = "class item_" + str(iid) + ":\n    def __init__(self):"\
+            + "\n        pass\n\n    " + "\n    ".join(commands)
+
+        return item_code
+
+    def _process_item_block(self, c):
+        commands = []
+        commands.append("def ")
+        if len(c.children) > 0:
+            for child in c.children:
+                commands.append(self._process_statements(child, 2))
+        return commands
+
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
