@@ -160,7 +160,7 @@ class CodeGen:
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
-            + "\n        pass\n\n    " + "\n    ".join(commands)
+            + "\n        self.__namespace = {}\n\n    " + "\n    ".join(commands)
 
         return scene_code
 
@@ -379,7 +379,7 @@ class CodeGen:
             commands += "nlist" + " = "
             commands += self._process_testlist(ass[1], 2)
         else:
-            commands += ass[0].value + " = "
+            commands += "self.__namespace['" + ass[0].value + "'] = "
             commands += self._process_testlist(ass[1], 2)
         return commands
 
@@ -446,7 +446,7 @@ class CodeGen:
                     if child.value == "pocket":
                         commands += self._process_pocket(child, indentlevel)
                     else:
-                        commands += child.value
+                        commands += "self.__namespace['" + child.value + "']"
 
                 elif child.type == "factor" and child.value is None:
                     commands += self._process_factor(child)
