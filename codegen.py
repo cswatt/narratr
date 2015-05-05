@@ -98,12 +98,15 @@ class CodeGen:
     # and "move" followed by a single token will check the dictionary of
     # directions (which it takes as an argument) for an applicable direction.
     # If it does not appear in the dictionary, an error is reported so the user
-    # is not confused.  If it does appear, it moves calls the cleanup function
-    # of the previous scene and goes to the setup function of the called scene.
+    # is not confused.  If it does appear, it encodes the next scene's function
+    # call within a list so that it can easily be identified by the caller
+    # function, which will return that piece of code. This is a centerpiece of
+    # our approach to avoiding an overflow of activation records in large
+    # games.
     def _add_main(self, startstate):
         if self.main == "":
             self.main = "pocket = {}\n"
-            self.main += '''def get_response(caller, direction):
+            self.main += '''def get_response(direction):
     response = raw_input(" -->> ")
     response = response.lower()
     response = response.translate(None,
@@ -114,9 +117,8 @@ class CodeGen:
         exit(0)
     elif response[:5] == "move " and len(response.split(" ")) == 2:
         if response.split(" ")[1] in direction:
-            exec caller + "_inst.cleanup()"
-            exec "s_" + str(direction[response.split(" ")[1]])\\
-                + "_inst.setup()"
+            return ["s_" + str(direction[response.split(" ")[1]])\\
+                + "_inst.setup()"]
         else:
             print "\\"" + response.split(" ")[1] + "\\" is not a "\\
                 + "valid direction from this scene."
@@ -133,8 +135,9 @@ class CodeGen:
                 raise Exception("Start scene $" + str(startstate.value) +
                                 " does not exist")
 
-            self.main += "if __name__ == '__main__':\n    s_"\
-                + str(self.startstate) + "_inst.setup()"
+            self.main += "if __name__ == '__main__':\n    next = s_"\
+                + str(self.startstate) + "_inst.setup()\n    while True:\n"\
+                + "        exec 'next = ' + next"
         else:
             raise Exception("Multiple start scene declarations.")
 
@@ -163,7 +166,8 @@ class CodeGen:
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
-            + "\n        pass\n\n    " + "\n    ".join(commands)
+            + "\n        self.__namespace = {}\n\n    "\
+            + "\n    ".join(commands)
 
         return scene_code
 
@@ -203,7 +207,7 @@ class CodeGen:
         if len(c.children) > 0:
             for child in c.children:
                 commands.append(self._process_statements(child, 2))
-        commands.append("    self.action(direction)\n")
+        commands.append("    return self.action(direction)\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
@@ -238,7 +242,10 @@ class CodeGen:
             for child in c.children:
                 commands.append(self._process_statements(child, 3))
         commands.append("        response = get_response(" +
-                        "self.__class__.__name__, direction)\n")
+                        "direction)\n            " +
+                        "if isinstance(response, list):" +
+                        "\n                self.cleanup()\n" +
+                        "                return response[0]")
         return commands
 
     def _process_statements(self, statement, indentlevel=1):
@@ -403,7 +410,7 @@ class CodeGen:
             commands += "nlist" + " = "
             commands += self._process_testlist(ass[1], 2)
         else:
-            commands += ass[0].value + " = "
+            commands += "self.__namespace['" + ass[0].value + "'] = "
             commands += self._process_testlist(ass[1], 2)
         return commands
 
@@ -470,7 +477,7 @@ class CodeGen:
                     if child.value == "pocket":
                         commands += self._process_pocket(child, indentlevel)
                     else:
-                        commands += child.value
+                        commands += "self.__namespace['" + child.value + "']"
 
                 elif child.type == "factor" and child.value is None:
                     commands += self._process_factor(child)
@@ -482,14 +489,23 @@ class CodeGen:
                     commands += str(child.value)
 
                 elif child.type == "arithmetic_expression":
+                    # there should be a _process_arithmetic_expression()
+                    # function that is called here.
                     if child.v_type == "integer":
                         commands += str(child.children[0].value) + ' '
+                    elif child.v_type == "id":
+                        commands += "self.__namespace['"\
+                                    + child.children[0].value + "'] "
                     else:
                         commands += child.children[0].value + ' '
                     commands += exps.value + ' '
 
-                elif child.type == "term" and child.v_type == "integer":
-                    commands += str(child.children[0].value) + ' '
+                elif child.type == "term":
+                    if child.v_type == "integer":
+                        commands += str(child.children[0].value) + ' '
+                    elif child.v_type == "id":
+                        commands += "self.__namespace['"\
+                                    + child.children[0].value + "'] "
 
                 elif child.type == "expression" and child.value is None:
                     if len(child.children) > 0:
@@ -567,6 +583,12 @@ class CodeGen:
                     commands += self._process_expression(child.children[0])
                     commands += "]"
                 elif remove:
-                    pass
-                pass
+                    if len(child.children) != 1:
+                        raise Exception("Line " + str(pocket_node.lineno) +
+                                        ": Deleting a value from pocket"
+                                        " requires exactly one argument. " +
+                                        str(len(child.children)) + " given.")
+                    commands += "del pocket["
+                    commands += self._process_expression(child.children[0])
+                    commands += "]"
         return commands
