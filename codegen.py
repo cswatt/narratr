@@ -160,7 +160,8 @@ class CodeGen:
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
-            + "\n        self.__namespace = {}\n\n    " + "\n    ".join(commands)
+            + "\n        self.__namespace = {}\n\n    "\
+            + "\n    ".join(commands)
 
         return scene_code
 
@@ -543,6 +544,12 @@ class CodeGen:
                     commands += self._process_expression(child.children[0])
                     commands += "]"
                 elif remove:
-                    pass
-                pass
+                    if len(child.children) != 1:
+                        raise Exception("Line " + str(pocket_node.lineno) +
+                                        ": Deleting a value from pocket"
+                                        " requires exactly one argument. " +
+                                        str(len(child.children)) + " given.")
+                    commands += "del pocket["
+                    commands += self._process_expression(child.children[0])
+                    commands += "]"
         return commands
