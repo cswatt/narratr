@@ -459,14 +459,23 @@ class CodeGen:
                     commands += str(child.value)
 
                 elif child.type == "arithmetic_expression":
+                    # there should be a _process_arithmetic_expression()
+                    # function that is called here.
                     if child.v_type == "integer":
                         commands += str(child.children[0].value) + ' '
+                    elif child.v_type == "id":
+                        commands += "self.__namespace['"\
+                                    + child.children[0].value + "'] "
                     else:
                         commands += child.children[0].value + ' '
                     commands += exps.value + ' '
 
-                elif child.type == "term" and child.v_type == "integer":
-                    commands += str(child.children[0].value) + ' '
+                elif child.type == "term":
+                    if child.v_type == "integer":
+                        commands += str(child.children[0].value) + ' '
+                    elif child.v_type == "id":
+                        commands += "self.__namespace['"\
+                                    + child.children[0].value + "'] "
 
                 elif child.type == "expression" and child.value is None:
                     if len(child.children) > 0:
