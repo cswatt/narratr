@@ -207,8 +207,7 @@ class ParserForNarratr:
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION testlist'''
         if p[1] == "exposition":
-            p[0] = Node(None, "exposition", [p[2]], lineno=p[2].lineno)
-        #look for exposition token for test list to be specified
+            p[0] = Node(None, "exposition", [p[2]], lineno=p.lineno(1))
 
     def p_win_statement(self, p):
         '''win_statement : WIN
@@ -218,8 +217,7 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "win_statement", children, lineno=p[2].lineno)
-        #look for win token
+            p[0] = Node(None, "win_statement", children, lineno=p.lineno(1))
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
@@ -229,8 +227,7 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "lose_statement", children, lineno=p[2].lineno)
-        #look for lose token
+            p[0] = Node(None, "lose_statement", children, lineno=p.lineno(1))
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
