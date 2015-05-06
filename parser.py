@@ -607,7 +607,7 @@ class ParserForNarratr:
     def p_elif_statements(self, p):
         '''elif_statements : elif_statements ELIF test COLON suite
                            | ELIF test COLON suite'''
-        if p[1].type == 'elif_statements':
+        if isinstance(p[1], Node) and p[1].type == 'elif_statements':
             p[0] = p[1]
             new_elif = Node(None, 'elif_statements', [p[3], [5]])
             p[0].children.append(new_elif)
