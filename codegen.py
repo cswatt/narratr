@@ -211,7 +211,6 @@ class CodeGen:
         print commands
         return commands
 
-
 # in narratr: k is key(1) (is the constructor call)
 # ...
 # item key(identifier){
@@ -283,7 +282,7 @@ class CodeGen:
                         "                return response[0]")
         return commands
 
-    def _process_statements(self, statement, indentlevel=1):
+    def _process_statements(self, statement, indentlevel=1, datatype=None):
         commands = ''
         prefix = "\n" + "    "*indentlevel
         indent = 1
@@ -291,7 +290,9 @@ class CodeGen:
             if smt.value == "say":
                 commands += prefix + "print "
                 for testlist in smt.children:
-                    commands += self._process_testlist(testlist, 2)
+                    t = "String"
+                    tl = testlist
+                    commands += self._process_testlist(tl, indentlevel + 1, t)
             elif smt.value == "exposition":
                 commands += prefix + "print "
                 for testlist in smt.children:
@@ -349,14 +350,16 @@ class CodeGen:
         return commands[5:]
 
     # This function takes "testlist" node as argument
-    def _process_testlist(self, testlist, indentlevel=1):
+    def _process_testlist(self, testlist, indentlevel=1, datatype=None):
         commands = ''
         for test in testlist.children:
             if test.type == "test":
                 if len(test.children) > 0:
                     for child in test.children:
                         if child.type == "expression":
-                            commands += self._process_expression(child, 2)
+                            i = indentlevel + 1
+                            dt = datatype
+                            commands += self._process_expression(child, i, dt)
                         if child.type == "and_test":
                             commands += self._process_expression(child, 2)
                         if child.type == "not_test":
@@ -456,21 +459,17 @@ class CodeGen:
         return commands
 
     # This function takes "expression" node as argument
-    def _process_expression(self, exps, indentlevel=1):
+    def _process_expression(self, exps, indentlevel=1, datatype=None):
         commands = ''
-        if exps.value in ["*", "/", "//"]:
+        if exps.value in ["*", "/", "//", "+", "-"]:
+            tempv = exps.value
+            i = indentlevel + 1
+            temp = self._process_arithmetic(exps, str(tempv), i, datatype)
+            commands += temp
             if len(exps.children) > 1:
-                if exps.children[0].v_type == "integer":
-                    term1 = str(exps.children[0].children[0].value)
-                else:
-                    term1 = (exps.children[0].children[0].value)
-                commands += term1
-                commands += ' ' + exps.value + ' '
-                if exps.children[1].v_type == "integer":
-                    term2 = str(exps.children[1].value)
-                else:
-                    term2 = exps.children[1].value
-                commands += term2
+                if exps.children[0].v_type == 'id':
+                    term1 = "self.__namespace['"
+                    term1 += str(exps.children[0].value) + "']"
 
         else:
             for child in exps.children:
@@ -512,7 +511,7 @@ class CodeGen:
                     if child.value == "pocket":
                         commands += self._process_pocket(child, indentlevel)
                     else:
-                        print self.symtab.get(child.value, 'GLOBAL')
+                        print self.fsymtab.get(child.value, 'GLOBAL')
                         commands += "self.__namespace['" + child.value + "']"
 
                 elif child.type == "factor" and child.value is None:
@@ -566,6 +565,72 @@ class CodeGen:
                     commands += "True"
                 elif factors.children[0].children[0].value == "false":
                     commands += "False"
+        else:
+            if factors.v_type == "integer":
+                commands += str(factors.value)
+            if factors.v_type == "id":
+                commands += "__namespace['" + str(factors.value) + "']"
+            if factors.v_type == "string":
+                commands += '"' + factors.value + '"'
+        return commands
+
+    # This function recursively deals with arithmetic node
+    def _process_arithmetic(self, expr, expvalue, indent=1, datatype=None):
+        commands = ''
+        if len(expr.children) > 0:
+            for child in expr.children:
+                if child.type == "arithmetic_expression":
+                    if child.value not in ['+', '-', '*', '/']:
+                        if len(child.children) > 0:
+                            if child.children[0].type == "factor":
+                                tempc = child.children[0]
+                                temp = self._process_factor(tempc, indent+1)
+                                if datatype == "String":
+                                    commands += 'str(' + temp + ')'
+                                else:
+                                    commands += temp
+                                commands += ' ' + expvalue + ' '
+                    else:
+                        if child.v_type == "integer":
+                            tv = child.value
+                            c = child
+                            temp = self._process_arithmetic(c, tv, indent+1)
+                            commands += temp + ' '
+                            if datatype == "String":
+                                commands += 'str(' + str(tv) + ')' + ' '
+                            else:
+                                commands += str(tv) + ' '
+                        elif child.v_type == 'id':
+                            tv = child.value
+                            c = child
+                            temp = self._process_arithmetic(c, tv, indent+1)
+                            commands += temp
+                            if datatype == "String":
+                                commands += 'str('
+                            commands += "self.__namespace['" + str(tv) + "']"
+                            if datatype == "String":
+                                commands += ')'
+                elif child.type == "term":
+                    if child.value is None:
+                        if len(child.children) > 0:
+                            if child.children[0].type == "factor":
+                                tc = child.children[0]
+                                commands += self._process_factor(tc, indent+1)
+                    elif child.value in ['*', '/']:
+                        tv = str(child.value)
+                        temp = self._process_arithmetic(child, tv, indent+1)
+                        commands += temp
+                elif child.type == "factor":
+                    if child.v_type == 'id':
+                        commands += ' ' + expvalue + ' '
+                        commands += "self.__namespace['"
+                        commands += str(child.value) + "']"
+                    if child.v_type == 'integer':
+                        if datatype == "String":
+                            commands += ' str(' + expvalue + ') '
+                        else:
+                            commands += ' ' + expvalue + ' '
+                        commands += str(child.value)
         return commands
 
     # This function takes "direction" node as argument

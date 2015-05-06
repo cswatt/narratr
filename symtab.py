@@ -76,7 +76,7 @@ class SymTab:
     # This should be the interface used to get a SymTab Entry from the Table.
     # Returns None if there is no entry.
     def get(self, symbol, scope):
-        self.table.get(self.getKey(symbol, scope), None)
+        return self.table.get(self.getKey(symbol, scope), None)
 
     # Updates an existing entry.
     def update(self, symbol, value, symboltype, scope, god=False):
