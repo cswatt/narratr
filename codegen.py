@@ -16,6 +16,8 @@
 # -----------------------------------------------------------------------------
 
 from node import Node
+
+
 class CodeGen:
     def __init__(self):
         self.frontmatter = "#!/usr/bin/env python\n"
@@ -352,7 +354,11 @@ class CodeGen:
                         commands += prefix + "else:\n    "
                         commands += self._process_statements(c, indentlevel+1)
                     elif c.type == "elif_statements":
-                        commands += "\n    " + self._process_statements(Node(None, "suite", [c]), indentlevel)
+                        commands += "\n    "\
+                                 + self._process_statements(
+                                                            Node(None, "suite",
+                                                                 [c]),
+                                                            indentlevel)
                     else:
                         commands += self._process_statements(c, indentlevel+1)
 
