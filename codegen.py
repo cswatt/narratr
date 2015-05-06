@@ -569,7 +569,7 @@ class CodeGen:
             if factors.v_type == "integer":
                 commands += str(factors.value)
             if factors.v_type == "id":
-                commands += "__namespace['" + str(factors.value) + "']"
+                commands += "self.__namespace['" + str(factors.value) + "']"
             if factors.v_type == "string":
                 commands += '"' + factors.value + '"'
         return commands

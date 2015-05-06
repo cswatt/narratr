@@ -6,7 +6,7 @@ scene $1 {
 		if (false):
 			say "Something bad."
 	action:
-		win
+		win 
 	cleanup:
 }
 
