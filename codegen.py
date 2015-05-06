@@ -285,6 +285,9 @@ class CodeGen:
         commands = ''
         prefix = "\n" + "    "*indentlevel
         indent = 1
+        # if statement.value == "else":
+        #     commands += prefix + "else:"
+        #     indentlevel += 1
         for smt in statement.children:
             if smt.value == "say":
                 commands += prefix + "print "
@@ -338,11 +341,15 @@ class CodeGen:
                                     commands += "}"
                             i += 1
 
-            elif smt.value in ["if", "while"]:
+            elif smt.value in ["if", "while", "elif"]:
                 commands += prefix + smt.value + " "
                 commands += self._process_test(smt.children[0], 0) + ":\n    "
-                commands += self._process_statements(smt.children[1],
-                                                     indentlevel+1)
+                for c in smt.children[1:]:
+                    if c.value == "else":
+                        commands += prefix + "else:\n    "
+                        commands += self._process_statements(c, indentlevel+1)
+                    else:
+                        commands += self._process_statements(c, indentlevel+1)
 
             elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
