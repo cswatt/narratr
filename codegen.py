@@ -279,6 +279,8 @@ class CodeGen:
                         "                return response[0]\n")
         return commands
 
+    # Statement is actually a suite node, but we're keeping the name for
+    # backwards-compatability.
     def _process_statements(self, statement, indentlevel=1, datatype=None):
         commands = ''
         prefix = "\n" + "    "*indentlevel
@@ -334,11 +336,10 @@ class CodeGen:
                                     commands += "}"
                             i += 1
 
-            elif smt.value == "if":
-                commands += self._process_ifstatement(smt, 2)
-
-            elif smt.value == "while":
-                commands += self._process_whilestatement(smt, 2)
+            elif smt.value in ["if", "while"]:
+                commands += prefix + smt.value + " "
+                commands += self._process_test(smt.children[0], 0) + ":\n    "
+                commands += self._process_statements(smt.children[1], indentlevel+1)
 
             elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
@@ -369,6 +370,9 @@ class CodeGen:
             elif test.type == "suite":
                 commands += "    "*3 + "win"
         return commands
+
+    def _process_test(self, test, indentlevel=1):
+        return "[tests]"
 
     # This function takes the node which has "block_statement" type and
     # "if" value. For an if statement, it generally contains two kinds
