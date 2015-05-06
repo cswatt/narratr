@@ -319,9 +319,11 @@ class CodeGen:
             elif smt.value == "flow":
                 commands += prefix
                 if len(smt.children) > 0:
-                    if smt.children[0].type in ["break_statement", "continue_statement"]:
+                    if smt.children[0].type in ["break_statement",
+                                                "continue_statement"]:
                         commands += smt.children[0].value
-                    else: #direction list
+                    # direction list
+                    else:
                         i = 0
                         for child in smt.children:
                             if child.type == "direction":
@@ -339,7 +341,8 @@ class CodeGen:
             elif smt.value in ["if", "while"]:
                 commands += prefix + smt.value + " "
                 commands += self._process_test(smt.children[0], 0) + ":\n    "
-                commands += self._process_statements(smt.children[1], indentlevel+1)
+                commands += self._process_statements(smt.children[1],
+                                                     indentlevel+1)
 
             elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
@@ -373,45 +376,6 @@ class CodeGen:
 
     def _process_test(self, test, indentlevel=1):
         return "[tests]"
-
-    # This function takes the node which has "block_statement" type and
-    # "if" value. For an if statement, it generally contains two kinds
-    # of nodes, one is test which shows the condition, the other is suite
-    # which shows the action
-    def _process_ifstatement(self, smt, indentlevel=1):
-        commands = ''
-        if len(smt.children) > 1:
-            for child in smt.children:
-                if child.type == "test":
-                    commands += self._process_ifcondition(child, 3)
-                elif child.type == "suite":
-                    commands += "\n" + '    '
-                    commands += self._process_action(child, 4)
-        return commands
-
-    def _process_ifcondition(self, cond, indentlevel=1):
-        commands = ''
-        if len(cond.children) > 1:
-            if cond.children[0].type == "and_test":
-                if cond.children[1].type == "not_test":
-                    commands += "\n" + "    "*indentlevel + "if "
-                    commands += self._process_expression(cond.children[0], 2)
-                    commands += ' and '
-                    commands += self._process_expression(cond.children[1], 2)
-                    commands += ':'
-            elif cond.children[0].type == "or_test":
-                if cond.children[1].type == "and_test":
-                    commands += "\n" + "    "*indentlevel + "if "
-                    commands += self._process_expression(cond.children[0], 2)
-                    commands += ' or '
-                    commands += self._process_expression(cond.children[1], 2)
-                    commands += ':'
-        else:
-            commands += "\n" + "    "*indentlevel + "if "
-            commands += self._process_expression(cond.children[0], 1)
-            commands += ':'
-
-        return commands
 
     def _process_action(self, expr, indentlevel=1):
         commands = ''
@@ -531,7 +495,7 @@ class CodeGen:
 
         elif factors.v_type == "string":
             commands += '"' + factors.value + '"'
-        
+
         elif factors.v_type == "list":
             commands += "["
             count = 0
@@ -592,7 +556,7 @@ class CodeGen:
 
         elif factors.v_type == "integer":
             commands += str(factors.value)
-            
+
         return commands
 
     # This function recursively deals with arithmetic node
