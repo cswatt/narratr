@@ -40,8 +40,10 @@ class CodeGen:
                     if type(bc) is dict:
                         for key, s_i in bc.iteritems():
                             if s_i.type == "scene_block":
+                                print 'scene_block'
                                 self._add_scene(self._scene_gen(s_i, key))
                             elif s_i.type == "item_block":
+                                print 'item_block'
                                 self._add_item(self._item_gen(s_i, key))
                     elif bc.type == "start_state":
                         self._add_main(bc)
@@ -63,12 +65,15 @@ class CodeGen:
         if outputfile == "stdout":
             print self.frontmatter
             print "\n".join(self.scenes)
+            print "\n".join(self.items)
             print self.main
         else:
             with open(outputfile, 'w') as f:
                 f.write(self.frontmatter)
                 f.write("\n")
                 f.write("\n".join(self.scenes))
+                f.write("\n\n")
+                f.write("\n".join(self.items))
                 f.write("\n\n")
                 f.write(self.main)
 
@@ -79,7 +84,7 @@ class CodeGen:
 
     # This function is used internally to add a item to the item list. It
     # takes a string *with correct indentation*.
-    def _add_item(self, scene):
+    def _add_item(self, item):
         self.items.append(item)
 
     # This function generates the code for a start state given a start state
@@ -173,26 +178,56 @@ class CodeGen:
 
     def _item_gen(self, item, iid):
         commands = []
-        for c in item.children:
-            if c.type == "ID":
-                iid = c.value
-
-            elif c.type == "item_block":
-                commands += self._process_item_block(c)
-
+        iid=item.value
         self.item_names.append(iid)
-        item_code = "class item_" + str(iid) + ":\n    def __init__(self):"\
-            + "\n        pass\n\n    " + "\n    ".join(commands)
+        item_code = "class item_" + str(iid) + ":\n    "
+        # "\n    ".join(commands)
+        for c in item.children:
+            print c.type
+            if c.type == "calllist":
+                item_code = item_code + "def __init__(self"
+                for exp in c.children:
+                    item_code += "," + exp.children[0].value
+                item_code +="):\n"
+                # item_code +="\n        self.__namespace = {}\n    " 
+            elif c.type == "suite":
+                commands += self._process_item_block(c)
+        item_code = item_code +"\n    ".join(commands)
+        # + "\n        pass\n\n    "
+
+        # Here modify code so that constructor takes args
+        # in python:
+# class key:
+#     def __init__(self, identifier)
+#         self.id = identifier
+
 
         return item_code
 
     def _process_item_block(self, c):
         commands = []
-        commands.append("def ")
         if len(c.children) > 0:
-            for child in c.children:
-                commands.append(self._process_statements(child, 2))
+            commands.append(self._process_statements(c, 2))
+        print commands
         return commands
+
+
+# in narratr: k is key(1) (is the constructor call)
+# ...
+# item key(identifier){
+# if identifier > 1:
+#     id = identifier
+# else:
+#     id = identifier + 5
+# }
+
+# in python:
+# class key:
+#     def __init__(self, identifier):
+#         if identifier > 1:
+#             self.id = identifier
+#         else:
+#             self.id = identifier + 5
 
 
     # Code for adding a setup block. Takes as input a single "setup block"
@@ -477,6 +512,7 @@ class CodeGen:
                     if child.value == "pocket":
                         commands += self._process_pocket(child, indentlevel)
                     else:
+                        print self.symtab.get(child.value, 'GLOBAL')
                         commands += "self.__namespace['" + child.value + "']"
 
                 elif child.type == "factor" and child.value is None:
@@ -592,3 +628,5 @@ class CodeGen:
                     commands += self._process_expression(child.children[0])
                     commands += "]"
         return commands
+
+

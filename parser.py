@@ -218,7 +218,7 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "win_statement", children, lineno=p[2].lineno)
+            p[0] = Node(None, "win_statement", children)
         #look for win token
 
     def p_lose_statement(self, p):
@@ -229,7 +229,7 @@ class ParserForNarratr:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "lose_statement", children, lineno=p[2].lineno)
+            p[0] = Node(None, "lose_statement", children)
         #look for lose token
 
     def p_flow_statement(self, p):
@@ -493,7 +493,6 @@ class ParserForNarratr:
         else:
             p[0] = p[2]
         p[0].type = 'atom'
-        print 'ATOM'
         #Look for parans around test in that one case
         #check to make sure first node is of type list, number, or boolean in the alternatecase
 

@@ -3,7 +3,7 @@ scene $1 {
     exposition "You are in an infinitely large room. The gentle smell of manure and princess glitter envelops the space."
     moves right($2)
 
-    new_pony is pony(0)
+    new_pony is pony(0, 0)
     
     n_visits is n_visits + 1
 
@@ -11,7 +11,7 @@ scene $1 {
 
   action:
   cleanup:
-    say "The ponies don't fit in your pocket so now" + ponies.length + "ponies are gonna follow you around. Almost makes up for not having any money."
+    say "The ponies don't fit in your pocket so now ponies are gonna follow you around. Almost makes up for not having any money."
 }
 
 scene $2 {
@@ -21,6 +21,8 @@ scene $2 {
   cleanup:
 }
 
-item pony(pony_id){
+item pony(pony_id, so){
   id is pony_id
 }
+
+start: $1
