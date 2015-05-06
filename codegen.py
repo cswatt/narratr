@@ -178,7 +178,7 @@ class CodeGen:
 
     def _item_gen(self, item, iid):
         commands = []
-        iid=item.value
+        iid = item.value
         self.item_names.append(iid)
         item_code = "class item_" + str(iid) + ":\n    "
         # "\n    ".join(commands)
@@ -188,11 +188,11 @@ class CodeGen:
                 item_code = item_code + "def __init__(self"
                 for exp in c.children:
                     item_code += "," + exp.children[0].value
-                item_code +="):\n"
-                # item_code +="\n        self.__namespace = {}\n    " 
+                item_code += "):\n"
+                # item_code +="\n        self.__namespace = {}\n    "
             elif c.type == "suite":
                 commands += self._process_item_block(c)
-        item_code = item_code +"\n    ".join(commands)
+        item_code = item_code + "\n    ".join(commands)
         # + "\n        pass\n\n    "
 
         # Here modify code so that constructor takes args
@@ -200,8 +200,6 @@ class CodeGen:
 # class key:
 #     def __init__(self, identifier)
 #         self.id = identifier
-
-
         return item_code
 
     def _process_item_block(self, c):
@@ -227,7 +225,6 @@ class CodeGen:
 #             self.id = identifier
 #         else:
 #             self.id = identifier + 5
-
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
@@ -511,14 +508,20 @@ class CodeGen:
                     if child.value == "pocket":
                         commands += self._process_pocket(child, indentlevel)
                     else:
-                        print self.fsymtab.get(child.value, 'GLOBAL')
+                        print self.symtab.get(child.value, 'GLOBAL')
                         commands += "self.__namespace['" + child.value + "']"
 
                 elif child.type == "factor" and child.value is None:
                     commands += self._process_factor(child)
 
                 elif child.type == "factor" and child.v_type == "string":
-                    commands += '"' + child.value + '"'
+                    if child.value == "str":
+                        commands += "str("
+                        commands += self._process_expression(
+                                    child.children[0].children[0])
+                        commands += ")"
+                    else:
+                        commands += '"' + child.value + '"'
 
                 elif child.type == "factor" and child.v_type == "integer":
                     commands += str(child.value)
@@ -693,5 +696,3 @@ class CodeGen:
                     commands += self._process_expression(child.children[0], 0)
                     commands += "]"
         return commands
-
-
