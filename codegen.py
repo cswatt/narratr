@@ -255,7 +255,7 @@ class CodeGen:
         commands = []
         commands.append("def cleanup(self):")
         if len(c.children) > 0:
-            commands.append(self._process_statements(c.children[0], 2))
+            commands.append(self._process_statements(c.children[0], 3))
         else:
             commands.append("    pass")
         return commands
@@ -448,6 +448,7 @@ class CodeGen:
             commands += "nlist" + " = "
             commands += self._process_testlist(ass[1], 2)
         else:
+            print ass
             commands += "self.__namespace['" + ass[0].value + "'] = "
             commands += self._process_testlist(ass[1], 2)
         return commands
@@ -511,9 +512,13 @@ class CodeGen:
                     if child.value == "pocket":
                         commands += self._process_pocket(child, indentlevel)
                     else:
-                        print self.fsymtab.get(child.value, 'GLOBAL')
-                        commands += "self.__namespace['" + child.value + "']"
-
+                        commands += child.value 
+                        if(self.symtab.get(child.value, 'GLOBAL')):
+                            if len(child.children[0].children) > 0:
+                                commands += "("
+                                for c in child.children[0].children:
+                                    commands += self._process_expression(c) + ","
+                                commands = commands[:-1] + ")"
                 elif child.type == "factor" and child.value is None:
                     commands += self._process_factor(child)
 
