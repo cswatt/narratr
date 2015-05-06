@@ -533,7 +533,7 @@ class CodeGen:
         elif factors.v_type == "id":
             if factors.value == "pocket":
                 commands += self._process_pocket(factors, indentlevel)
-            elif(self.symtab.get(child.value, 'GLOBAL')):
+            elif(self.symtab.get(factors.value, 'GLOBAL')):
                 if len(child.children[0].children) > 0:
                     commands += "("
                     for c in child.children[0].children:
