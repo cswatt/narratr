@@ -194,7 +194,6 @@ class CodeGen:
                 commands.append(self._process_statements(child, 2))
         return commands
 
-
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
     # direction, and at the end, the code to move to the action block), and
@@ -423,19 +422,14 @@ class CodeGen:
     # This function takes "expression" node as argument
     def _process_expression(self, exps, indentlevel=1):
         commands = ''
-        if exps.value in ["*", "/", "//"]:
+        if exps.value in ["*", "/", "//", "+", "-"]:
+            tempv = exps.value
+            temp = self._process_arithmetic(exps, str(tempv), indentlevel+1)
+            commands += temp
             if len(exps.children) > 1:
-                if exps.children[0].v_type == "integer":
-                    term1 = str(exps.children[0].children[0].value)
-                else:
-                    term1 = (exps.children[0].children[0].value)
-                commands += term1
-                commands += ' ' + exps.value + ' '
-                if exps.children[1].v_type == "integer":
-                    term2 = str(exps.children[1].value)
-                else:
-                    term2 = exps.children[1].value
-                commands += term2
+                if exps.children[0].v_type == 'id':
+                    term1 = "self.__namespace['"
+                    term1 += str(exps.children[0].value) + "']"
 
         else:
             for child in exps.children:
@@ -530,6 +524,54 @@ class CodeGen:
                     commands += "True"
                 elif factors.children[0].children[0].value == "false":
                     commands += "False"
+        else:
+            if factors.v_type == "integer":
+                commands += str(factors.value)
+            if factors.v_type == "id":
+                commands += "__namespace['" + str(factors.value) + "']"
+        return commands
+
+    # This function recursively deals with arithmetic node
+    def _process_arithmetic(self, expression, expvalue, indent=1):
+        commands = ''
+        if len(expression.children) > 0:
+            for child in expression.children:
+                if child.type == "arithmetic_expression":
+                    if child.value not in ['+', '-', '*', '/']:
+                        if len(child.children) > 0:
+                            if child.children[0].type == "factor":
+                                tempc = child.children[0]
+                                temp = self._process_factor(tempc, indent+1)
+                                commands += temp + ' ' + expvalue + ' '
+                    else:
+                        if child.v_type == "integer":
+                            tv = child.value
+                            c = child
+                            temp = self._process_arithmetic(c, tv, indent+1)
+                            commands += temp + ' ' + str(tv) + ' '
+                        elif child.v_type == 'id':
+                            tv = child.value
+                            c = child
+                            temp = self._process_arithmetic(c, tv, indent+1)
+                            commands += temp
+                            commands += "self.__namespace['" + str(tv) + "']"
+                elif child.type == "term":
+                    if child.value is None:
+                        if len(child.children) > 0:
+                            if child.children[0].type == "factor":
+                                tc = child.children[0]
+                                commands += self._process_factor(tc, indent+1)
+                    elif child.value in ['*', '/']:
+                        tv = str(child.value)
+                        temp = self._process_arithmetic(child, tv, indent+1)
+                        commands += temp
+                elif child.type == "factor":
+                    if child.v_type == 'id':
+                        commands += ' ' + expvalue + ' '
+                        commands += "self.__namespace['"
+                        commands += str(child.value) + "']"
+                    if child.v_type == 'integer':
+                        commands += ' ' + expvalue + ' ' + str(child.value)
         return commands
 
     # This function takes "direction" node as argument
