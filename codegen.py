@@ -252,7 +252,7 @@ class CodeGen:
         commands = []
         commands.append("def cleanup(self):")
         if len(c.children) > 0:
-            commands.append(self._process_statements(c.children[0], 2))
+            commands.append(self._process_statements(c.children[0], 3))
         else:
             commands.append("    pass")
         return commands
@@ -445,6 +445,7 @@ class CodeGen:
             commands += "nlist" + " = "
             commands += self._process_testlist(ass[1], 2)
         else:
+            print ass
             commands += "self.__namespace['" + ass[0].value + "'] = "
             commands += self._process_testlist(ass[1], 2)
         return commands
@@ -470,6 +471,7 @@ class CodeGen:
 
         else:
             for child in exps.children:
+
                 if child.type == "factor":
                     commands += self._process_factor(child, 0)
 
