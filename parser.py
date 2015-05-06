@@ -609,10 +609,10 @@ class ParserForNarratr:
                            | ELIF test COLON suite'''
         if isinstance(p[1], Node) and p[1].type == 'elif_statements':
             p[0] = p[1]
-            new_elif = Node(None, 'elif_statements', [p[3], [5]])
+            new_elif = Node(None, 'elif_statements', [p[3], p[5]])
             p[0].children.append(new_elif)
         else:
-            p[0] = Node(None, 'elif_statements', [p[2], [4]],
+            p[0] = Node(None, 'elif_statements', [p[2], p[4]],
                         lineno=p[2].lineno)
         p[0].type = 'elif_statements'
         #look for elif token and colon token

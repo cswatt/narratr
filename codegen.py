@@ -341,7 +341,7 @@ class CodeGen:
                                     commands += "}"
                             i += 1
 
-            elif smt.value in ["if", "while", "elif"]:
+            elif smt.value in ["if", "while"]:
                 commands += prefix + smt.value + " "
                 commands += self._process_test(smt.children[0], 0) + ":\n    "
                 for c in smt.children[1:]:
