@@ -315,21 +315,24 @@ class CodeGen:
                         commands += self._process_testlist(smt)
 
             elif smt.value == "flow":
-                commands += "    "*indentlevel
+                commands += prefix
                 if len(smt.children) > 0:
-                    i = 0
-                    for child in smt.children:
-                        if child.type == "direction":
-                            if i == 0:
-                                commands += ' direction = {"'
-                            else:
-                                commands += '"'
-                            commands += self._process_direction(child, 2)
-                            if (len(smt.children) - 1) != i:
-                                commands += ', '
-                            else:
-                                commands += "}"
-                        i += 1
+                    if smt.children[0].type in ["break_statement", "continue_statement"]:
+                        commands += smt.children[0].value
+                    else: #direction list
+                        i = 0
+                        for child in smt.children:
+                            if child.type == "direction":
+                                if i == 0:
+                                    commands += 'direction = {"'
+                                else:
+                                    commands += '"'
+                                commands += self._process_direction(child, 2)
+                                if (len(smt.children) - 1) != i:
+                                    commands += ', '
+                                else:
+                                    commands += "}"
+                            i += 1
 
             elif smt.value == "if":
                 commands += self._process_ifstatement(smt, 2)
