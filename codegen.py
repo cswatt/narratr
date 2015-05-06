@@ -15,7 +15,7 @@
 #
 # -----------------------------------------------------------------------------
 
-
+from node import Node
 class CodeGen:
     def __init__(self):
         self.frontmatter = "#!/usr/bin/env python\n"
@@ -341,13 +341,18 @@ class CodeGen:
                                     commands += "}"
                             i += 1
 
-            elif smt.value in ["if", "while"]:
-                commands += prefix + smt.value + " "
+            elif smt.value in ["if", "while"] or smt.type == "elif_statements":
+                if smt.value is not None:
+                    commands += prefix + smt.value + " "
+                else:
+                    commands += prefix + "elif "
                 commands += self._process_test(smt.children[0], 0) + ":\n    "
                 for c in smt.children[1:]:
                     if c.value == "else":
                         commands += prefix + "else:\n    "
                         commands += self._process_statements(c, indentlevel+1)
+                    elif c.type == "elif_statements":
+                        commands += "\n    " + self._process_statements(Node(None, "suite", [c]), indentlevel)
                     else:
                         commands += self._process_statements(c, indentlevel+1)
 
