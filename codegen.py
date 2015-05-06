@@ -470,66 +470,13 @@ class CodeGen:
 
         else:
             for child in exps.children:
-                if child.type == "factor" and child.v_type == "list":
-                    commands += "["
-                    count = 0
-                    for lchild in child.children:
-                        tl = lchild.children[0]
-                        commands += self._process_expression(tl)
-                        count += 1
-                        if count != len(child.children):
-                            commands += ', '
-                    commands += "]"
-
-                elif child.type == "factor" and child.value == "list":
-                    commands += "nlist"
-                    if len(child.children) > 0:
-                        for fchild in child.children:
-                            if fchild.type == "trailer":
-                                if len(fchild.children) > 0:
-                                    fcount = 0
-                                    for ffchild in fchild.children:
-                                        if ffchild.type == "dot":
-                                            commands += ffchild.value
-                                        elif ffchild.type == "id":
-                                            if ffchild.value == "add":
-                                                commands += "append("
-                                        elif ffchild.type == "expression":
-                                            t = ffchild
-                                            temp = self._process_expression(t)
-                                            commands += temp
-                                            fcount += 1
-                                            if fcount != len(fchild.children):
-                                                commands += ', '
-                                            else:
-                                                commands += ')'
-
-                elif child.type == "factor" and child.v_type == "id":
-                    if child.value == "pocket":
-                        commands += self._process_pocket(child, indentlevel)
-                    else:
-                        print self.symtab.get(child.value, 'GLOBAL')
-                        commands += "self.__namespace['" + child.value + "']"
-
-                elif child.type == "factor" and child.value is None:
-                    commands += self._process_factor(child)
-
-                elif child.type == "factor" and child.v_type == "string":
-                    if child.value == "str":
-                        commands += "str("
-                        commands += self._process_expression(
-                                    child.children[0].children[0])
-                        commands += ")"
-                    else:
-                        commands += '"' + child.value + '"'
-
-                elif child.type == "factor" and child.v_type == "integer":
-                    commands += str(child.value)
+                if child.type == "factor":
+                    commands += self._process_factor(child, 0)
 
                 elif child.type == "arithmetic_expression":
                     # there should be a _process_arithmetic_expression()
                     # function that is called here.
-                    if child.v_type == "integer":
+                    if child.v_type in ["integer", "float"]:
                         commands += str(child.children[0].value) + ' '
                     elif child.v_type == "id":
                         commands += "self.__namespace['"\
@@ -563,18 +510,75 @@ class CodeGen:
                     commands += factors.children[1].value
                 for factor in factors.children[2].children:
                     commands += ' ' + str(factor.value)
+
             elif factors.children[0].v_type == "boolean":
                 if factors.children[0].children[0].value == "true":
                     commands += "True"
                 elif factors.children[0].children[0].value == "false":
                     commands += "False"
-        else:
-            if factors.v_type == "integer":
-                commands += str(factors.value)
-            if factors.v_type == "id":
-                commands += "self.__namespace['" + str(factors.value) + "']"
-            if factors.v_type == "string":
+
+        if factors.v_type in ["integer", "float"]:
+            commands += str(factors.value)
+
+        elif factors.v_type == "string":
+            commands += '"' + factors.value + '"'
+        
+        elif factors.v_type == "list":
+            commands += "["
+            count = 0
+            for lchild in factors.children:
+                tl = lchild.children[0]
+                commands += self._process_expression(tl)
+                count += 1
+                if count != len(child.children):
+                    commands += ', '
+            commands += "]"
+
+        elif factors.value == "list":
+            commands += "nlist"
+            if len(factors.children) > 0:
+                for fchild in child.children:
+                    if fchild.type == "trailer":
+                        if len(fchild.children) > 0:
+                            fcount = 0
+                            for ffchild in fchild.children:
+                                if ffchild.type == "dot":
+                                    commands += ffchild.value
+                                elif ffchild.type == "id":
+                                    if ffchild.value == "add":
+                                        commands += "append("
+                                elif ffchild.type == "expression":
+                                    t = ffchild
+                                    temp = self._process_expression(t)
+                                    commands += temp
+                                    fcount += 1
+                                    if fcount != len(fchild.children):
+                                        commands += ', '
+                                    else:
+                                        commands += ')'
+
+        elif factors.v_type == "id":
+            if factors.value == "pocket":
+                commands += self._process_pocket(factors, indentlevel)
+            # elif [this is an item]
+            else:
+                commands += "self.__namespace['" + factors.value + "']"
+
+        elif factors.value is None:
+            commands += self._process_factor(factors)
+
+        elif factors.v_type == "string":
+            if factors.value == "str":
+                commands += "str("
+                commands += self._process_expression(
+                            factors.children[0].children[0])
+                commands += ")"
+            else:
                 commands += '"' + factors.value + '"'
+
+        elif factors.v_type == "integer":
+            commands += str(factors.value)
+            
         return commands
 
     # This function recursively deals with arithmetic node
