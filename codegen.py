@@ -279,7 +279,7 @@ class CodeGen:
                         "direction)\n            " +
                         "if isinstance(response, list):" +
                         "\n                self.cleanup()\n" +
-                        "                return response[0]")
+                        "                return response[0]\n")
         return commands
 
     def _process_statements(self, statement, indentlevel=1, datatype=None):
@@ -324,7 +324,7 @@ class CodeGen:
                     for child in smt.children:
                         if child.type == "direction":
                             if i == 0:
-                                commands += '\ndirection = {"'
+                                commands += ' direction = {"'
                             else:
                                 commands += '"'
                             commands += self._process_direction(child, 2)
@@ -671,9 +671,9 @@ class CodeGen:
                                         ": Adding to the pocket requires" +
                                         " exactly two arguments. " +
                                         str(len(child.children)) + " given.")
-                    commands += self._process_expression(child.children[0])
+                    commands += self._process_expression(child.children[0], 0)
                     commands += "] = "
-                    commands += self._process_expression(child.children[1])
+                    commands += self._process_expression(child.children[1], 0)
                 elif get:
                     if len(child.children) != 1:
                         raise Exception("Line " + str(pocket_node.lineno) +
@@ -681,7 +681,7 @@ class CodeGen:
                                         " requires exactly one argument. " +
                                         str(len(child.children)) + " given.")
                     commands += "pocket["
-                    commands += self._process_expression(child.children[0])
+                    commands += self._process_expression(child.children[0], 0)
                     commands += "]"
                 elif remove:
                     if len(child.children) != 1:
@@ -690,7 +690,7 @@ class CodeGen:
                                         " requires exactly one argument. " +
                                         str(len(child.children)) + " given.")
                     commands += "del pocket["
-                    commands += self._process_expression(child.children[0])
+                    commands += self._process_expression(child.children[0], 0)
                     commands += "]"
         return commands
 
