@@ -10,7 +10,7 @@ scene $1 {
 		n is 2 * 2
 		say n
 		n is 9 / 3
-		say n
+		say n + "is awesome"
 		n is 10//3
 	action:
 		win
