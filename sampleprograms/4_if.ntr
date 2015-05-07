@@ -2,8 +2,10 @@ scene $1 {
 	setup:
 		if (1 == 1):
 			say "Okay."
+		elif (1 == 1) and (2 == 1):
+			say "fine"
 	action:
-		win
+		win "haha"
 	cleanup:
 }
 
