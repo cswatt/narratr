@@ -313,10 +313,10 @@ class ParserForNarratr:
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
-        p[0] = Node(None, 'moveto', [p[2]], lineno=p[1].lineno)
+        p[0] = Node(None, 'moveto', [Node(p[2], "sceneid")], lineno=p.lineno(1))
         p[0].type = 'moveto_statement'
-        #make sure both moveto and scene id are found and make sure sceneid is
-        # integer
+        # Make sure both moveto and scene id are found and make sure sceneid is
+        # integer.
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
