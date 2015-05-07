@@ -185,7 +185,6 @@ class CodeGen:
         item_code = "class item_" + str(iid) + ":\n    "
         # "\n    ".join(commands)
         for c in item.children:
-            print c.type
             if c.type == "calllist":
                 item_code = item_code + "def __init__(self"
                 for exp in c.children:
@@ -208,7 +207,6 @@ class CodeGen:
         commands = []
         if len(c.children) > 0:
             commands.append(self._process_statements(c, 2))
-        print commands
         return commands
 
 # in narratr: k is key(1) (is the constructor call)
@@ -300,23 +298,30 @@ class CodeGen:
             elif smt.value == "exposition":
                 commands += prefix + "print "
                 for testlist in smt.children:
-                    commands += self._process_testlist(testlist, 2)
+                    commands += self._process_testlist(
+                        testlist,
+                        indentlevel + 1)
             elif smt.value in ["win", "lose"]:
                 if len(smt.children) > 0:
                     for testlist in smt.children:
                         commands += prefix + "print "
-                        commands += self._process_testlist(testlist, 2)
+                        commands += self._process_testlist(
+                            testlist,
+                            indentlevel + 1)
                 commands += prefix + "exit(0)"
             elif smt.value == "is":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "god_id":
-                        self.main = self._process_god_assign(smt.children, 2)\
-                                    + self.main
+                        self.main = self._process_god_assign(
+                            smt.children,
+                            indentlevel + 1) + self.main
             elif smt.value == "expression":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "id":
                         commands += prefix
-                        commands += self._process_assign(smt.children, 2)
+                        commands += self._process_assign(
+                            smt.children,
+                            indentlevel + 1)
                     elif smt.children[0].type == "test":
                         commands += prefix
                         commands += self._process_testlist(smt)
@@ -336,7 +341,9 @@ class CodeGen:
                                     commands += 'direction = {"'
                                 else:
                                     commands += '"'
-                                commands += self._process_direction(child, 2)
+                                commands += self._process_direction(
+                                    child,
+                                    indentlevel + 1)
                                 if (len(smt.children) - 1) != i:
                                     commands += ', '
                                 else:
@@ -383,11 +390,17 @@ class CodeGen:
                             dt = datatype
                             commands += self._process_expression(child, i, dt)
                         if child.type == "and_test":
-                            commands += self._process_expression(child, 2)
+                            commands += self._process_expression(
+                                child,
+                                indentlevel + 1)
                         if child.type == "not_test":
-                            commands += self._process_expression(child, 2)
+                            commands += self._process_expression(
+                                child,
+                                indentlevel + 1)
                         if child.type == "or_test":
-                            commands += self._process_expression(child, 2)
+                            commands += self._process_expression(
+                                child,
+                                indentlevel + 1)
             elif test.type == "suite":
                 commands += "    "*3 + "win"
         return commands
@@ -434,7 +447,6 @@ class CodeGen:
             commands += "nlist" + " = "
             commands += self._process_testlist(ass[1], 2)
         else:
-            print ass
             commands += "self.__namespace['" + ass[0].value + "'] = "
             commands += self._process_testlist(ass[1], 2)
         return commands
@@ -589,7 +601,10 @@ class CodeGen:
                                 tempc = child.children[0]
                                 temp = self._process_factor(tempc, indent+1)
                                 if datatype == "String":
-                                    commands += 'str(' + temp + ')'
+                                    if tempc.v_type == 'string':
+                                        commands += temp
+                                    else:
+                                        commands += 'str(' + temp + ')'
                                 else:
                                     commands += temp
                                 commands += ' ' + expvalue + ' '
@@ -597,7 +612,8 @@ class CodeGen:
                         if child.v_type == "integer":
                             tv = child.value
                             c = child
-                            temp = self._process_arithmetic(c, tv, indent+1)
+                            temp = self._process_arithmetic(c, tv,
+                                                            indent+1, datatype)
                             commands += temp + ' '
                             if datatype == "String":
                                 commands += 'str(' + str(tv) + ')' + ' '
@@ -606,22 +622,26 @@ class CodeGen:
                         elif child.v_type == 'id':
                             tv = child.value
                             c = child
-                            temp = self._process_arithmetic(c, tv, indent+1)
-                            commands += temp
-                            if datatype == "String":
-                                commands += 'str('
-                            commands += "self.__namespace['" + str(tv) + "']"
-                            if datatype == "String":
-                                commands += ')'
+                            temp = self._process_arithmetic(c, tv,
+                                                            indent+1, datatype)
+                            commands += temp + ' '
+                            commands += str(tv) + ' '
                 elif child.type == "term":
                     if child.value is None:
                         if len(child.children) > 0:
                             if child.children[0].type == "factor":
                                 tc = child.children[0]
+                                if (datatype == "String" and
+                                        tc.v_type != 'string'):
+                                    commands += 'str('
                                 commands += self._process_factor(tc, indent+1)
+                                if (datatype == "String" and
+                                        tc.v_type != 'string'):
+                                    commands += ')'
                     elif child.value in ['*', '/']:
                         tv = str(child.value)
-                        temp = self._process_arithmetic(child, tv, indent+1)
+                        temp = self._process_arithmetic(child, tv,
+                                                        indent+1, datatype)
                         commands += temp
                 elif child.type == "factor":
                     if child.v_type == 'id':

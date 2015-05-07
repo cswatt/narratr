@@ -11,6 +11,7 @@ scene $1 {
 		say n
 		n is 9 / 3
 		say n + "is awesome"
+		say "is awesome" + n + n
 		n is 10//3
 	action:
 		win
