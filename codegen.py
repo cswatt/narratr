@@ -285,9 +285,6 @@ class CodeGen:
         commands = ''
         prefix = "\n" + "    "*indentlevel
         indent = 1
-        # if statement.value == "else":
-        #     commands += prefix + "else:"
-        #     indentlevel += 1
         for smt in statement.children:
             if smt.value == "say":
                 commands += prefix + "print "
