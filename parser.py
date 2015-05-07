@@ -36,7 +36,7 @@ class ParserForNarratr:
         "program : newlines_optional blocks"
         p[0] = Node(None, "program", [p[2]])
 
-    # assumes start state only given once
+    # Assumes start state only given once--addressed in codegen.py
     def p_blocks(self, p):
         '''blocks : scene_block newlines_optional
                   | item_block newlines_optional
