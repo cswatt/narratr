@@ -762,61 +762,53 @@ class CodeGen:
         return commands
 
     def _process_pocket(self, pocket_node, indentlevel=1):
-        commands = '    ' * indentlevel
+        commands = ""
         add = get = remove = False
-        for i, child in enumerate(pocket_node.children):
-            if i == 0:
-                if child.children[1].value == "add":
-                    add = True
-                    commands += "pocket["
-                elif child.children[1].value == "get":
-                    get = True
-                    pass
-                elif child.children[1].value == "remove":
-                    remove = True
-                    pass
-                else:
-                    raise Exception("Invalid operation on line " +
-                                    str(child.children[1].lineno) +
-                                    ": cannot '" +
-                                    str(child.children[1].value) +
-                                    "' the pocket.")
-            elif i == 1:
-                if add:
-                    if len(child.children) != 2:
-                        raise Exception("Line " + str(pocket_node.lineno) +
-                                        ": Adding to the pocket requires" +
-                                        " exactly two arguments. " +
-                                        str(len(child.children)) + " given.")
-                    commands += self._process_expression(
-                                        child.children[0],
-                                        indentlevel=0)
-                    commands += "] = "
-                    commands += self._process_expression(
-                                        child.children[1],
-                                        indentlevel=0)
-                elif get:
-                    if len(child.children) != 1:
-                        raise Exception("Line " + str(pocket_node.lineno) +
-                                        ": Getting a value from pocket"
-                                        " requires exactly one argument. " +
-                                        str(len(child.children)) + " given.")
-                    commands += "pocket["
-                    commands += self._process_expression(
-                                        child.children[0],
-                                        indentlevel=0)
-                    commands += "]"
-                elif remove:
-                    if len(child.children) != 1:
-                        raise Exception("Line " + str(pocket_node.lineno) +
-                                        ": Deleting a value from pocket"
-                                        " requires exactly one argument. " +
-                                        str(len(child.children)) + " given.")
-                    commands += "del pocket["
-                    commands += self._process_expression(
-                                        child.children[0],
-                                        indentlevel=0)
-                    commands += "]"
+        if len(pocket_node.children) != 2:
+            self._process_error("Pocket has the wrong structure.",
+                                pocket_node.lineno)
+
+        if pocket_node.children[0].children[1].value == "add":
+            if len(pocket_node.children[1].children) != 2:
+                l = len(pocket_node.children[1].children)
+                self._process_error("Adding to the pocket requires" +
+                                    " exactly two arguments. " +
+                                    str(l) + " given.", pocket_node.lineno)
+            else:
+                commands += "pocket['"
+                commands += self._process_expression(
+                                    pocket_node.children[1].children[0])
+                commands += "] = "
+                commands += self._process_expression(
+                                    pocket_node.children[1].children[1])
+
+        elif pocket_node.children[0].children[1].value == "get":
+            if len(pocket_node.children[1].children) != 1:
+                l = len(pocket_node.children[1].children)
+                self._process_error("Adding to the pocket requires" +
+                                    " exactly one argument. " +
+                                    str(l) + " given.", pocket_node.lineno)
+            else:
+                commands += "pocket['"
+                commands += self._process_expression(
+                                    pocket_node.children[1].children[0])
+                commands += "]"
+
+        elif pocket_node.children[0].children[1].value == "remove":
+            if len(pocket_node.children[1].children) != 1:
+                l = len(pocket_node.children[1].children)
+                self._process_error("Removing from pocket requires" +
+                                    " exactly one argument. " +
+                                    str(l) + " given.", pocket_node.lineno)
+            else:
+                commands += "del pocket['"
+                commands += self._process_expression(
+                                    pocket_node.children[1].children[0])
+                commands += "]"
+        else:
+            self._process_error("Cannot '" +
+                                str(pocket_node.children[0].children[1]) +
+                                "' the pocket.", child.children[1].lineno)
         return commands
 
     def _process_error(self, error, lineno=0):
