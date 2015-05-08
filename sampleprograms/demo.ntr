@@ -49,7 +49,7 @@ scene $4{
 		if (response == "kick the llama"):
 			say "You're a terrible person. You deserve to lose this game."
 			lose
-		elif (response == "pet the llama"):
+		elif (response == "pet the llama" or response == "hug the llama" or response == "embrace the llama"):
 			say "The llama bats its eyelashes at you."
 	cleanup:
 		pocket.add(pumpingllama)
@@ -62,29 +62,31 @@ item llama(name){
 
 scene $5{
 	setup:
-		exposition "THERE IS A GIANT DRAGON. He's wearing a purple shirt that says 'Complexity of Compiler Design.' But you are no knight."
+		exposition "THERE IS A GIANT DRAGON. He's wearing a purple shirt that says 'Complexity of Compiler Design.' But you are no knight. What could you do to fight the dragon? Punch? Stab? Throw the llama at him?"
 		moves down($4)
-		dragon_hp is 10
+		dragon_hp is 5
 	action:
 		while dragon_hp > 0:
-			if (dragon_hp == 10):
-				say "DRAGON: blahhh"
-			if (dragon_hp == 9):
-				say "DRAGON: okay i'm tired now"
-			if (dragon_hp == 8):
-				say "DRAGON: okay i'm tired now"
-			if (dragon_hp == 7):
-				say "DRAGON: okay i'm tired now"
-			if (dragon_hp == 6):
-				say "DRAGON: okay i'm tired now"
+			say "The dragon breathes fire at you. Ow."
 			if (dragon_hp == 5):
-				say "DRAGON: okay i'm tired now"
+				say "DRAGON: My flames of ambiguity shall engulf you!"
+			if (dragon_hp == 4):
+				say "DRAGON: Look at you. Lost in a text-based dungeon with no company but a Pumping Llama. Pathetic."
+			if (dragon_hp == 3):
+				say "DRAGON: I'm getting real tired of that sword of yours."
+			if (dragon_hp == 2):
+				say "DRAGON: Why do you keep stabbing me?"
+			if (dragon_hp == 1:
+				say "DRAGON: *cough* ... *cough* ..."
+			if (dragon_hp == 0):
+				say "DRAGON: Curse you..."
+				break
 
-			if (response == "punch the dragon"):
+			if (response == "punch the dragon" or response == "punch dragon"):
 				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
-			if (response == "stab the dragon") and (thesword.pickedUp):
+			if (response == "stab the dragon" or response == "stab dragon") and (thesword.pickedUp):
 				dragon_hp is dragon_hp - 1
-			if (response == "throw the llama"):
+			if (response == "throw the llama" or "throw llama"):
 				say "That's animal cruelty."
 			if (response == "run away"):
 				break
