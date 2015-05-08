@@ -359,8 +359,7 @@ class CodeGen:
                         commands += self._process_statements(c, indentlevel+1)
                     elif c.type == "elif_statements":
                         commands += "\n    "\
-                                 + self._process_statements(
-                                                            Node(None, "suite",
+                                 + self._process_statements(Node(None, "suite",
                                                                  [c]),
                                                             indentlevel)
                     else:
@@ -370,9 +369,7 @@ class CodeGen:
                 commands += self._process_testlist(smt, 2)
 
         # We need to remove the leading whitespace and first tab because of
-        # the list constructed by _scene_gen(). It's possible this will mess
-        # with the block statements later on, in which case this modification
-        # should instead be made in that function.
+        # the list constructed by _scene_gen().
         return commands[5:]
 
     # This function takes "testlist" node as argument
