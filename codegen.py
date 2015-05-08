@@ -159,7 +159,7 @@ class CodeGen:
                 + "        exec 'next = ' + next"
         else:
             self._process_warning("Multiple start scene declarations. " +
-                                  "Using scene $" + self.startstate ".")
+                                  "Using scene $" + self.startstate + ".")
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
