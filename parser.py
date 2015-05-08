@@ -16,7 +16,9 @@
 #
 # -----------------------------------------------------------------------------
 
+from sys import stderr, exit
 import ply.yacc as yacc
+from ply.lex import LexToken
 from lexer import LexerForNarratr
 from node import Node
 from symtab import SymTabEntry, SymTab
@@ -682,7 +684,6 @@ class ParserForNarratr:
         if len(p) == 9:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]],
                         lineno=p[2].lineno)
-            p[4].value = 'elif'
             p[8].value = 'else'
         elif len(p) == 8:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]],
@@ -691,7 +692,6 @@ class ParserForNarratr:
         elif len(p) == 6:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]],
                         lineno=p[2].lineno)
-            p[4].value = 'elif'
         else:
             p[0] = Node(None, 'if_statement', [p[2], p[4]], lineno=p[2].lineno)
         p[0].type = 'if_statement'
@@ -786,10 +786,12 @@ class ParserForNarratr:
                      "' with '" + p[3].v_type + "'")
 
     def p_error(self, p):
-        if isinstance(p, str):
-            raise Exception(p)
-        else:
-            raise Exception("Syntax Error at token " + str(p))
+        if isinstance(p, LexToken):
+            stderr.write("Syntax Error at Line " + str(p.lineno) + ": " +
+                         "at token '" + str(p.value) + "'\n")
+        elif isinstance(p, str):
+            stderr.write("Syntax Error: " + str(p) + "\n")
+        exit(1)
 
     def parse(self, string_to_parse, **kwargs):
         return self.parser.parse(string_to_parse, lexer=self.lexer, **kwargs)

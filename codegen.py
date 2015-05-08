@@ -15,6 +15,7 @@
 #
 # -----------------------------------------------------------------------------
 
+from sys import stderr, exit
 from node import Node
 
 
@@ -36,19 +37,23 @@ class CodeGen:
     # DFS or other tree searching algorithms, which improves efficiency.
     def process(self, node, symtab):
         self.symtab = symtab
-        for c in node.children:
-            if c.type == "blocks":
-                for bc in c.children:
-                    if type(bc) is dict:
-                        for key, s_i in bc.iteritems():
-                            if s_i.type == "scene_block":
-                                print 'scene_block'
-                                self._add_scene(self._scene_gen(s_i, key))
-                            elif s_i.type == "item_block":
-                                print 'item_block'
-                                self._add_item(self._item_gen(s_i, key))
-                    elif bc.type == "start_state":
-                        self._add_main(bc)
+        if len(node.children) != 1 or node.children[0].type != "blocks":
+            self._process_error("Unexpected Parse Tree - Incorrect number" +
+                                "or type of children for the top node",
+                                node.lineno)
+        blocks = node.children[0].children
+        for block in blocks:
+            if type(block) is dict:
+                for key, s_i in block.iteritems():
+                    if s_i.type == "scene_block":
+                        self._add_scene(self._scene_gen(s_i, key))
+                    elif s_i.type == "item_block":
+                        self._add_item(self._item_gen(s_i, key))
+            elif block.type == "start_state":
+                self._add_main(block)
+            else:
+                self._process_error("Found unexpected block types.",
+                                    block.lineno)
 
     # This function takes the instance variables constructed by the process()
     # function and writes them to an output file. (As such, it must be run
@@ -205,9 +210,13 @@ class CodeGen:
     def _process_item_block(self, c):
         commands = []
         if len(c.children) > 0:
+<<<<<<< HEAD
             for child in c.children:
                 commands.append(self._process_statements(child,
                                 indentlevel=2, blocktype='item'))
+=======
+            commands.append(self._process_suite(c, 2))
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
         return commands
 
 # in narratr: k is key(1) (is the constructor call)
@@ -230,7 +239,7 @@ class CodeGen:
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
     # direction, and at the end, the code to move to the action block), and
-    # sends the child nodes to _process_statements() to generate their code.
+    # sends the child nodes to _process_suite() to generate their code.
     def _process_setup_block(self, c):
         commands = []
         commands.append("def setup(self):" +
@@ -238,14 +247,18 @@ class CodeGen:
 
         if len(c.children) > 0:
             for child in c.children:
+<<<<<<< HEAD
                 commands.append(self._process_statements(child,
                                 indentlevel=2, blocktype='scene'))
+=======
+                commands.append(self._process_suite(child, 2))
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
         commands.append("    return self.action(direction)\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
     # node. Adds boilerplate code (function definition and "pass" if necessary,
-    # explained below), then sends the child nodes to _process_statements() to
+    # explained below), then sends the child nodes to _process_suite() to
     # generate their code. "pass" is required in the scenario that there are no
     # child nodes, in which case Python syntactically requires code, we need to
     # be able to execute the function, but we don't want anything to happen. #
@@ -254,8 +267,12 @@ class CodeGen:
         commands = []
         commands.append("def cleanup(self):")
         if len(c.children) > 0:
+<<<<<<< HEAD
             commands.append(self._process_statements(c.children[0],
                             indentlevel=3, blocktype='scene'))
+=======
+            commands.append(self._process_suite(c.children[0], 3))
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
         else:
             commands.append("    pass")
         return commands
@@ -274,8 +291,12 @@ class CodeGen:
         commands.append("    response = \"\"\n        while True:")
         if len(c.children) > 0:
             for child in c.children:
+<<<<<<< HEAD
                 commands.append(self._process_statements(child,
                                 indentlevel=3,  blocktype='scene'))
+=======
+                commands.append(self._process_suite(child, 3)[5:])
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
@@ -283,8 +304,15 @@ class CodeGen:
                         "                return response[0]\n")
         return commands
 
+    def _process_suite(self, statement, indentlevel=1, datatype=None):
+        commands = ""
+        for smt in statement.children:
+            commands += self._process_statement(smt, indentlevel)
+        return commands
+
     # Statement is actually a suite node, but we're keeping the name for
     # backwards-compatability.
+<<<<<<< HEAD
     def _process_statements(self, statement, indentlevel=1, datatype=None,
                             blocktype='scene'):
         commands = ''
@@ -303,9 +331,30 @@ class CodeGen:
                                         blocktype=blocktype)
             elif smt.value == "exposition":
                 commands += prefix + "print "
+=======
+    def _process_statement(self, smt, indentlevel=1, datatype=None):
+        commands = ''
+        prefix = "\n" + "    "*indentlevel
+        if smt.value == "say":
+            commands += prefix + "print "
+            for testlist in smt.children:
+                t = "String"
+                tl = testlist
+                commands += self._process_testlist(tl, indentlevel + 1, t)
+        elif smt.value == "exposition":
+            commands += prefix + "print "
+            for testlist in smt.children:
+                commands += self._process_testlist(
+                    testlist,
+                    indentlevel + 1)
+        elif smt.value in ["win", "lose"]:
+            if len(smt.children) > 0:
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
                 for testlist in smt.children:
+                    commands += prefix + "print "
                     commands += self._process_testlist(
                         testlist,
+<<<<<<< HEAD
                         indentlevel=indentlevel + 1, blocktype=blocktype)
             elif smt.value in ["win", "lose"]:
                 if len(smt.children) > 0:
@@ -388,14 +437,66 @@ class CodeGen:
                                     smt,
                                     indentlevel=2,
                                     blocktype=blocktype)
+=======
+                        indentlevel + 1)
+            commands += prefix + "exit(0)"
+        elif smt.value == "is":
+            if len(smt.children) > 0:
+                if smt.children[0].type == "god_id":
+                    self.main = self._process_god_assign(
+                        smt.children,
+                        indentlevel + 1) + self.main
+        elif smt.value == "expression":
+            if len(smt.children) > 0:
+                if smt.children[0].type == "id":
+                    commands += prefix
+                    commands += self._process_assign(
+                        smt.children,
+                        indentlevel + 1)
+                elif smt.children[0].type == "test":
+                    commands += prefix
+                    commands += self._process_testlist(smt)
 
-        # We need to remove the leading whitespace and first tab because of
-        # the list constructed by _scene_gen(). It's possible this will mess
-        # with the block statements later on, in which case this modification
-        # should instead be made in that function.
-        return commands[5:]
+        elif smt.value == "flow":
+            commands += prefix
+            if len(smt.children) > 0:
+                if smt.children[0].type in ["break_statement",
+                                            "continue_statement"]:
+                    commands += smt.children[0].value
+                # direction list
+                else:
+                    i = 0
+                    for child in smt.children:
+                        if child.type == "direction":
+                            if i == 0:
+                                commands += 'direction = {"'
+                            else:
+                                commands += '"'
+                            commands += self._process_direction(
+                                child,
+                                indentlevel + 1)
+                            if (len(smt.children) - 1) != i:
+                                commands += ', '
+                            else:
+                                commands += "}"
+                        i += 1
+
+        elif smt.value == "if" or smt.type == "elif_statements":
+            commands += prefix + self._process_ifstatement(smt,
+                                                           indentlevel)
+
+        elif smt.value == "while":
+            commands += prefix + self._process_whilestatement(smt,
+                                                              indentlevel)
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
+
+        elif smt.value is None:
+            commands += self._process_testlist(smt, 2)
+
+        return commands
 
     # This function takes "testlist" node as argument
+<<<<<<< HEAD
     def _process_testlist(self, testlist, indentlevel=1, datatype=None,
                           blocktype='scene'):
         commands = ''
@@ -429,10 +530,25 @@ class CodeGen:
             elif test.type == "suite":
                 commands += "    "*3 + "win"
         return commands
+=======
+    def _process_testlist(self, testlist, indentlevel=1, datatype=None):
+        if not isinstance(testlist, Node):
+            self._process_error("Something bad happened. Unfortunately, that" +
+                                " is all we know.")
+        if len(testlist.children) == 0:
+             self._process_error("Testlist has no children to process.",
+                                 testlist.lineno)
+        tests = testlist.children
+        testcode = []
+        for test in tests:
+            testcode.append(self._process_test(test))
+        return ",".join(testcode)
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
 
     def _process_test(self, test, indentlevel=1):
         return "[tests]"
 
+<<<<<<< HEAD
     def _process_action(self, expr, indentlevel=1):
         commands = ''
         if len(expr.children) > 0:
@@ -472,6 +588,36 @@ class CodeGen:
                                 indentlevel=1,
                                 blocktype=blocktype)
             commands += ":"
+=======
+    # This function takes statement node with "while" value.
+    def _process_whilestatement(self, smt, indentlevel=1):
+        commands = "while "
+        commands += self._process_test(smt.children[0], 0) + ":\n    "
+        for c in smt.children[1:]:
+            commands += self._process_suite(c, indentlevel+1)
+        return commands
+
+    # This function takes statement node with "if" value, or an elif node.
+    # Note, because of the embedding structure, we need to process it this
+    # way, and the constructions are identical, except "if" vs "elif" token.
+    def _process_ifstatement(self, smt, indentlevel=1):
+        if smt.value is not None:
+            commands = "if "
+        else:
+            commands = "elif "
+        commands += self._process_test(smt.children[0], 0) + ":\n    "
+        for c in smt.children[1:]:
+            if c.value == "else":
+                commands += "\n" + "    "*indentlevel + "else:\n    "
+                commands += self._process_suite(c, indentlevel+1)
+            elif c.type == "elif_statements":
+                commands += "\n    "\
+                         + self._process_suite(Node(None, "suite",
+                                                         [c]),
+                                                    indentlevel)
+            else:
+                commands += self._process_suite(c, indentlevel+1)
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
         return commands
 
     def _process_assign(self, ass, indentlevel=1, blocktype='scene'):
@@ -525,7 +671,6 @@ class CodeGen:
                         term1 += str(exps.children[0].value)
         else:
             for child in exps.children:
-
                 if child.type == "factor":
                     commands += self._process_factor(
                                         child,
@@ -552,6 +697,7 @@ class CodeGen:
                         if blocktype == 'scene':
                             commands += "self.__namespace['"\
                                     + child.children[0].value + "'] "
+<<<<<<< HEAD
                         elif blocktype == 'item':
                             commands += child.children[0].value
                 elif child.type == "expression" and child.value is None:
@@ -562,11 +708,19 @@ class CodeGen:
                                                     exex,
                                                     indentlevel=2,
                                                     blocktype=blocktype)
+=======
+
+                elif child.type == "expression":
+                    commands += self._process_expression(child, indentlevel)
+
+>>>>>>> fd1bbd6d049ba2e5d024496eb0d673eaf7ab4523
         return commands
 
     # This function takes "factor" node as argument
     def _process_factor(self, factors, indentlevel=2, blocktype='scene'):
         commands = ""
+        # When is this triggered, if ever? Is there a better way to write
+        # it?
         if len(factors.children) > 0:
             if len(factors.children) == 3:
                 for factor in factors.children[0].children:
@@ -809,3 +963,18 @@ class CodeGen:
                                         indentlevel=0)
                     commands += "]"
         return commands
+
+    def _process_error(self, error, lineno=0):
+        if lineno != 0:
+            stderr.write("ERROR: Line " + str(lineno) + ": " + str(error) +
+                         "\n")
+        else:
+            stderr.write("ERROR: " + str(error) + "\n")
+        exit(1)
+
+    def _process_warning(self, warning, lineno=0):
+        if lineno != 0:
+            stderr.write("WARNING: Line " + str(lineno) + ": " + str(warning) +
+                         "\n")
+        else:
+            stderr.write("WARNING: " + str(warning) + "\n")
