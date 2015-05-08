@@ -369,30 +369,17 @@ class CodeGen:
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist, indentlevel=1, datatype=None):
-        commands = ''
-        for test in testlist.children:
-            if test.type == "test":
-                if len(test.children) > 0:
-                    for child in test.children:
-                        if child.type == "expression":
-                            i = indentlevel + 1
-                            dt = datatype
-                            commands += self._process_expression(child, i, dt)
-                        if child.type == "and_test":
-                            commands += self._process_expression(
-                                child,
-                                indentlevel + 1)
-                        if child.type == "not_test":
-                            commands += self._process_expression(
-                                child,
-                                indentlevel + 1)
-                        if child.type == "or_test":
-                            commands += self._process_expression(
-                                child,
-                                indentlevel + 1)
-            elif test.type == "suite":
-                commands += "    "*3 + "win"
-        return commands
+        if not isinstance(testlist, Node):
+            self._process_error("Something bad happened. Unfortunately, that" +
+                                " is all we know.")
+        if len(testlist.children) == 0:
+             self._process_error("Testlist has no children to process.",
+                                 testlist.lineno)
+        tests = testlist.children
+        testcode = []
+        for test in tests:
+            testcode.append(self._process_test(test))
+        return ",".join(testcode)
 
     def _process_test(self, test, indentlevel=1):
         return "[tests]"
