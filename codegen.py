@@ -422,7 +422,7 @@ class CodeGen:
         commands += self._process_test(smt.children[0], 0) + ":\n    "
         for c in smt.children[1:]:
             if c.value == "else":
-                commands += prefix + "else:\n    "
+                commands += "\n" + "    "*indentlevel + "else:\n    "
                 commands += self._process_statements(c, indentlevel+1)
             elif c.type == "elif_statements":
                 commands += "\n    "\
