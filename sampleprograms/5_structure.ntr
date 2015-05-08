@@ -1,0 +1,5 @@
+scene $1 {
+	setup:
+	action: win
+	cleanup:
+}
