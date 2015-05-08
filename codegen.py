@@ -15,7 +15,7 @@
 #
 # -----------------------------------------------------------------------------
 
-from __future__ import print_function
+from sys import stderr, exit
 from node import Node
 
 
@@ -37,17 +37,19 @@ class CodeGen:
     # DFS or other tree searching algorithms, which improves efficiency.
     def process(self, node, symtab):
         self.symtab = symtab
-        for c in node.children:
-            if c.type == "blocks":
-                for bc in c.children:
-                    if type(bc) is dict:
-                        for key, s_i in bc.iteritems():
-                            if s_i.type == "scene_block":
-                                self._add_scene(self._scene_gen(s_i, key))
-                            elif s_i.type == "item_block":
-                                self._add_item(self._item_gen(s_i, key))
-                    elif bc.type == "start_state":
-                        self._add_main(bc)
+        if len(node.children) != 1 or node.children[0].type != "blocks":
+            self._process_error("Unexpected Parse Tree - Incorrect number" +
+                                "or type of children for the top node")
+        blocks = node.children[0].children
+        for block in blocks:
+            if type(block) is dict:
+                for key, s_i in block.iteritems():
+                    if s_i.type == "scene_block":
+                        self._add_scene(self._scene_gen(s_i, key))
+                    elif s_i.type == "item_block":
+                        self._add_item(self._item_gen(s_i, key))
+            elif block.type == "start_state":
+                self._add_main(block)
 
     # This function takes the instance variables constructed by the process()
     # function and writes them to an output file. (As such, it must be run
@@ -697,7 +699,8 @@ class CodeGen:
         return commands
 
     def _process_error(self, *errors):
-        print("ERROR: ", *errors, file=sys.stderr)
+        stderr.write("ERROR: " + str(*errors) + "\n")
+        exit(1)
 
     def _process_warning(self, *warnings):
-        print("WARNING: ", *warnings, file=sys.stderr)
+        stderr.write("WARNING: " + str(*warnings) + "\n")
