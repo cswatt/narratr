@@ -15,6 +15,7 @@
 #
 # -----------------------------------------------------------------------------
 
+from sys import stderr, exit
 import re
 import ply.lex as lex
 
@@ -212,15 +213,15 @@ class LexerForNarratr:
     def t_ignore_whitespace(self, t):
         r'[ \t\r\f\v]+'
 
-    # This rule is triggered if an error is encountered. The lexer skips a line
-    # after raising an exception.
+    # This rule is triggered if an error is encountered. The program exits with
+    # an error code after printing an error
     def t_error(self, t):
-        if isinstance(t, str):
-            raise Exception(t)
-        else:
-            raise Exception("Illegal token '" + t.value[0] + "' at line " +
-                            str(t.lexer.lineno))
-        t.lexer.skip(1)
+        if isinstance(t, lex.LexToken):
+            stderr.write("ERROR: Unrecognized character at Line " +
+                         str(t.lexer.lineno) + ": '" + str(t.value) + "'\n")
+        elif isinstance(t, str):
+            stderr.write("ERROR: " + str(p) + "\n")
+        exit(1)
 
     # This method provides an interface to the lexer's input(string) function
     def input(self, string_to_scan):

@@ -663,14 +663,14 @@ class ParserForNarratr:
 
     def p_error(self, p, err_type=None):
         if err_type == "combination_error":
-            stderr.write("Type error at line " + str(p.lineno(2)) +
+            stderr.write("ERROR: Type error at line " + str(p.lineno(2)) +
                          ": cannot combine '" + p[1].v_type +
-                         "' with '" + p[3].v_type + "'")
+                         "' with '" + p[3].v_type + "'\n")
         elif isinstance(p, LexToken):
-            stderr.write("Syntax Error at Line " + str(p.lineno) + ": " +
-                         "at token '" + str(p.value) + "'\n")
+            stderr.write("ERROR: Syntax Error at Line " + str(p.lineno) +
+                         ": " + "at token '" + str(p.value) + "'\n")
         elif isinstance(p, str):
-            stderr.write("Syntax Error: " + str(p) + "\n")
+            stderr.write("ERROR: " + str(p) + "\n")
         exit(1)
 
     def parse(self, string_to_parse, **kwargs):
