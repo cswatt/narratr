@@ -401,63 +401,48 @@ class ParserForNarratr:
     # make decisions.
     def p_test(self, p):
         '''test : or_test'''
-        p[0] = p[1]
-        p[0].type = "test"
+        p[0] = Node(None, 'test', [p[1]], lineno=p[1].lineno)
 
     def p_or_test(self, p):
         '''or_test : or_test OR and_test
                    | and_test'''
         if p[1].type == 'and_test':
-            p[0] = p[1]
-            p[0].type = 'or_test'
+            p[0] = Node(None, 'or_test', [p[1]], lineno=p[1].lineno)
         else:
             if not (p[2] == 'or'):
                 self.p_error('Syntax error: Or not used ' +
                              'at ' +
                              str(p.lineno(1)))
             children = [p[1], p[3]]
-            p[0] = Node(None, 'or', children, lineno=p[1].lineno)
-            p[0].type = 'or_test'
-        # look for or token in one case
+            p[0] = Node('or', 'or_test', children, lineno=p[1].lineno)
 
     def p_and_test(self, p):
         '''and_test : and_test AND not_test
                     | not_test'''
         if p[1].type == 'not_test':
-            p[0] = p[1]
-            p[0].type = 'and_test'
+            p[0] = Node(None, 'and_test', [p[1]], lineno=p[1].lineno)
         else:
             if not (p[2] == 'and'):
                 self.p_error('Syntax error: And not used ' +
                              'at ' +
                              str(p.lineno(1)))
             children = [p[1], p[3]]
-            p[0] = Node(None, 'and', children, lineno=p[1].lineno)
-            p[0].type = 'and_test'
-        # look for and token
+            p[0] = Node('and', 'and_test', children, lineno=p[1].lineno)
 
     def p_not_test(self, p):
         '''not_test : NOT not_test
                     | comparison'''
         if isinstance(p[1], Node) and p[1].type == 'comparison':
-            p[0] = p[1]
-            p[0].type = 'not_test'
+            p[0] = Node(None, 'not_test', [p[1]], lineno=p[1].lineno)
         else:
-            if not (p[1] == 'not'):
-                self.p_error('Syntax error: Not not used ' +
-                             'at ' +
-                             str(p.lineno(2)))
-            p[0] = Node(None, 'not', [p[2]], lineno=p[2].lineno)
-            p[0].type = 'not_test'
-        # look for not token
+            p[0] = Node('not', 'not_test', [p[2]], lineno=p[2].lineno)
 
     def p_comparison(self, p):
         '''comparison : comparison comparison_op expression
                       | expression'''
         if p[1].type == 'comparison':
-            p[0] = p[1]
-            p[0].children.append(p[2])
-            p[0].children.append(p[3])
+            p[0] = Node('comparison', 'comparison', [p[1], p[2], p[3]],
+                        p[1].v_type, lineno=p[1].lineno)
         else:
             p[0] = Node(None, 'comparison', [p[1]], p[1].v_type,
                         lineno=p[1].lineno)
