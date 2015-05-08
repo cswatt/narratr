@@ -26,7 +26,7 @@ class Node:
     #               Technically optional, but include for all new nodes.
     #   lineno      The line number at which the node appears. Technically
     #               optional, but include for all new nodes.
-    def __init__(self, v, t, c=[], v_type=None, lineno=None):
+    def __init__(self, v, t, c=[], v_type=None, lineno=0):
         self.value = v
         self.type = t
         self.children = c

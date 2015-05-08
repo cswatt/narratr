@@ -39,7 +39,8 @@ class CodeGen:
         self.symtab = symtab
         if len(node.children) != 1 or node.children[0].type != "blocks":
             self._process_error("Unexpected Parse Tree - Incorrect number" +
-                                "or type of children for the top node")
+                                "or type of children for the top node",
+                                node.lineno)
         blocks = node.children[0].children
         for block in blocks:
             if type(block) is dict:
@@ -50,6 +51,9 @@ class CodeGen:
                         self._add_item(self._item_gen(s_i, key))
             elif block.type == "start_state":
                 self._add_main(block)
+            else:
+                self._process_error("Found unexpected block types.",
+                                    block.lineno)
 
     # This function takes the instance variables constructed by the process()
     # function and writes them to an output file. (As such, it must be run
@@ -698,9 +702,17 @@ class CodeGen:
                     commands += "]"
         return commands
 
-    def _process_error(self, *errors):
-        stderr.write("ERROR: " + str(*errors) + "\n")
+    def _process_error(self, error, lineno=0):
+        if lineno != 0:
+            stderr.write("ERROR: Line " + str(lineno) + ": " + str(error) +
+                         "\n")
+        else:
+            stderr.write("ERROR: " + str(error) + "\n")
         exit(1)
 
-    def _process_warning(self, *warnings):
-        stderr.write("WARNING: " + str(*warnings) + "\n")
+    def _process_warning(self, warning, lineno=0):
+        if lineno != 0:
+            stderr.write("WARNING: Line " + str(lineno) + ": " + str(warning) +
+                         "\n")
+        else:
+            stderr.write("WARNING: " + str(warning) + "\n")
