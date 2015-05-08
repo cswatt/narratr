@@ -347,25 +347,13 @@ class CodeGen:
                                     commands += "}"
                             i += 1
 
-            elif smt.value in ["if"] or smt.type == "elif_statements":
-                if smt.value is not None:
-                    commands += prefix + smt.value + " "
-                else:
-                    commands += prefix + "elif "
-                commands += self._process_test(smt.children[0], 0) + ":\n    "
-                for c in smt.children[1:]:
-                    if c.value == "else":
-                        commands += prefix + "else:\n    "
-                        commands += self._process_statements(c, indentlevel+1)
-                    elif c.type == "elif_statements":
-                        commands += "\n    "\
-                                 + self._process_statements(Node(None, "suite",
-                                                                 [c]),
-                                                            indentlevel)
-                    else:
-                        commands += self._process_statements(c, indentlevel+1)
+            elif smt.value == "if" or smt.type == "elif_statements":
+                commands += prefix + self._process_ifstatement(smt,
+                                                               indentlevel)
+
             elif smt.value == "while":
-                commands += prefix + self._process_whilestatement(smt, indentlevel)
+                commands += prefix + self._process_whilestatement(smt,
+                                                                  indentlevel)
 
             elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
@@ -415,14 +403,34 @@ class CodeGen:
                 commands += self._process_statements(expr)
         return commands
 
-    # This function taks the node which has "block_statement" type and
-    # "while" value. The "while" node has similar structure with if
-    # statement and is needed to be seperated
+    # This function takes statement node with "while" value.
     def _process_whilestatement(self, smt, indentlevel=1):
         commands = "while "
         commands += self._process_test(smt.children[0], 0) + ":\n    "
         for c in smt.children[1:]:
             commands += self._process_statements(c, indentlevel+1)
+        return commands
+
+    # This function takes statement node with "if" value, or an elif node.
+    # Note, because of the embedding structure, we need to process it this
+    # way, and the constructions are identical, except "if" vs "elif" token.
+    def _process_ifstatement(self, smt, indentlevel=1):
+        if smt.value is not None:
+            commands = "if "
+        else:
+            commands = "elif "
+        commands += self._process_test(smt.children[0], 0) + ":\n    "
+        for c in smt.children[1:]:
+            if c.value == "else":
+                commands += prefix + "else:\n    "
+                commands += self._process_statements(c, indentlevel+1)
+            elif c.type == "elif_statements":
+                commands += "\n    "\
+                         + self._process_statements(Node(None, "suite",
+                                                         [c]),
+                                                    indentlevel)
+            else:
+                commands += self._process_statements(c, indentlevel+1)
         return commands
 
     def _process_assign(self, ass, indentlevel=1):
