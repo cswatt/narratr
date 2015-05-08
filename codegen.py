@@ -276,7 +276,7 @@ class CodeGen:
         commands.append("    response = \"\"\n        while True:")
         if len(c.children) > 0:
             for child in c.children:
-                commands.append(self._process_suite(child, 3))
+                commands.append(self._process_suite(child, 3)[5:])
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
