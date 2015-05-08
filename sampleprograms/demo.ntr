@@ -1,0 +1,94 @@
+scene $1 {
+	setup:
+		exposition "You wake up in a dark room."
+		moves right($2)
+	action:
+		say "There is a door to your right. What would you like to do?"
+	cleanup:
+		exposition "You're in the same old room where you started. Did you go in a circle? Are you lost?"
+}
+
+start: $1
+
+scene $2 {
+	setup:
+		exposition "An open area stretches before you. You can hear a voice speak to you."
+		speaker is "the voice"
+		god thesword is sword("The Sword of Semantic Correctness")
+		moves left($1), down($3), right($4)
+	action:
+		say "Will you listen to " + speaker + "?"
+		if (response == "no"):
+			say "That's your problem. You never listen."
+		else:
+			speaker is "Alfred Aho"
+			say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
+			pocket.add(thesword)
+	cleanup:
+}
+
+item sword(name){
+	id is name
+}
+
+scene $3 {
+	setup: 
+		exposition "It's just a closet."
+		moves up($2)
+	action:
+	cleanup:
+}
+
+scene $4{
+	setup:
+		exposition "There's a llama in the corner."
+		god pumpingllama is llama("Pumping Llama")
+		moves left($2), up($5)
+	action:
+		say "'Baa,' says the llama. What will you do?"
+		if (response == "kick the llama"):
+			say "You're a terrible person."
+		else if (response == "pet the llama"):
+			say "The llama bats its eyelashes at you."
+	cleanup:
+		pocket.add(pumpingllama)
+		exposition "A Pumping Llama once lived in this room. Now he follows you around."
+}
+
+item llama(name){
+	id is name
+}
+
+scene $5{
+	setup:
+		exposition "THERE IS A GIANT DRAGON. He's wearing a purple shirt that says 'Complexity of Compiler Design.' But you are no knight."
+		moves down($4)
+		dragon_hp is 10
+	action:
+		while dragon_hp > 0:
+			if (dragon_hp == 10):
+				say "DRAGON: blahhh"
+			if (dragon_hp == 9):
+				say "DRAGON: okay i'm tired now"
+			if (dragon_hp == 8):
+				say "DRAGON: okay i'm tired now"
+			if (dragon_hp == 7):
+				say "DRAGON: okay i'm tired now"
+			if (dragon_hp == 6):
+				say "DRAGON: okay i'm tired now"
+			if (dragon_hp == 5):
+				say "DRAGON: okay i'm tired now"
+
+			if (response == "punch the dragon"):
+				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
+			if (response == "slay the dragon"):
+				dragon_hp is dragon_hp - 1
+			if (response == "throw the llama")
+				say "That's animal cruelty."
+			if (response == "run away"):
+				break
+
+		if (dragon_hp > 0):
+	cleanup:
+		say
+}
