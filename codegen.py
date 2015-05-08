@@ -67,7 +67,9 @@ class CodeGen:
     # line breaks are only approximations.
     def construct(self, outputfile="stdout"):
         if self.main == "":
-            raise Exception("No start scene specified")
+            self._process_warning("No start scene specified. " +
+                                  "Defaulting to $1.")
+            self._add_main(1)
 
         if outputfile == "stdout":
             print self.frontmatter
@@ -141,11 +143,16 @@ class CodeGen:
             for s in self.scene_nums:
                 self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
 
-            if startstate.value in self.scene_nums:
-                self.startstate = startstate.value
+            if isinstance(startstate, Node):
+                ss = startstate.value
             else:
-                raise Exception("Start scene $" + str(startstate.value) +
-                                " does not exist")
+                ss = startstate
+
+            if ss in self.scene_nums:
+                self.startstate = ss
+            else:
+                self._process_error("Start scene $" + str(startstate.value) +
+                                    " does not exist.")
 
             self.main += "if __name__ == '__main__':\n    next = s_"\
                 + str(self.startstate) + "_inst.setup()\n    while True:\n"\
