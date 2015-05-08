@@ -145,10 +145,9 @@ class ParserForNarratr:
         '''suite : simple_statement
                  | newlines INDENT statements DEDENT newlines_optional'''
         if isinstance(p[1], Node) and p[1].type == "simple_statement":
-            p[0] = p[1]
+            p[0] = Node("simple", "suite", [p[1]], lineno=p[1].lineno)
         else:
-            p[0] = p[3]
-        p[0].type = "suite"
+            p[0] = Node("statements", "suite", [p[3]], lineno=p.lineno(2))
 
     def p_statements(self, p):
         '''statements : statements statement
