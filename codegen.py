@@ -439,13 +439,14 @@ class CodeGen:
             if god:
                 commands += prefix + "self." + smt.children[0].value
             else:
-                commands += prefix + "self.__namespace['" + smt.children[0].value + "'] = "
+                commands += prefix + "self.__namespace['" + \
+                            smt.children[0].value + "'] = "
             commands += self._process_testlist(smt.children[1])
         elif smt.value == "godis":
             commands += prefix + "try:"
             commands += prefix + "    " + smt.children[0].value
             commands += prefix + "except NameError:"
-            commands += prefix + "    " + smt.children[0].value + " = "
+            commands += prefix + "    self." + smt.children[0].value + " = "
             commands += prefix + self._process_testlist(smt.children[1])
         return commands
 

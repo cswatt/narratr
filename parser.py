@@ -249,8 +249,8 @@ class ParserForNarratr:
             p[0] = Node("testlist", "expression_statement", [p[1]],
                         lineno=p[1].lineno)
         elif p[1] == "god":
-            p[0] = Node("godis", "expression_statement", [Node(p[2], "god_id"), p[4]],
-                        lineno=p.lineno(1))
+            p[0] = Node("godis", "expression_statement", [Node(p[2], "god_id"),
+                        p[4]], lineno=p.lineno(1))
         else:
             p[0] = Node("is", "expression_statement", [Node(p[1], "id"), p[3]],
                         lineno=p.lineno(1))
@@ -376,27 +376,21 @@ class ParserForNarratr:
                                  | arithmetic_expression MINUS term
                                  | term'''
         if p[1].type == 'term':
-            p[0] = Node("term", "arithmetic_expression", [p[1]],
+            p[0] = Node("term", "arithmetic_expression", [p[1]], p[1].v_type,
                         lineno=p[1].lineno)
         else:
             # Extra condition for '+': allow string concatenation.
-            if p[2] == "+":
-                if p[1].v_type == "string":
-                    if p[3].v_type == "string":
+            if p[1].v_type == "string":
+                if p[2] == "+":
+                    if p[3].v_type in ["string", "id"]:
                         p[0] = Node(p[2], 'arithmetic_expression',
                                     [p[1], p[3]], "string", p.lineno(2))
-                    elif p[3].v_type == "id":
-                        p[0] = Node(p[2], 'arithmetic_expression',
-                                    [p[1], p[3]], "id", p.lineno(2))
                     else:
                         self.p_error(p, err_type="combination_error")
-
-            # Reject any expression trying to subtract strings.
-            elif p[2] == "-":
-                if p[1].v_type == "string" or p[3].v_type == "string":
+                # Reject any expression trying to subtract strings.
+                elif p[2] == "-":
                     self.p_error(p, err_type="combination_error")
-
-            if p[0] is None:
+            else:
                 p[0] = self.combination_rules(p, 'arithmetic_expression')
 
     def p_term(self, p):
