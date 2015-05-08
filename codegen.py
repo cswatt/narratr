@@ -21,7 +21,7 @@ from node import Node
 
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "#!/usr/bin/env python\n\nfrom sys import exit"
+        self.frontmatter = "#!/usr/bin/env python\nfrom sys import exit\n\n"
         self.scenes = []
         self.scene_nums = []
         self.items = []
@@ -307,11 +307,11 @@ class CodeGen:
         prefix = "\n" + "    "*indentlevel
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'simple statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'simple statement'. Unfortunately, that is " +
+                                "all we know.")
         if len(smt.children) == 0:
             self._process_error("Simple statement has no children to process.",
-                                smt.lineno)        
+                                smt.lineno)
         for child in smt.children:
             if child.value == "say":
                 commands += prefix + "print "
@@ -338,11 +338,11 @@ class CodeGen:
         prefix = "\n" + "    "*indentlevel
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'block statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'block statement'. Unfortunately, that is " +
+                                "all we know.")
         if len(smt.children) == 0:
             self._process_error("Block statement has no children to process.",
-                                smt.lineno)  
+                                smt.lineno)
         for child in smt.children:
             if child.type == "if_statement":
                 self._process_ifstatement(child)
@@ -350,17 +350,17 @@ class CodeGen:
                 self._process_whilestatement(child)
         return commands
 
-    # Say statement function is called from simple statement and 
+    # Say statement function is called from simple statement and
     # passes node to _process_testlist()
     def _process_say_smt(self, smt):
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'say_statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'say statement'. Unfortunately, that is " +
+                                "all we know.")
         if len(smt.children) == 0:
             self._process_error("Say statement has no children to process.",
-                                smt.lineno)    
+                                smt.lineno)
         for child in smt.children:
             if child.type == "say_statement":
                 for c in child.children:
@@ -368,16 +368,16 @@ class CodeGen:
                         commands += self._process_testlist(c)
         return commands
 
-    # Exposition statement passes node to _process_testlist 
+    # Exposition statement passes node to _process_testlist
     def _process_expo_smt(self, smt):
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'exposition_statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'exposition statement'. Unfortunately, " +
+                                "that is all we know.")
         if len(smt.children) == 0:
-            self._process_error("Exposition statement has no children to process.",
-                                smt.lineno) 
+            self._process_error("Exposition statement has no children to " +
+                                "process.", smt.lineno)
         for child in smt.children:
             if child.type == "exposition":
                 for c in child.children:
@@ -390,47 +390,47 @@ class CodeGen:
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'win statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'win statement'. Unfortunately, that is " +
+                                "all we know.")
         if len(smt.children) == 0:
             self._process_error("Win statement has no children to process.",
-                                smt.lineno) 
+                                smt.lineno)
         for child in smt.children:
             if child.type == "win_statement":
                 for c in child.children:
                     if c.type == "testlist":
                         commands += self._process_testlist(c)
-        return commands      
-    
+        return commands
+
     # Lose tatement, print the smt if there is and exit the scene
     def _process_lose_smt(self, smt):
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'lose statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'lose statement'. Unfortunately, that is" +
+                                " all we know.")
         if len(smt.children) == 0:
             self._process_error("Lose statement has no children to process.",
-                                smt.lineno) 
+                                smt.lineno)
         for child in smt.children:
             if child.type == "lose_statement":
                 for c in child.children:
                     if c.type == "testlist":
                         commands += self._process_testlist(c)
-        return commands    
+        return commands
 
     # Expression statement
     def _process_expr_smt(self, smt):
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'lose statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'lose statement'. Unfortunately, that is " +
+                                "all we know.")
         if len(smt.children) == 0:
             self._process_error("Lose statement has no children to process.",
-                                smt.lineno) 
+                                smt.lineno)
         for c in smt.children:
-            if c.type == "expression_statement":            
+            if c.type == "expression_statement":
                 for child in c.children:
                     if child.type == "god_id":
                         pass
@@ -438,18 +438,18 @@ class CodeGen:
                         pass
                     elif child.type == "testlist":
                         commands += self._process_testlist(child)
-        return commands 
-    
+        return commands
+
     # Flow statemnt
     def _process_flow_smt(self, smt):
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'flow statement'. Unfortunately, that is all we " +
-                                "know.")
+                                "'flow statement'. Unfortunately, that is " +
+                                "all we know.")
         if len(smt.children) == 0:
             self._process_error("Flow statement has no children to process.",
-                                smt.lineno)  
+                                smt.lineno)
         for c in smt.children:
             if c.type == "flow_statement":
                 for child in c.children:
@@ -460,7 +460,7 @@ class CodeGen:
                     elif child.type == "moves_declaration":
                         pass
                     elif child.type == "moveto_statement":
-                        pass       
+                        pass
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist):
