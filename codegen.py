@@ -42,10 +42,8 @@ class CodeGen:
                     if type(bc) is dict:
                         for key, s_i in bc.iteritems():
                             if s_i.type == "scene_block":
-                                print 'scene_block'
                                 self._add_scene(self._scene_gen(s_i, key))
                             elif s_i.type == "item_block":
-                                print 'item_block'
                                 self._add_item(self._item_gen(s_i, key))
                     elif bc.type == "start_state":
                         self._add_main(bc)
