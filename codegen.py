@@ -15,6 +15,7 @@
 #
 # -----------------------------------------------------------------------------
 
+from __future__ import print_function
 from node import Node
 
 
@@ -694,3 +695,9 @@ class CodeGen:
                     commands += self._process_expression(child.children[0], 0)
                     commands += "]"
         return commands
+
+    def _process_error(self, *errors):
+        print("ERROR: ", *errors, file=sys.stderr)
+
+    def _process_warning(self, *warnings):
+        print("WARNING: ", *warnings, file=sys.stderr)
