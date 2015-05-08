@@ -16,7 +16,9 @@
 #
 # -----------------------------------------------------------------------------
 
+from sys import stderr, exit
 import ply.yacc as yacc
+from ply.lex import LexToken
 from lexer import LexerForNarratr
 from node import Node
 from symtab import SymTabEntry, SymTab
@@ -695,10 +697,12 @@ class ParserForNarratr:
                      "' with '" + p[3].v_type + "'")
 
     def p_error(self, p):
-        if isinstance(p, str):
-            raise Exception(p)
-        else:
-            raise Exception("Syntax Error at token " + str(p))
+        if isinstance(p, LexToken):
+            stderr.write("Syntax Error at Line " + str(p.lineno) + ": " +
+                         "at token '" + str(p.value) + "'\n")
+        elif isinstance(p, str):
+            stderr.write("Syntax Error: " + str(p) + "\n")
+        exit(1)
 
     def parse(self, string_to_parse, **kwargs):
         return self.parser.parse(string_to_parse, lexer=self.lexer, **kwargs)
