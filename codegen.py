@@ -390,17 +390,6 @@ class CodeGen:
     def _process_test(self, test, indentlevel=1):
         return "[tests]"
 
-    def _process_action(self, expr, indentlevel=1):
-        commands = ''
-        if len(expr.children) > 0:
-            if expr.type == 'suite' and expr.value is None:
-                commands += self._process_statements(expr, indentlevel)
-            elif expr.type == 'suite' and expr.value is "else":
-                commands += '    '*(indentlevel-1) + "else:\n"
-                commands += '    '*(indentlevel+1)
-                commands += self._process_statements(expr)
-        return commands
-
     # This function takes statement node with "while" value.
     def _process_whilestatement(self, smt, indentlevel=1):
         commands = "while "
