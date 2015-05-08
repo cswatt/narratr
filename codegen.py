@@ -494,6 +494,8 @@ class CodeGen:
     # This function takes "factor" node as argument
     def _process_factor(self, factors, indentlevel=2):
         commands = ""
+        # When is this triggered, if ever? Is there a better way to write
+        # it?
         if len(factors.children) > 0:
             if len(factors.children) == 3:
                 for factor in factors.children[0].children:
