@@ -189,13 +189,16 @@ class ParserForNarratr:
             p[1].children.append(p[2])
             p[0] = p[1]
         else:
-            p[0] = Node(None, "statements", [p[1]])
+            p[0] = Node(None, "statements", [p[1]], lineno=p[1].lineno)
 
     def p_statement(self, p):
         '''statement : simple_statement
                      | block_statement'''
-        p[0] = p[1]
-        p[0].type = "statement"
+        if p[1].type == 'simple_statement':
+            value = 'simple'
+        else:
+            value = 'block'
+        p[0] = Node(value, 'statement', [p[1]], lineno=p[1].lineno)
 
     def p_simple_statement(self, p):
         '''simple_statement : say_statement newlines
@@ -206,27 +209,20 @@ class ParserForNarratr:
                             | expression_statement newlines'''
         if isinstance(p[1], Node):
             if p[1].type == "say_statement":
-                p[0] = p[1]
-                p[0].value = "say"
+                value = "say"
             elif p[1].type == "exposition":
-                p[0] = p[1]
-                p[0].value = "exposition"
+                value = "exposition"
             elif p[1].type == "win_statement":
-                p[0] = p[1]
-                p[0].value = "win"
+                value = "win"
             elif p[1].type == "expression_statement":
-                p[0] = p[1]
-                p[0].value = "expression"
+                value = "expression"
             elif p[1].type == "flow_statement":
-                p[0] = p[1]
-                p[0].value = "flow"
+                value = "flow"
             elif p[1].type == "lose_statement":
-                p[0] = p[1]
-                p[0].value = "lose"
-
-            p[0].type = "simple_statement"
+                value = "lose"
         else:
             self.p_error("Syntax Error forming simple_statement.")
+        p[0] = Node(value, 'simple_statement', [p[1]], lineno=p[1].lineno)
 
     def p_say_statement(self, p):
         '''say_statement : SAY testlist'''
@@ -234,7 +230,6 @@ class ParserForNarratr:
             self.p_error('Syntax for say statement incorrect at' +
                          str(p.lineno(2)))
         p[0] = Node(None, "say_statement", [p[2]], lineno=p[2].lineno)
-        # look for say token for test list to be defined
 
     def p_exposition_statement(self, p):
         '''exposition_statement : EXPOSITION testlist'''
@@ -253,7 +248,6 @@ class ParserForNarratr:
             if len(p) == 3:
                 children = [p[2]]
             p[0] = Node(None, "win_statement", children)
-        # look for win token
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
@@ -267,7 +261,6 @@ class ParserForNarratr:
             if len(p) == 3:
                 children = [p[2]]
             p[0] = Node(None, "lose_statement", children)
-        # look for lose token
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
@@ -374,15 +367,8 @@ class ParserForNarratr:
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
-        if not (p[1] == 'movesto'):
-            self.p_error('Syntax error: Moves not using ' +
-                         'correct syntax at ' +
-                         str(p.lineno(1)))
-        p[0] = Node(None, 'moveto', [Node(p[2], "sceneid")],
+        p[0] = Node('moveto', 'moveto_statement', [Node(p[2], "sceneid")],
                     lineno=p.lineno(1))
-        p[0].type = 'moveto_statement'
-        # Make sure both moveto and scene id are found and make sure sceneid is
-        # integer.
 
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
@@ -643,15 +629,13 @@ class ParserForNarratr:
     def p_block_statement(self, p):
         '''block_statement : if_statement
                            | while_statement'''
-
         if isinstance(p[1], Node):
             if p[1].type == 'if_statement':
-                p[0] = p[1]
-                p[0].value = 'if'
+                p[0] = Node('if', 'block_statement', [p[1]],
+                            lineno=p[1].lineno)
             elif p[1].type == 'while_statement':
-                p[0] = p[1]
-                p[0].value = 'while'
-        p[0].type = 'block_statement'
+                p[0] = Node('while', 'block_statement', [p[1]],
+                            lineno=p[1].lineno)
 
     def p_if_statement(self, p):
         '''if_statement : IF test COLON suite elif_statements ELSE COLON suite
