@@ -39,7 +39,8 @@ class ParserForNarratr:
         "program : newlines_optional blocks"
         p[0] = Node(None, "program", [p[2]])
 
-    # Assumes start state only given once--addressed in codegen.py
+    # Start state may be given multiple times. This is handled in the code
+    # generator.
     def p_blocks(self, p):
         '''blocks : scene_block newlines_optional
                   | item_block newlines_optional
@@ -84,24 +85,8 @@ class ParserForNarratr:
                        | SCENE SCENEID LCURLY newlines setup_block \
                           action_block cleanup_block RCURLY'''
         if isinstance(p[6], Node) and p[6].type == 'setup_block':
-            if not (p[3] == '{' and p[11] == '}'):
-                self.p_error("Scene block does not have matching parens at " +
-                             str(p.lineno(6)))
-            if not (p[6].type == 'setup_block' and
-                    p[7].type == 'action_block' and
-                    p[8].type == 'cleanup_block'):
-                self.p_error("You do not have all three blocks needed for " +
-                             "a scene")
             children = [p[6], p[7], p[8]]
         elif isinstance(p[5], Node) and p[5].type == 'setup_block':
-            if not (p[3] == '{' and p[8] == '}'):
-                self.p_error("Scene block does not have matching parens at " +
-                             str(p.lineno(5)))
-            if not (p[5].type == 'setup_block' and
-                    p[6].type == 'action_block' and
-                    p[7].type == 'cleanup_block'):
-                self.p_error("You do not have all three blocks needed " +
-                             "for a scene")
             children = [p[5], p[6], p[7]]
         p[0] = Node(p[2], "scene_block", children, lineno=p.lineno(2))
         try:
@@ -111,14 +96,10 @@ class ParserForNarratr:
                          ": A scene with the id '" + str(p[2]) + "' already" +
                          " exists.")
         self.pass_down(p[0], p[2])
-        # check tokens to make sure that scene block is specificed correctly
 
     def p_item_block(self, p):
         '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
                       | ITEM ID calllist LCURLY suite RCURLY'''
-        if not (p[4] == '{' and p[6] == '}'):
-            self.p_error("Item block does not have matching parens at " +
-                         str(p.lineno(5)))
         if isinstance(p[5], Node) and p[5].type == "suite":
             children = [p[3], p[5]]
         else:
@@ -131,7 +112,6 @@ class ParserForNarratr:
                          ": An item with the id '" + str(p[2]) + "' already" +
                          " exists.")
         self.pass_down(p[0], p[2])
-        # check tokens to make sure that item block is specified correctly
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'
@@ -140,38 +120,26 @@ class ParserForNarratr:
     def p_setup_block(self, p):
         '''setup_block : SETUP COLON suite
                        | SETUP COLON newlines'''
-        if not (p[1] == 'setup' and p[2] == ':'):
-            self.p_error('Setup block not using correct syntax at' +
-                         str(p.lineno(3)))
         if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "setup_block", [p[3]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, "setup_block", lineno=p.lineno(1))
-        # check tokens to make sure that setup block is specified
 
     def p_action_block(self, p):
         '''action_block : ACTION COLON suite
                         | ACTION COLON newlines'''
-        if not (p[1] == 'action' and p[2] == ':'):
-            self.p_error('Action block not using correct syntax at ' +
-                         str(p.lineno(3)))
         if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "action_block", [p[3]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, "action_block", lineno=p.lineno(1))
-        # make sure that action token is specified and color is used
 
     def p_cleanup_block(self, p):
         '''cleanup_block : CLEANUP COLON suite
                          | CLEANUP COLON newlines'''
-        if not (p[1] == 'cleanup' and p[2] == ':'):
-            self.p_error('Cleanup block not using correct syntax at' +
-                         str(p.lineno(3)))
         if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "cleanup_block", [p[3]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, "cleanup_block", lineno=p.lineno(1))
-        # make sure that cleanup keyword and color both exist
 
     def p_suite(self, p):
         '''suite : simple_statement
@@ -239,28 +207,22 @@ class ParserForNarratr:
     def p_win_statement(self, p):
         '''win_statement : WIN
                          | WIN testlist'''
-        if not (p[1] == 'win'):
-            self.p_error('Win block not using correct syntax at' +
-                         str(p.lineno(2)))
         if p[1] == "win":
             if len(p) == 2:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "win_statement", children)
+            p[0] = Node("win", "win_statement", children)
 
     def p_lose_statement(self, p):
         '''lose_statement : LOSE
                           | LOSE testlist'''
-        if not (p[1] == 'lose'):
-            self.p_error('Lose block not using correct syntax at' +
-                         str(p.lineno(2)))
         if p[1] == "lose":
             if len(p) == 2:
                 children = []
             if len(p) == 3:
                 children = [p[2]]
-            p[0] = Node(None, "lose_statement", children)
+            p[0] = Node("lose", "lose_statement", children)
 
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
@@ -276,14 +238,14 @@ class ParserForNarratr:
                 temp_node.value = 'continue'
             elif p[1].type == 'moves_declaration':
                 p[0] = p[1]
-                
                 p[0].value = 'move'
                 p[0].type = 'flow_statement'
                 return p[0]
             elif p[1].type == 'moveto_statement':
                 temp_node = p[1]
                 temp_node.type = 'moveto'
-            p[0] = Node(None, "flow_statement", [temp_node], lineno=p[1].lineno)
+            p[0] = Node(None, "flow_statement", [temp_node],
+                        lineno=p[1].lineno)
 
     def p_expression_statement(self, p):
         '''expression_statement : ID IS testlist
@@ -308,7 +270,6 @@ class ParserForNarratr:
                          str(p.lineno(1)))
         p[0] = Node(p[1], 'break_statement', [], lineno=p.lineno(1))
         p[0].type = 'break_statement'
-        # look for break token
 
     def p_continue_statement(self, p):
         '''continue_statement : CONTINUE'''
@@ -317,7 +278,6 @@ class ParserForNarratr:
                          str(p.lineno(1)))
         p[0] = Node(p[1], 'continue_statement', [], lineno=p.lineno(1))
         p[0].type = 'continue_statement'
-        # look for continue token
 
     def p_moves_declaration(self, p):
         '''moves_declaration : MOVES directionlist'''
@@ -327,7 +287,6 @@ class ParserForNarratr:
                          str(p.lineno(2)))
         p[0] = p[2]
         p[0].type = 'moves_declaration'
-        # look for moves and make sure there is something after it
 
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
@@ -347,15 +306,7 @@ class ParserForNarratr:
                      | RIGHT
                      | UP
                      | DOWN'''
-        if not (p[1] == 'left' or p[1] == 'right' or
-                p[1] == 'up' or
-                p[1] == 'down'):
-                self.p_error('Syntax error: Direction not valid ' +
-                             ' at ' +
-                             str(p.lineno(1)))
         p[0] = Node(p[1], 'direction', [], lineno=p.lineno(1))
-        p[0].type = 'direction'
-        # make sure this is defined in one of the four ways
 
     def p_moveto_statement(self, p):
         '''moveto_statement : MOVETO SCENEID'''
@@ -374,9 +325,6 @@ class ParserForNarratr:
             p[0].children.append(p[3])
             p[0].type = 'testlist'
 
-    # If there is just one possible rule and one child, the type of the node
-    # still needs to be updated because parent AST nodes may check the type to
-    # make decisions.
     def p_test(self, p):
         '''test : or_test'''
         p[0] = Node(None, 'test', [p[1]], lineno=p[1].lineno)
@@ -387,10 +335,6 @@ class ParserForNarratr:
         if p[1].type == 'and_test':
             p[0] = Node(None, 'or_test', [p[1]], lineno=p[1].lineno)
         else:
-            if not (p[2] == 'or'):
-                self.p_error('Syntax error: Or not used ' +
-                             'at ' +
-                             str(p.lineno(1)))
             children = [p[1], p[3]]
             p[0] = Node('or', 'or_test', children, lineno=p[1].lineno)
 
@@ -400,10 +344,6 @@ class ParserForNarratr:
         if p[1].type == 'not_test':
             p[0] = Node(None, 'and_test', [p[1]], lineno=p[1].lineno)
         else:
-            if not (p[2] == 'and'):
-                self.p_error('Syntax error: And not used ' +
-                             'at ' +
-                             str(p.lineno(1)))
             children = [p[1], p[3]]
             p[0] = Node('and', 'and_test', children, lineno=p[1].lineno)
 
@@ -463,16 +403,15 @@ class ParserForNarratr:
                         p[0] = Node(p[2], 'arithmetic_expression',
                                     [p[1], p[3]], "id", p.lineno(2))
                     else:
-                        self.combination_error(p)
+                        self.p_error(p, err_type="combination_error")
 
             # Reject any expression trying to subtract strings.
             elif p[2] == "-":
                 if p[1].v_type == "string" or p[3].v_type == "string":
-                    self.combination_error(p)
+                    self.p_error(p, err_type="combination_error")
 
             if p[0] is None:
                 p[0] = self.combination_rules(p, 'arithmetic_expression')
-        # look for plus and minus and make sure the second part is of type term
 
     def p_term(self, p):
         '''term : term TIMES factor
@@ -480,10 +419,10 @@ class ParserForNarratr:
                 | term INTEGERDIVIDE factor
                 | factor '''
         if p[1].type == "term":
-            # Reject anything with strings
+            # Type checking: reject anything with strings
             if (p[1].v_type in ["string", "list"] or
                     p[3].v_type in ["string", "list"]):
-                self.combination_error(p)
+                self.p_error(p, err_type="combination_error")
 
             p[0] = self.combination_rules(p, 'term')
             # For integer division, we can just reset the v_type
@@ -493,8 +432,6 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'term', [p[1]], p[1].v_type, lineno=p[1].lineno)
             p[0].type = 'term'
-        # Look for the terms, times, divide, and integerdivide in the ones
-        # longer than factor
 
     def p_factor(self, p):
         '''factor : PLUS factor
@@ -508,7 +445,6 @@ class ParserForNarratr:
         else:
             p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
                         lineno=p.lineno(2))
-        # look for plus and minus signs
 
     def p_power(self, p):
         '''power : power trailer
@@ -534,9 +470,6 @@ class ParserForNarratr:
                              str(p.lineno(2)))
             p[0] = p[2]
         p[0].type = 'atom'
-        # Look for parans around test in that one case
-        # check to make sure first node is of type list,
-        # number, or boolean in the alternatecase
 
     def p_atom_string(self, p):
         '''atom : STRING'''
@@ -575,8 +508,6 @@ class ParserForNarratr:
                              'at ' +
                              str(p.lineno(1)))
             p[0] = Node(None, "list", [], "list", p[1].lineno)
-        # check lsquare and rsquare balanced
-        # check test list between or that they are empty
 
     def p_number_int(self, p):
         '''number : INTEGER'''
@@ -604,8 +535,6 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'calllist', [])
         p[0].type = 'calllist'
-        # make sure that calllist is Lparan and RParan balanced
-        # check that args is bewteen then or that they are empty
 
     def p_args(self, p):
         '''args : args COMMA expression
@@ -616,7 +545,6 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'args', [p[1]], lineno=p[1].lineno)
         p[0].type = 'args'
-        # Check for comma to add expression and type of expression
 
     def p_block_statement(self, p):
         '''block_statement : if_statement
@@ -669,7 +597,7 @@ class ParserForNarratr:
     # In order to create SymTab entries (in particular, in order to know
     # the appropriate scope) for named entities discovered below a main
     # branch (i.e. variables in a scene), we need to travel back down
-    # the branches once we get to the main branch. This function does so,
+    # the branches once we get to the main node. This function does so,
     # creating symtab entries as it goes. It is called recursively on
     # every branch, looking for named entities. It takes as its argument
     # a branch and the scope to be assigned to all found named entities.
@@ -700,10 +628,10 @@ class ParserForNarratr:
 
     # Check numbers for interoperability. If they are of
     # differing types, the result is always the more general of
-    # the two data types (i.e. float).
+    # the two data types (i.e. float). For now, we allow
+    # anything with id's, but later would intend to type check
+    # those as well.
     def combination_rules(self, p, n_type):
-        # Keep anything for "id", we'll have to check existance and resolve
-        # type later.
         if p[1].v_type == "id" or p[3].v_type == "id":
             p[0] = Node(p[2], n_type, [p[1], p[3]], "id", p.lineno(2))
         elif p[1].v_type == "integer":
@@ -714,32 +642,31 @@ class ParserForNarratr:
                 p[0] = Node(p[2], n_type, [p[1], p[3]],
                             "float", p.lineno(2))
             else:
-                self.combination_error(p)
+                self.p_error(p, "combination_error")
         elif p[1].v_type == "float":
             if p[3].v_type in ["integer", "float"]:
                 p[0] = Node(p[2], n_type, [p[1], p[3]],
                             "float", p.lineno(2))
             else:
-                self.combination_error(p)
+                self.p_error(p, "combination_error")
         elif p[1].v_type == "list":
             if p[3].v_type == "list":
                 p[0] = Node(p[2], n_type, [p[1], p[3]],
                             "list", p.lineno(2))
             else:
-                self.combination_error(p)
+                self.p_error(p, "combination_error")
 
         elif p[1].v_type == "boolean":
-                self.combination_error(p)
+                self.p_error(p, "combination_error")
 
         return p[0]
 
-    def combination_error(self, p):
-        self.p_error("Type error at line " + str(p.lineno(2)) +
-                     ": cannot combine '" + p[1].v_type +
-                     "' with '" + p[3].v_type + "'")
-
-    def p_error(self, p):
-        if isinstance(p, LexToken):
+    def p_error(self, p, err_type=None):
+        if err_type == "combination_error":
+            stderr.write("Type error at line " + str(p.lineno(2)) +
+                         ": cannot combine '" + p[1].v_type +
+                         "' with '" + p[3].v_type + "'")
+        elif isinstance(p, LexToken):
             stderr.write("Syntax Error at Line " + str(p.lineno) + ": " +
                          "at token '" + str(p.value) + "'\n")
         elif isinstance(p, str):
