@@ -367,9 +367,7 @@ class CodeGen:
         elif smt.value is None:
             commands += self._process_testlist(smt, 2)
 
-        # We need to remove the leading whitespace and first tab because of
-        # the list constructed by _scene_gen().
-        return commands[5:]
+        return commands
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist, indentlevel=1, datatype=None):
