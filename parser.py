@@ -424,13 +424,10 @@ class ParserForNarratr:
                   | MINUS factor
                   | power'''
         if p[1].type == 'power':
-            p[0] = p[1]
-            p[0].type = 'factor'
-            if p[0].value == "str":
-                p[0].v_type = "string"
+            p[0] = Node("power", "factor", [p[1]], lineno=p[1].lineno)
         else:
-            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
-                        lineno=p.lineno(2))
+            p[0] = Node(p[1], 'factor', [p[1], p[2]], p[2].v_type,
+                        lineno=p.lineno(1))
 
     def p_power(self, p):
         '''power : power trailer
@@ -439,8 +436,7 @@ class ParserForNarratr:
             p[1].children.append(p[2])
             p[0] = p[1]
         else:
-            p[0] = p[1]
-            p[0].type = 'power'
+            p[0] = Node("atom", 'power', [p[1]], lineno=p[1].lineno)
 
     def p_atom_node(self, p):
         '''atom : LPARAN test RPARAN
@@ -448,10 +444,9 @@ class ParserForNarratr:
                 | number
                 | boolean'''
         if isinstance(p[1], Node):
-            p[0] = p[1]
+            p[0] = Node(p[1].type, "atom", [p[1]], lineno=p[1].lineno)
         else:
-            p[0] = p[2]
-        p[0].type = 'atom'
+            p[0] = Node("test", "atom", [p[2]], lineno=p.lineno(1))
 
     def p_atom_string(self, p):
         '''atom : STRING'''
@@ -465,30 +460,16 @@ class ParserForNarratr:
         '''trailer : calllist
                    | DOT ID'''
         if isinstance(p[1], Node) and p[1].type == "calllist":
-            p[0] = p[1]
-            p[0].type = 'trailer'
+            p[0] = Node("calllist", "trailer", [p[1]], lineno=p[1].lineno)
         else:
-            p[0] = Node(None, 'trailer',
-                        [Node(p[1], 'dot', [], lineno=p.lineno(1)),
-                            Node(p[2], 'id',  [], lineno=p.lineno(2))])
+            p[0] = Node("dot", 'trailer', [p[2]], p.lineno(1))
 
     def p_list(self, p):
         '''list : LSQUARE RSQUARE
                 | LSQUARE testlist RSQUARE'''
         if isinstance(p[2], Node) and p[2].type == 'testlist':
-            if not (p[1] == '[' and p[3] == ']'):
-                self.p_error('Syntax error: Brackets not balanced ' +
-                             'at ' +
-                             str(p.lineno(2)))
-            p[0] = p[2]
-            p[0].type = 'list'
-            p[0].v_type = 'list'
-            p[0].lineno = p.lineno(2)
+            p[0] = Node(None, "list", [], "list", p.lineno(1))
         else:
-            if not (p[1] == '[' and p[2] == ']'):
-                self.p_error('Syntax error: Brackets not balanced ' +
-                             'at ' +
-                             str(p.lineno(1)))
             p[0] = Node(None, "list", [], "list", p[1].lineno)
 
     def p_number_int(self, p):
@@ -513,9 +494,9 @@ class ParserForNarratr:
         '''calllist : LPARAN args RPARAN
                     | LPARAN RPARAN'''
         if isinstance(p[2], Node):
-            p[0] = p[2]
+            p[0] = Node("args", "calllist", [p[2]], lineno=p.lineno(1))
         else:
-            p[0] = Node(None, 'calllist', [])
+            p[0] = Node(None, 'calllist', [], lineno=p.lineno(1))
         p[0].type = 'calllist'
 
     def p_args(self, p):
