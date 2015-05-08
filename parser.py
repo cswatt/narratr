@@ -230,37 +230,30 @@ class ParserForNarratr:
                           | moveto_statement'''
         if isinstance(p[1], Node):
             if p[1].type == 'break_statement':
-                temp_node = p[1]
-                temp_node.value = 'break'
+                value = "break"
             elif p[1].type == 'continue_statement':
-                temp_node = p[1]
-                temp_node.value = 'continue'
+                value = "continue"
             elif p[1].type == 'moves_declaration':
-                p[0] = p[1]
-                p[0].value = 'move'
-                p[0].type = 'flow_statement'
-                return p[0]
+                value = "moves"
             elif p[1].type == 'moveto_statement':
-                temp_node = p[1]
-                temp_node.type = 'moveto'
-            p[0] = Node(None, "flow_statement", [temp_node],
-                        lineno=p[1].lineno)
+                value = "moveto"
+        else:
+            self.p_error("Parse error in flow_statement.")
+        p[0] = Node(value, "flow_statement", [p[1]], lineno=p[1].lineno)
 
     def p_expression_statement(self, p):
         '''expression_statement : ID IS testlist
                                 | GOD ID IS testlist
                                 | testlist'''
         if isinstance(p[1], Node):
-            p[0] = p[1]
-            p[0].type = "expression_statement"
+            p[0] = Node("testlist", "expression_statement", [p[1]],
+                        lineno=p[1].lineno)
         elif p[1] == "god":
-            children = [Node(p[2], "god_id"), p[4]]
-            p[0] = Node("god", "expression_statement", children,
+            p[0] = Node("godis", "expression_statement", [p[2], p[4]],
                         lineno=p.lineno(1))
         else:
-            children = [Node(p[1], "id"), p[3]]
-            p[0] = Node("is", "expression_statement", children,
-                        lineno=p[3].lineno)
+            p[0] = Node("is", "expression_statement", [p[1], p[4]],
+                        lineno=p.lineno(1))
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
@@ -280,12 +273,7 @@ class ParserForNarratr:
 
     def p_moves_declaration(self, p):
         '''moves_declaration : MOVES directionlist'''
-        if not (p[1] == 'moves' and p[2].type == 'directionlist'):
-            self.p_error('Syntax error: Moves not using ' +
-                         'correct syntax at ' +
-                         str(p.lineno(2)))
-        p[0] = p[2]
-        p[0].type = 'moves_declaration'
+        p[0] = Node("moves", 'moves_declaration', [p[2]], lineno=p.lineno(1))
 
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
@@ -367,8 +355,7 @@ class ParserForNarratr:
 
     def p_expression(self, p):
         '''expression : arithmetic_expression'''
-        p[0] = p[1]
-        p[0].type = "expression"
+        p[0] = Node(p[1].value, "expression", [p[1]], lineno=p[1].lineno)
 
     def p_comparison_op(self, p):
         '''comparison_op : LESS
@@ -389,8 +376,8 @@ class ParserForNarratr:
                                  | arithmetic_expression MINUS term
                                  | term'''
         if p[1].type == 'term':
-            p[0] = p[1]
-            p[0].type = 'arithmetic_expression'
+            p[0] = Node("term", "arithmetic_expression", [p[1]],
+                        lineno=p[1].lineno)
         else:
             # Extra condition for '+': allow string concatenation.
             if p[2] == "+":
@@ -463,10 +450,6 @@ class ParserForNarratr:
         if isinstance(p[1], Node):
             p[0] = p[1]
         else:
-            if not (p[1] == '(' and p[3] == ')'):
-                self.p_error('Syntax error: Parentheses not balanced ' +
-                             'at ' +
-                             str(p.lineno(2)))
             p[0] = p[2]
         p[0].type = 'atom'
 
@@ -669,7 +652,7 @@ class ParserForNarratr:
             stderr.write("ERROR: Syntax Error at Line " + str(p.lineno) +
                          ": " + "at token '" + str(p.value) + "'\n")
         elif isinstance(p, str):
-            stderr.write("ERROR: " + str(p) + "\n")
+            stderr.write("ERROR: " + p + "\n")
         exit(1)
 
     def parse(self, string_to_parse, **kwargs):
