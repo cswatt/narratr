@@ -283,7 +283,7 @@ class CodeGen:
                         "                return response[0]\n")
         return commands
 
-    def _process_suite(self, statement, indentlevel=1, datatype=None):
+    def _process_suite(self, statement, indentlevel=1):
         commands = ""
         for smt in statement.children:
             commands += self._process_statement(smt, indentlevel)
@@ -291,7 +291,7 @@ class CodeGen:
 
     # Statement is actually a suite node, but we're keeping the name for
     # backwards-compatability.
-    def _process_statement(self, smt, indentlevel=1, datatype=None):
+    def _process_statement(self, smt, indentlevel=1):
         commands = ''
         prefix = "\n" + "    "*indentlevel
         if smt.value == "say":
@@ -519,18 +519,12 @@ class CodeGen:
         return commands
 
     # This function takes "expression" node as argument
-    def _process_expression(self, exps, indentlevel=1, datatype=None,
-                            blocktype='scene'):
+    def _process_expression(self, exps):
         commands = ''
         if exps.value in ["*", "/", "//", "+", "-"]:
             tempv = exps.value
             i = indentlevel + 1
-            temp = self._process_arithmetic(
-                            exps,
-                            str(tempv),
-                            indentlevel=i,
-                            datatype=datatype,
-                            blocktype=blocktype)
+            temp = self._process_arithmetic(exps, str(tempv))
             commands += temp
             if len(exps.children) > 1:
                 if exps.children[0].v_type == 'id':
@@ -542,10 +536,7 @@ class CodeGen:
         else:
             for child in exps.children:
                 if child.type == "factor":
-                    commands += self._process_factor(
-                                        child,
-                                        indentlevel=0,
-                                        blocktype=blocktype)
+                    commands += self._process_factor(child)
                 elif child.type == "arithmetic_expression":
                     # there should be a _process_arithmetic_expression()
                     # function that is called here.
@@ -572,7 +563,7 @@ class CodeGen:
         return commands
 
     # This function takes "factor" node as argument
-    def _process_factor(self, factors, indentlevel=2, blocktype='scene'):
+    def _process_factor(self, factors):
         commands = ""
         # When is this triggered, if ever? Is there a better way to write
         # it?
@@ -633,9 +624,7 @@ class CodeGen:
 
         elif factors.v_type == "id":
             if factors.value == "pocket":
-                commands += self._process_pocket(
-                                    factors,
-                                    indentlevel=indentlevel)
+                commands += self._process_pocket(factors)
             elif(self.symtab.get(factors.value, 'GLOBAL')):
                 if len(factors.children[0].children) > 0:
                     commands += "("
@@ -648,7 +637,7 @@ class CodeGen:
                 elif blocktype == 'item':
                     commands += factors.value
         elif factors.value is None:
-            commands += self._process_factor(factors, blocktype=blocktype)
+            commands += self._process_factor(factors)
         elif factors.v_type == "string":
             if factors.value == "str":
                 commands += "str("
@@ -662,8 +651,7 @@ class CodeGen:
         return commands
 
     # This function recursively deals with arithmetic node
-    def _process_arithmetic(self, expr, expvalue, indentlevel=1,
-                            datatype=None, blocktype='scene'):
+    def _process_arithmetic(self, expr, expvalue):
         commands = ''
         if len(expr.children) > 0:
             for child in expr.children:
@@ -672,10 +660,7 @@ class CodeGen:
                         if len(child.children) > 0:
                             if child.children[0].type == "factor":
                                 tempc = child.children[0]
-                                temp = self._process_factor(
-                                                tempc,
-                                                indentlevel=indentlevel+1,
-                                                blocktype=blocktype)
+                                temp = self._process_factor(tempc)
                                 if datatype == "String":
                                     if tempc.v_type == 'string':
                                         commands += temp
@@ -688,12 +673,7 @@ class CodeGen:
                         if child.v_type == "integer":
                             tv = child.value
                             c = child
-                            temp = self._process_arithmetic(
-                                            c,
-                                            tv,
-                                            indentlevel=indentlevel+1,
-                                            datatype=datatype,
-                                            blocktype=blocktype)
+                            temp = self._process_arithmetic(c, tv)
                             commands += temp + ' '
                             if datatype == "String":
                                 commands += 'str(' + str(tv) + ')' + ' '
@@ -702,12 +682,7 @@ class CodeGen:
                         elif child.v_type == 'id':
                             tv = child.value
                             c = child
-                            temp = self._process_arithmetic(
-                                            c,
-                                            tv,
-                                            indentlevel=indentlevel+1,
-                                            datatype=datatype,
-                                            blocktype=blocktype)
+                            temp = self._process_arithmetic(c, tv)
                             commands += temp + ' '
                             commands += str(tv) + ' '
                 elif child.type == "term":
@@ -718,21 +693,13 @@ class CodeGen:
                                 if (datatype == "String" and
                                         tc.v_type != 'string'):
                                     commands += 'str('
-                                commands += self._process_factor(
-                                                    tc,
-                                                    indentlevel=indentlevel+1,
-                                                    blocktype=blocktype)
+                                commands += self._process_factor(tc)
                                 if (datatype == "String" and
                                         tc.v_type != 'string'):
                                     commands += ')'
                     elif child.value in ['*', '/']:
                         tv = str(child.value)
-                        temp = self._process_arithmetic(
-                                        child,
-                                        tv,
-                                        indentlevel=indentlevel+1,
-                                        datatype=datatype,
-                                        blocktype=blocktype)
+                        temp = self._process_arithmetic(child, tv)
                         commands += temp
                 elif child.type == "factor":
                     if child.v_type == 'id':
@@ -753,7 +720,7 @@ class CodeGen:
     # This function takes "direction" node as argument
     # Building a dictionary for direction, using the direction as key and
     # scene number as value
-    def _process_direction(self, direction, indentlevel=1):
+    def _process_direction(self, direction):
         commands = ''
         commands += direction.value
         commands += '": '
@@ -761,7 +728,7 @@ class CodeGen:
             commands += str(scene.value)
         return commands
 
-    def _process_pocket(self, pocket_node, indentlevel=1):
+    def _process_pocket(self, pocket_node):
         commands = '    ' * indentlevel
         add = get = remove = False
         for i, child in enumerate(pocket_node.children):
@@ -789,12 +756,10 @@ class CodeGen:
                                         " exactly two arguments. " +
                                         str(len(child.children)) + " given.")
                     commands += self._process_expression(
-                                        child.children[0],
-                                        indentlevel=0)
+                                        child.children[0])
                     commands += "] = "
                     commands += self._process_expression(
-                                        child.children[1],
-                                        indentlevel=0)
+                                        child.children[1])
                 elif get:
                     if len(child.children) != 1:
                         raise Exception("Line " + str(pocket_node.lineno) +
@@ -803,8 +768,7 @@ class CodeGen:
                                         str(len(child.children)) + " given.")
                     commands += "pocket["
                     commands += self._process_expression(
-                                        child.children[0],
-                                        indentlevel=0)
+                                        child.children[0])
                     commands += "]"
                 elif remove:
                     if len(child.children) != 1:
@@ -814,8 +778,7 @@ class CodeGen:
                                         str(len(child.children)) + " given.")
                     commands += "del pocket["
                     commands += self._process_expression(
-                                        child.children[0],
-                                        indentlevel=0)
+                                        child.children[0])
                     commands += "]"
         return commands
 
