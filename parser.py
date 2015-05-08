@@ -276,13 +276,14 @@ class ParserForNarratr:
                 temp_node.value = 'continue'
             elif p[1].type == 'moves_declaration':
                 p[0] = p[1]
+                
                 p[0].value = 'move'
                 p[0].type = 'flow_statement'
                 return p[0]
             elif p[1].type == 'moveto_statement':
                 temp_node = p[1]
                 temp_node.type = 'moveto'
-            p[0] = Node(None, "flow_statement", [temp_node])
+            p[0] = Node(None, "flow_statement", [temp_node], lineno=p[1].lineno)
 
     def p_expression_statement(self, p):
         '''expression_statement : ID IS testlist
@@ -305,7 +306,7 @@ class ParserForNarratr:
         if not (p[1] == 'break'):
             self.p_error('Break not using correct syntax at' +
                          str(p.lineno(1)))
-        p[0] = Node(p[1], 'break_statement', [])
+        p[0] = Node(p[1], 'break_statement', [], lineno=p.lineno(1))
         p[0].type = 'break_statement'
         # look for break token
 
@@ -314,7 +315,7 @@ class ParserForNarratr:
         if not (p[1] == 'continue'):
             self.p_error('Break not using correct syntax at' +
                          str(p.lineno(1)))
-        p[0] = Node(p[1], 'continue_statement', [])
+        p[0] = Node(p[1], 'continue_statement', [], lineno=p.lineno(1))
         p[0].type = 'continue_statement'
         # look for continue token
 

@@ -10,8 +10,8 @@ scene $1 {
 		n is 2 * 2
 		say n
 		n is 9 / 3
-		say n + "is awesome"
-		say "is awesome" + n + n
+		say str(n) + "is awesome"
+		say "is awesome" + n + n + "haha"
 		n is 10//3
 	action:
 		win

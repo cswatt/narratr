@@ -1,8 +1,13 @@
 scene $1 {
 	setup:
 		say "Hello, World!"
+		moves right($2)
 	action:
-		win
+		god n is hi
+		a is hihi
+		if 1 == 1 and 2 == 2:
+			moveto $2
+		win haha
 	cleanup:
 }
 

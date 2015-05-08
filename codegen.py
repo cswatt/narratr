@@ -286,109 +286,161 @@ class CodeGen:
     def _process_suite(self, statement, indentlevel=1):
         commands = ""
         for smt in statement.children:
-            commands += self._process_statement(smt, indentlevel)
+            if smt.value == "simple":
+                commands += self._process_simple_smt(smt, 1)
+            elif smt.value == "block":
+                commands += self._process_block_smt(smt, 1)
         return commands
 
     # Statement is actually a suite node, but we're keeping the name for
     # backwards-compatability.
-    def _process_statement(self, smt, indentlevel=1):
+    def _process_simple_smt(self, smt, indentlevel=1):
         commands = ''
         prefix = "\n" + "    "*indentlevel
-        if smt.value == "say":
-            commands += prefix + "print "
-            for testlist in smt.children:
-                t = "String"
-                tl = testlist
-                commands += self._process_testlist(tl)
-        elif smt.value == "exposition":
-            commands += prefix + "print "
-            for testlist in smt.children:
-                commands += self._process_testlist(testlist)
-        elif smt.value in ["win", "lose"]:
-            if len(smt.children) > 0:
-                for testlist in smt.children:
-                    commands += prefix + "print "
-                    commands += self._process_testlist(testlist)
-            elif smt.value in ["win", "lose"]:
-                if len(smt.children) > 0:
-                    for testlist in smt.children:
-                        commands += prefix + "print "
-                        commands += self._process_testlist(
-                            testlist,
-                            indentlevel=indentlevel + 1, blocktype=blocktype)
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'simple statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Simple statement has no children to process.",
+                                smt.lineno)        
+        for child in smt.children:
+            if child.value == "say":
+                commands += prefix + "print "
+                commands += self._process_say_smt(child)
+            elif child.value == "exposition":
+                commands += prefix + "print "
+                commands += self._process_expo_smt(child)
+            elif child.value == "win":
+                commands += prefix + "print"
+                commands += self._process_win_smt(child)
                 commands += prefix + "exit(0)"
-        elif smt.value == "is":
-            if len(smt.children) > 0:
-                if smt.children[0].type == "god_id":
-                    self.main = self._process_god_assign(
-                        smt.children,
-                        indentlevel=indentlevel + 1) + self.main
-        elif smt.value == "expression":
-            if len(smt.children) > 0:
-                if smt.children[0].type == "id":
-                    commands += prefix
-                    commands += self._process_assign(
-                        smt.children,
-                        indentlevel=indentlevel + 1, blocktype=blocktype)
-                elif smt.children[0].type == "test":
-                    commands += prefix
-                    commands += self._process_testlist(
-                                        smt,
-                                        blocktype=blocktype)
-
-        elif smt.value == "flow":
-            commands += prefix
-            if len(smt.children) > 0:
-                if smt.children[0].type in ["break_statement",
-                                            "continue_statement"]:
-                    commands += smt.children[0].value
-                # direction list
-                else:
-                    i = 0
-                    for child in smt.children:
-                        if child.type == "direction":
-                            if i == 0:
-                                commands += 'direction = {"'
-                            else:
-                                commands += '"'
-                            commands += self._process_direction(
-                                child,
-                                indentlevel=indentlevel + 1)
-                            if (len(smt.children) - 1) != i:
-                                commands += ', '
-                            else:
-                                commands += "}"
-                        i += 1
-
-        elif smt.value in ["if", "while"] or smt.type == "elif_statements":
-            if smt.value is not None:
-                commands += prefix + smt.value + " "
-            else:
-                commands += prefix + "elif "
-            commands += self._process_test(smt.children[0], 0) + ":\n    "
-            for c in smt.children[1:]:
-                if c.value == "else":
-                    commands += prefix + "else:\n    "
-                    commands += self._process_statements(
-                                        c,
-                                        indentlevel=indentlevel+1,
-                                        blocktype=blocktype)
-                elif c.type == "elif_statements":
-                    commands += "\n    "\
-                             + self._process_statements(
-                                        Node(None, "suite", [c]),
-                                        indentlevel=indentlevel,
-                                        blocktype=blocktype)
-                else:
-                    commands += self._process_statements(
-                                        c,
-                                        indentlevel=indentlevel+1,
-                                        blocktype=blocktype)
-
-        elif smt.value is None:
-            commands += self._process_testlist(smt)
-
+            elif child.value == "lose":
+                commands += prefix + "print"
+                commands += self._process_lose_smt(child)
+                commands += prefix + "exit(0)"
+            elif smt.value == "expression":
+                commands += self._process_expr_smt(child)
+            elif smt.value == "flow":
+                commands += self._process_flow_smt(child)
         return commands
+
+    def _process_block_smt(self, smt, indentlevel=1):
+        commands = ''
+        prefix = "\n" + "    "*indentlevel
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'block statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Block statement has no children to process.",
+                                smt.lineno)  
+        for child in smt.children:
+            if child.type == "if_statement":
+                self._process_ifstatement(child)
+            elif child.type == "while_statement":
+                self._process_whilestatement(child)
+        return commands
+
+    # Say statement function is called from simple statement and 
+    # passes node to _process_testlist()
+    def _process_say_smt(self, smt):
+        commands = ''
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'say_statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Say statement has no children to process.",
+                                smt.lineno)    
+        for child in smt.children:
+            if child.type == "testlist":
+                commands += self._process_testlist(child)
+        return commands
+
+    # Exposition statement passes node to _process_testlist 
+    def _process_expo_smt(self, smt):
+        commands = ''
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'exposition_statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Exposition statement has no children to process.",
+                                smt.lineno) 
+        for child in smt.children:
+            if child.type == "testlist":
+                commands += self._process_testlist(child)
+        return commands
+
+    # Win tatement, print the smt if there is and exit the scene
+    def _process_win_smt(self, smt):
+        commands = ''
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'win statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Win statement has no children to process.",
+                                smt.lineno) 
+        for child in smt.children:
+            if child.type == "testlist":
+                commands += self._process_testlist(child)
+        return commands      
+    
+    # Lose tatement, print the smt if there is and exit the scene
+    def _process_lose_smt(self, smt):
+        commands = ''
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'lose statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Lose statement has no children to process.",
+                                smt.lineno) 
+        for child in smt.children:
+            if child.type == "testlist":
+                commands += self._process_testlist(child)
+        return commands    
+
+    # Expression statement
+    def _process_expr_smt(self, smt):
+        commands = ''
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'lose statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Lose statement has no children to process.",
+                                smt.lineno) 
+        for child in smt.children:
+            if child.type == "god_id":
+                pass
+            elif child.type == "id":
+                pass
+            elif child.type == "testlist":
+                commands += self._process_testlist(child)
+        return commands 
+    
+    # Flow statemnt
+    def _process_flow_smt(self, smt):
+        commands = ''
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'flow statement'. Unfortunately, that is all we " +
+                                "know.")
+        if len(smt.children) == 0:
+            self._process_error("Flow statement has no children to process.",
+                                smt.lineno)  
+        for child in smt.children:
+            if child.type == "continue_statement":
+                commands += child.value
+            elif child.type == "break_statement":
+                commands += child.value
+            elif child.type == "moves_declaration":
+                pass
+            elif child.type == "moveto_statement":
+                pass       
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist):
