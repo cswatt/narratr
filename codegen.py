@@ -158,7 +158,8 @@ class CodeGen:
                 + str(self.startstate) + "_inst.setup()\n    while True:\n"\
                 + "        exec 'next = ' + next"
         else:
-            raise Exception("Multiple start scene declarations.")
+            self._process_warning("Multiple start scene declarations. " +
+                                  "Using scene $" + self.startstate ".")
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
