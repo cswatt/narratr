@@ -464,7 +464,6 @@ class CodeGen:
 
         else:
             for child in exps.children:
-
                 if child.type == "factor":
                     commands += self._process_factor(child, 0)
 
@@ -487,11 +486,9 @@ class CodeGen:
                         commands += "self.__namespace['"\
                                     + child.children[0].value + "'] "
 
-                elif child.type == "expression" and child.value is None:
-                    if len(child.children) > 0:
-                        for exex in child.children:
-                            if exex.type == "factor":
-                                commands += self._process_factor(exex, 2)
+                elif child.type == "expression":
+                    commands += self._process_expression(child, indentlevel)
+
         return commands
 
     # This function takes "factor" node as argument
