@@ -249,10 +249,10 @@ class ParserForNarratr:
             p[0] = Node("testlist", "expression_statement", [p[1]],
                         lineno=p[1].lineno)
         elif p[1] == "god":
-            p[0] = Node("godis", "expression_statement", [p[2], p[4]],
+            p[0] = Node("godis", "expression_statement", [Node(p[2], "god_id"), p[4]],
                         lineno=p.lineno(1))
         else:
-            p[0] = Node("is", "expression_statement", [p[1], p[4]],
+            p[0] = Node("is", "expression_statement", [Node(p[1], "id"), p[3]],
                         lineno=p.lineno(1))
 
     def p_break_statement(self, p):
@@ -584,29 +584,25 @@ class ParserForNarratr:
     # every branch, looking for named entities. It takes as its argument
     # a branch and the scope to be assigned to all found named entities.
     def pass_down(self, branch, scope):
-        if isinstance(branch, Node) and branch.type == "statement":
-            if branch.value == "expression":
-                for i, child in enumerate(branch.children):
-                    if child.type == "id":
-                        try:
-                            self.symtab.insert(child.value,
-                                               branch.children[i+1],
-                                               branch.children[i+1].v_type,
-                                               scope, False)
-                        except:
-                            pass
-                    if child.type == "god_id":
-                        try:
-                            self.symtab.insert(child.value,
-                                               branch.children[i+1],
-                                               branch.children[i+1].v_type,
-                                               scope, True)
-                        except:
-                            pass
+        for i, child in enumerate(branch.children):
+            if child.type == "id":
 
-        if isinstance(branch, Node):
-            for child in branch.children:
-                self.pass_down(child, scope)
+                self.symtab.insert(child.value,
+                                   None,
+                                   None,
+                                   scope, False)
+                child.v_type = self.symtab.getKey(child.value, scope)
+
+            elif child.type == "god_id":
+                try:
+                    self.symtab.insert(child.value,
+                                       [],
+                                       [],
+                                       scope, True)
+                    child.v_type = self.symtab.getKey(child.value, scope)
+                except:
+                    pass
+            self.pass_down(child, scope)
 
     # Check numbers for interoperability. If they are of
     # differing types, the result is always the more general of

@@ -343,7 +343,7 @@ class CodeGen:
         elif smt.value == "lose":
             commands += self._process_lose_smt(smt.children[0], indentlevel)
         elif smt.value == "expression":
-            commands += prefix + self._process_expr_smt(smt.children[0])
+            commands += self._process_expr_smt(smt.children[0], indentlevel)
         elif smt.value == "flow":
             commands += self._process_flow_smt(child)
         return commands
@@ -421,7 +421,8 @@ class CodeGen:
         return commands
 
     # Expression statement
-    def _process_expr_smt(self, smt):
+    def _process_expr_smt(self, smt, indentlevel):
+        prefix = '\n' + '    '*indentlevel
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
@@ -430,15 +431,22 @@ class CodeGen:
         if len(smt.children) == 0:
             self._process_error("Lose statement has no children to process.",
                                 smt.lineno)
-        for c in smt.children:
-            if c.type == "expression_statement":
-                for child in c.children:
-                    if child.type == "god_id":
-                        pass
-                    elif child.type == "id":
-                        pass
-                    elif child.type == "testlist":
-                        commands += self._process_testlist(child)
+        elif smt.value == "testlist":
+            commands += prefix + self._process_testlist(smt.children[0])
+        elif smt.value == "is":
+            # todo check for god variable in symtab
+            god = self.symtab.getWithKey(smt.children[0].v_type).god
+            if god:
+                commands += prefix + "self." + smt.children[0].value
+            else:
+                commands += prefix + "self.__namespace['" + smt.children[0].value + "'] = "
+            commands += self._process_testlist(smt.children[1])
+        elif smt.value == "godis":
+            commands += prefix + "try:"
+            commands += prefix + "    " + smt.children[0].value
+            commands += prefix + "except NameError:"
+            commands += prefix + "    " + smt.children[0].value + " = "
+            commands += prefix + self._process_testlist(smt.children[1])
         return commands
 
     # Flow statemnt
@@ -575,64 +583,9 @@ class CodeGen:
                 commands += self._process_suite(c, indentlevel+1)
         return commands
 
-    def _process_assign(self, ass, indentlevel=1, blocktype='scene'):
-        commands = ''
-        if ass[0].value == "list":
-            commands += "nlist" + " = "
-            commands += self._process_testlist(ass[1])
-        else:
-            commands += "self.__namespace['" + ass[0].value + "'] = "
-            commands += self._process_testlist(ass[1])
-        return commands
-
-    def _process_god_assign(self, ass, indentlevel=1, blocktype='scene'):
-        commands = ''
-        commands += ass[0].value + " = "
-        commands += self._process_testlist(ass[1])
-        return commands
-
     # This function takes "expression" node as argument
     def _process_expression(self, exps):
-        commands = ''
-        if exps.value in ["*", "/", "//", "+", "-"]:
-            tempv = exps.value
-            temp = self._process_arithmetic(exps, str(tempv))
-            commands += temp
-            if len(exps.children) > 1:
-                if exps.children[0].v_type == 'id':
-                    if blocktype == 'scene':
-                        term1 = "self.__namespace['"
-                        term1 += str(exps.children[0].value) + "']"
-                    elif blocktype == 'item':
-                        term1 += str(exps.children[0].value)
-        else:
-            for child in exps.children:
-                if child.type == "factor":
-                    commands += self._process_factor(child)
-                elif child.type == "arithmetic_expression":
-                    # there should be a _process_arithmetic_expression()
-                    # function that is called here.
-                    if child.v_type in ["integer", "float"]:
-                        commands += str(child.children[0].value) + ' '
-                    elif child.v_type == "id":
-                        if blocktype == 'scene':
-                            commands += "self.__namespace['"\
-                                    + child.children[0].value + "'] "
-                        elif blocktype == 'item':
-                            commands += child.children[0].value
-                    else:
-                        commands += child.children[0].value + ' '
-                    commands += exps.value + ' '
-                elif child.type == "term":
-                    if child.v_type == "integer":
-                        commands += str(child.children[0].value) + ' '
-                    elif child.v_type == "id":
-                        if blocktype == 'scene':
-                            commands += "self.__namespace['"\
-                                    + child.children[0].value + "'] "
-                elif child.type == "expression":
-                    commands += self._process_expression(child, indentlevel)
-        return commands
+        return self._process_arithmmetic(exps.children[0])
 
     # This function takes "factor" node as argument
     def _process_factor(self, factors):
