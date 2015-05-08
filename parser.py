@@ -461,15 +461,7 @@ class ParserForNarratr:
                          | EQUALS
                          | NOTEQUALS
                          | NOT EQUALS'''
-        if not (p[1] == '<' or p[1] == '>' or p[1] == '<=' or
-                p[1] == '>=' or p[1] == '==' or p[1] == '!=' or
-                p[1] == 'not'):
-                self.p_error('Syntax error: Comparison not ' +
-                             ' correct at ' +
-                             str(p.lineno(1)))
         p[0] = Node(p[1], 'comparison_op', [], lineno=p.lineno(1))
-        p[0].type = 'comparison_op'
-        # make sure that comparison op is valid
 
     # In the first two productions for this rule, we need to ensure that
     # the two sides are combinable. We overload to PLUS operator to string

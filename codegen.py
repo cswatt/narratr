@@ -470,7 +470,6 @@ class CodeGen:
         else:
             return self._process_expression(comparison.children[0])
 
-    # This function is yet to be implemented.
     def _process_comparisonop(self, comparisonop):
         return comparisonop.value
 
