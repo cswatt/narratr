@@ -295,9 +295,9 @@ class CodeGen:
         commands = ""
         for smt in statement.children:
             if smt.value == "simple":
-                commands += self._process_simple_smt(smt, 1)
+                commands += self._process_simple_smt(smt, indentlevel)
             elif smt.value == "block":
-                commands += self._process_block_smt(smt, 1)
+                commands += self._process_block_smt(smt, indentlevel)
         return commands
 
     # Statement is actually a suite node, but we're keeping the name for
@@ -362,8 +362,10 @@ class CodeGen:
             self._process_error("Say statement has no children to process.",
                                 smt.lineno)    
         for child in smt.children:
-            if child.type == "testlist":
-                commands += self._process_testlist(child)
+            if child.type == "say_statement":
+                for c in child.children:
+                    if c.type == "testlist":
+                        commands += self._process_testlist(c)
         return commands
 
     # Exposition statement passes node to _process_testlist 
@@ -377,8 +379,10 @@ class CodeGen:
             self._process_error("Exposition statement has no children to process.",
                                 smt.lineno) 
         for child in smt.children:
-            if child.type == "testlist":
-                commands += self._process_testlist(child)
+            if child.type == "exposition":
+                for c in child.children:
+                    if child.type == "testlist":
+                        commands += self._process_testlist(c)
         return commands
 
     # Win tatement, print the smt if there is and exit the scene
@@ -392,8 +396,10 @@ class CodeGen:
             self._process_error("Win statement has no children to process.",
                                 smt.lineno) 
         for child in smt.children:
-            if child.type == "testlist":
-                commands += self._process_testlist(child)
+            if child.type == "win_statement":
+                for c in child.children:
+                    if c.type == "testlist":
+                        commands += self._process_testlist(c)
         return commands      
     
     # Lose tatement, print the smt if there is and exit the scene
@@ -407,8 +413,10 @@ class CodeGen:
             self._process_error("Lose statement has no children to process.",
                                 smt.lineno) 
         for child in smt.children:
-            if child.type == "testlist":
-                commands += self._process_testlist(child)
+            if child.type == "lose_statement":
+                for c in child.children:
+                    if c.type == "testlist":
+                        commands += self._process_testlist(c)
         return commands    
 
     # Expression statement
@@ -421,13 +429,15 @@ class CodeGen:
         if len(smt.children) == 0:
             self._process_error("Lose statement has no children to process.",
                                 smt.lineno) 
-        for child in smt.children:
-            if child.type == "god_id":
-                pass
-            elif child.type == "id":
-                pass
-            elif child.type == "testlist":
-                commands += self._process_testlist(child)
+        for c in smt.children:
+            if c.type == "expression_statement":            
+                for child in c.children:
+                    if child.type == "god_id":
+                        pass
+                    elif child.type == "id":
+                        pass
+                    elif child.type == "testlist":
+                        commands += self._process_testlist(child)
         return commands 
     
     # Flow statemnt
@@ -440,15 +450,17 @@ class CodeGen:
         if len(smt.children) == 0:
             self._process_error("Flow statement has no children to process.",
                                 smt.lineno)  
-        for child in smt.children:
-            if child.type == "continue_statement":
-                commands += child.value
-            elif child.type == "break_statement":
-                commands += child.value
-            elif child.type == "moves_declaration":
-                pass
-            elif child.type == "moveto_statement":
-                pass       
+        for c in smt.children:
+            if c.type == "flow_statement":
+                for child in c.children:
+                    if child.type == "continue_statement":
+                        commands += child.value
+                    elif child.type == "break_statement":
+                        commands += child.value
+                    elif child.type == "moves_declaration":
+                        pass
+                    elif child.type == "moveto_statement":
+                        pass       
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist):
