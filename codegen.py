@@ -291,13 +291,31 @@ class CodeGen:
                         "                return response[0]\n")
         return commands
 
-    def _process_suite(self, statement, indentlevel=1):
+    def _process_suite(self, suite, indentlevel=1):
         commands = ""
-        for smt in statement.children:
-            if smt.value == "simple":
-                commands += self._process_simple_smt(smt, indentlevel)
-            elif smt.value == "block":
-                commands += self._process_block_smt(smt, indentlevel)
+        if len(suite) != 1:
+            self._process_error("Too many children in suite.")
+        else:
+            if suite.value == "simple":
+                commands += self._process_simple_smt(child, indentlevel)
+            else:
+                commands += self._process_statements(child, indentlevel)
+        return commands
+
+    def _process_statements(self, statements, indentlevel=1):
+        commands = ''
+        for smt in statements.children:
+            commands += self._process_statement(smt)
+        return commands
+
+    def _process_statement(self, statement, indentlevel=1):
+        commands = ''
+        if statement.value == "simple":
+            commands += self._process_simple_smt(statement, indentlevel)
+        elif statement.value == "block":
+            commands += self._process_block_smt(statement, indentlevel)
+        else:
+            self._process_error("Not accepted ")
         return commands
 
     # Statement is actually a suite node, but we're keeping the name for
