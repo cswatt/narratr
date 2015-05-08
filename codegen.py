@@ -21,7 +21,7 @@ from node import Node
 
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "#!/usr/bin/env python\n"
+        self.frontmatter = "#!/usr/bin/env python\n\nfrom sys import exit"
         self.scenes = []
         self.scene_nums = []
         self.items = []
@@ -67,7 +67,9 @@ class CodeGen:
     # line breaks are only approximations.
     def construct(self, outputfile="stdout"):
         if self.main == "":
-            raise Exception("No start scene specified")
+            self._process_warning("No start scene specified. " +
+                                  "Defaulting to $1.")
+            self._add_main(1)
 
         if outputfile == "stdout":
             print self.frontmatter
@@ -141,17 +143,23 @@ class CodeGen:
             for s in self.scene_nums:
                 self.main += "s_" + str(s) + "_inst = s_" + str(s) + "()\n"
 
-            if startstate.value in self.scene_nums:
-                self.startstate = startstate.value
+            if isinstance(startstate, Node):
+                ss = startstate.value
             else:
-                raise Exception("Start scene $" + str(startstate.value) +
-                                " does not exist")
+                ss = startstate
+
+            if ss in self.scene_nums:
+                self.startstate = ss
+            else:
+                self._process_error("Start scene $" + str(startstate.value) +
+                                    " does not exist.")
 
             self.main += "if __name__ == '__main__':\n    next = s_"\
                 + str(self.startstate) + "_inst.setup()\n    while True:\n"\
                 + "        exec 'next = ' + next"
         else:
-            raise Exception("Multiple start scene declarations.")
+            self._process_warning("Multiple start scene declarations. " +
+                                  "Using scene $" + self.startstate + ".")
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children

@@ -294,7 +294,7 @@ class ParserForNarratr:
             p[0].type = "expression_statement"
         elif p[1] == "god":
             children = [Node(p[2], "god_id"), p[4]]
-            p[0] = Node("is", "expression_statement", children,
+            p[0] = Node("god", "expression_statement", children,
                         lineno=p.lineno(1))
         else:
             children = [Node(p[1], "id"), p[3]]
@@ -334,22 +334,13 @@ class ParserForNarratr:
                          | directionlist COMMA direction LPARAN SCENEID \
                                 RPARAN'''
         if p[1].type == 'direction':
-            if not (p[2] == '(' and p[4] == ')'):
-                self.p_error('Syntax error: Parentheses not balanced ' +
-                             ' at ' +
-                             str(p.lineno(1)))
             p[1].children.append(Node(p[3], 'sceneid', [], lineno=p.lineno(3)))
             p[0] = Node(None, 'directionlist', [p[1]], lineno=p[1].lineno)
         else:
-            if not (p[4] == '(' and p[6].type == ')'):
-                self.p_error('Syntax error: Parentheses not balanced ' +
-                             ' at ' +
-                             str(p.lineno(3)))
             p[3].children.append(Node(p[5], 'sceneid', [], lineno=p.lineno(5)))
             p[1].children.append(p[3])
             p[0] = p[1]
         p[0].type = 'directionlist'
-        # look for parans around scene id, all three elements, and then comma
 
     def p_direction(self, p):
         '''direction : LEFT
