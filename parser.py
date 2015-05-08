@@ -591,7 +591,6 @@ class ParserForNarratr:
         if len(p) == 9:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]],
                         lineno=p[2].lineno)
-            p[4].value = 'elif'
             p[8].value = 'else'
         elif len(p) == 8:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]],
@@ -600,7 +599,6 @@ class ParserForNarratr:
         elif len(p) == 6:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]],
                         lineno=p[2].lineno)
-            p[4].value = 'elif'
         else:
             p[0] = Node(None, 'if_statement', [p[2], p[4]], lineno=p[2].lineno)
         p[0].type = 'if_statement'
