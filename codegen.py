@@ -21,7 +21,7 @@ from node import Node
 
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "#!/usr/bin/env python\n"
+        self.frontmatter = "#!/usr/bin/env python\n\nfrom sys import exit"
         self.scenes = []
         self.scene_nums = []
         self.items = []
