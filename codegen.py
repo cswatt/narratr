@@ -347,7 +347,7 @@ class CodeGen:
                                     commands += "}"
                             i += 1
 
-            elif smt.value in ["if", "while"] or smt.type == "elif_statements":
+            elif smt.value in ["if"] or smt.type == "elif_statements":
                 if smt.value is not None:
                     commands += prefix + smt.value + " "
                 else:
@@ -364,6 +364,8 @@ class CodeGen:
                                                             indentlevel)
                     else:
                         commands += self._process_statements(c, indentlevel+1)
+            elif smt.value == "while":
+                commands += prefix + self._process_whilestatement(smt, indentlevel)
 
             elif smt.value is None:
                 commands += self._process_testlist(smt, 2)
@@ -417,22 +419,10 @@ class CodeGen:
     # "while" value. The "while" node has similar structure with if
     # statement and is needed to be seperated
     def _process_whilestatement(self, smt, indentlevel=1):
-        commands = ''
-        if len(smt.children) > 1:
-            for child in smt.children:
-                if child.type == 'test':
-                    commands += self._process_whilecondition(child, 3)
-                elif child.type == "suite":
-                    commands += "\n" + '    '
-                    commands += self._process_action(child, 4)
-        return commands
-
-    def _process_whilecondition(self, cond, indentlevel=1):
-        commands = ''
-        if len(cond.children) > 0:
-            commands += "\n" + '    '*indentlevel + "while "
-            commands += self._process_factor(cond, 1)
-            commands += ":"
+        commands = "while "
+        commands += self._process_test(smt.children[0], 0) + ":\n    "
+        for c in smt.children[1:]:
+            commands += self._process_statements(c, indentlevel+1)
         return commands
 
     def _process_assign(self, ass, indentlevel=1):
