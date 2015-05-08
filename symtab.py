@@ -78,6 +78,10 @@ class SymTab:
     def get(self, symbol, scope):
         return self.table.get(self.getKey(symbol, scope), None)
 
+    # This interface can be used if you already know the exact key
+    def getWithKey(self, key):
+        return self.table.get(key, None)
+
     # Updates an existing entry.
     def update(self, symbol, value, symboltype, scope, god=False):
         if self.getKey(symbol, scope) not in self.table:
