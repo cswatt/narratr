@@ -317,79 +317,76 @@ class CodeGen:
                             testlist,
                             indentlevel=indentlevel + 1, blocktype=blocktype)
                 commands += prefix + "exit(0)"
-            elif smt.value == "is":
-                if len(smt.children) > 0:
-                    if smt.children[0].type == "god_id":
-                        self.main = self._process_god_assign(
-                            smt.children,
-                            indentlevel=indentlevel + 1) + self.main
-            elif smt.value == "expression":
-                if len(smt.children) > 0:
-                    if smt.children[0].type == "id":
-                        commands += prefix
-                        commands += self._process_assign(
-                            smt.children,
-                            indentlevel=indentlevel + 1, blocktype=blocktype)
-                    elif smt.children[0].type == "test":
-                        commands += prefix
-                        commands += self._process_testlist(
-                                            smt,
-                                            blocktype=blocktype)
+        elif smt.value == "is":
+            if len(smt.children) > 0:
+                if smt.children[0].type == "god_id":
+                    self.main = self._process_god_assign(
+                        smt.children,
+                        indentlevel=indentlevel + 1) + self.main
+        elif smt.value == "expression":
+            if len(smt.children) > 0:
+                if smt.children[0].type == "id":
+                    commands += prefix
+                    commands += self._process_assign(
+                        smt.children,
+                        indentlevel=indentlevel + 1, blocktype=blocktype)
+                elif smt.children[0].type == "test":
+                    commands += prefix
+                    commands += self._process_testlist(
+                                        smt,
+                                        blocktype=blocktype)
 
-            elif smt.value == "flow":
-                commands += prefix
-                if len(smt.children) > 0:
-                    if smt.children[0].type in ["break_statement",
-                                                "continue_statement"]:
-                        commands += smt.children[0].value
-                    # direction list
-                    else:
-                        i = 0
-                        for child in smt.children:
-                            if child.type == "direction":
-                                if i == 0:
-                                    commands += 'direction = {"'
-                                else:
-                                    commands += '"'
-                                commands += self._process_direction(
-                                    child,
-                                    indentlevel=indentlevel + 1)
-                                if (len(smt.children) - 1) != i:
-                                    commands += ', '
-                                else:
-                                    commands += "}"
-                            i += 1
-
-            elif smt.value in ["if", "while"] or smt.type == "elif_statements":
-                if smt.value is not None:
-                    commands += prefix + smt.value + " "
+        elif smt.value == "flow":
+            commands += prefix
+            if len(smt.children) > 0:
+                if smt.children[0].type in ["break_statement",
+                                            "continue_statement"]:
+                    commands += smt.children[0].value
+                # direction list
                 else:
-                    commands += prefix + "elif "
-                commands += self._process_test(smt.children[0], 0) + ":\n    "
-                for c in smt.children[1:]:
-                    if c.value == "else":
-                        commands += prefix + "else:\n    "
-                        commands += self._process_statements(
-                                            c,
-                                            indentlevel=indentlevel+1,
-                                            blocktype=blocktype)
-                    elif c.type == "elif_statements":
-                        commands += "\n    "\
-                                 + self._process_statements(
-                                            Node(None, "suite", [c]),
-                                            indentlevel=indentlevel,
-                                            blocktype=blocktype)
-                    else:
-                        commands += self._process_statements(
-                                            c,
-                                            indentlevel=indentlevel+1,
-                                            blocktype=blocktype)
+                    i = 0
+                    for child in smt.children:
+                        if child.type == "direction":
+                            if i == 0:
+                                commands += 'direction = {"'
+                            else:
+                                commands += '"'
+                            commands += self._process_direction(
+                                child,
+                                indentlevel=indentlevel + 1)
+                            if (len(smt.children) - 1) != i:
+                                commands += ', '
+                            else:
+                                commands += "}"
+                        i += 1
 
-            elif smt.value is None:
-                commands += self._process_testlist(smt)
+        elif smt.value in ["if", "while"] or smt.type == "elif_statements":
+            if smt.value is not None:
+                commands += prefix + smt.value + " "
+            else:
+                commands += prefix + "elif "
+            commands += self._process_test(smt.children[0], 0) + ":\n    "
+            for c in smt.children[1:]:
+                if c.value == "else":
+                    commands += prefix + "else:\n    "
+                    commands += self._process_statements(
+                                        c,
+                                        indentlevel=indentlevel+1,
+                                        blocktype=blocktype)
+                elif c.type == "elif_statements":
+                    commands += "\n    "\
+                             + self._process_statements(
+                                        Node(None, "suite", [c]),
+                                        indentlevel=indentlevel,
+                                        blocktype=blocktype)
+                else:
+                    commands += self._process_statements(
+                                        c,
+                                        indentlevel=indentlevel+1,
+                                        blocktype=blocktype)
 
         elif smt.value is None:
-            commands += self._process_testlist(smt, 2)
+            commands += self._process_testlist(smt)
 
         return commands
 
