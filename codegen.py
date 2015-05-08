@@ -320,11 +320,11 @@ class CodeGen:
                 commands += prefix + "print "
                 commands += self._process_expo_smt(child)
             elif child.value == "win":
-                commands += prefix + "print"
+                commands += prefix + "print "
                 commands += self._process_win_smt(child)
                 commands += prefix + "exit(0)"
             elif child.value == "lose":
-                commands += prefix + "print"
+                commands += prefix + "print "
                 commands += self._process_lose_smt(child)
                 commands += prefix + "exit(0)"
             elif smt.value == "expression":
