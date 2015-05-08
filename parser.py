@@ -301,7 +301,7 @@ class ParserForNarratr:
         elif p[1] == "god":
             children = [Node(p[2], "god_id"), p[4]]
             p[0] = Node("is", "expression_statement", children,
-                        lineno=p[3].lineno)
+                        lineno=p.lineno(1))
         else:
             children = [Node(p[1], "id"), p[3]]
             p[0] = Node("is", "expression_statement", children,
