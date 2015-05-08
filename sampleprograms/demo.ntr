@@ -41,13 +41,14 @@ scene $3 {
 
 scene $4{
 	setup:
-		exposition "There's a llama in the corner."
+		exposition "There's a llama in the corner. It's the Pumping Llama!"
 		god pumpingllama is llama("Pumping Llama")
 		moves left($2), up($5)
 	action:
-		say "'Baa,' says the llama. What will you do?"
+		say "'Baa,' says the Pumping Llama. What will you do?"
 		if (response == "kick the llama"):
-			say "You're a terrible person."
+			say "You're a terrible person. You deserve to lose this game."
+			lose
 		else if (response == "pet the llama"):
 			say "The llama bats its eyelashes at you."
 	cleanup:
@@ -81,7 +82,7 @@ scene $5{
 
 			if (response == "punch the dragon"):
 				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
-			if (response == "slay the dragon"):
+			if (response == "stab the dragon") and (thesword.pickedUp):
 				dragon_hp is dragon_hp - 1
 			if (response == "throw the llama")
 				say "That's animal cruelty."
@@ -89,6 +90,9 @@ scene $5{
 				break
 
 		if (dragon_hp > 0):
+			say "You should probably go back and look for something to help you fight the dragon."
+		if (dragon_hp <= 0):
+			say "You've slain the Complexity Dragon!"
+			win
 	cleanup:
-		say
 }
