@@ -211,7 +211,7 @@ class CodeGen:
     def _process_item_block(self, c):
         commands = []
         if len(c.children) > 0:
-            commands.append(self._process_statements(c, 2))
+            commands.append(self._process_suite(c, 2))
         return commands
 
 # in narratr: k is key(1) (is the constructor call)
@@ -234,7 +234,7 @@ class CodeGen:
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
     # direction, and at the end, the code to move to the action block), and
-    # sends the child nodes to _process_statements() to generate their code.
+    # sends the child nodes to _process_suite() to generate their code.
     def _process_setup_block(self, c):
         commands = []
         commands.append("def setup(self):" +
@@ -242,13 +242,13 @@ class CodeGen:
 
         if len(c.children) > 0:
             for child in c.children:
-                commands.append(self._process_statements(child, 2))
+                commands.append(self._process_suite(child, 2))
         commands.append("    return self.action(direction)\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
     # node. Adds boilerplate code (function definition and "pass" if necessary,
-    # explained below), then sends the child nodes to _process_statements() to
+    # explained below), then sends the child nodes to _process_suite() to
     # generate their code. "pass" is required in the scenario that there are no
     # child nodes, in which case Python syntactically requires code, we need to
     # be able to execute the function, but we don't want anything to happen. #
@@ -257,7 +257,7 @@ class CodeGen:
         commands = []
         commands.append("def cleanup(self):")
         if len(c.children) > 0:
-            commands.append(self._process_statements(c.children[0], 3))
+            commands.append(self._process_suite(c.children[0], 3))
         else:
             commands.append("    pass")
         return commands
@@ -276,7 +276,7 @@ class CodeGen:
         commands.append("    response = \"\"\n        while True:")
         if len(c.children) > 0:
             for child in c.children:
-                commands.append(self._process_statements(child, 3))
+                commands.append(self._process_suite(child, 3))
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
@@ -284,84 +284,88 @@ class CodeGen:
                         "                return response[0]\n")
         return commands
 
+    def _process_suite(self, statement, indentlevel=1, datatype=None):
+        commands = ""
+        for smt in statement.children:
+            commands += self._process_statement(smt, indentlevel)
+        return commands
+
     # Statement is actually a suite node, but we're keeping the name for
     # backwards-compatability.
-    def _process_statements(self, statement, indentlevel=1, datatype=None):
+    def _process_statement(self, smt, indentlevel=1, datatype=None):
         commands = ''
         prefix = "\n" + "    "*indentlevel
-        indent = 1
-        for smt in statement.children:
-            if smt.value == "say":
-                commands += prefix + "print "
+        if smt.value == "say":
+            commands += prefix + "print "
+            for testlist in smt.children:
+                t = "String"
+                tl = testlist
+                commands += self._process_testlist(tl, indentlevel + 1, t)
+        elif smt.value == "exposition":
+            commands += prefix + "print "
+            for testlist in smt.children:
+                commands += self._process_testlist(
+                    testlist,
+                    indentlevel + 1)
+        elif smt.value in ["win", "lose"]:
+            if len(smt.children) > 0:
                 for testlist in smt.children:
-                    t = "String"
-                    tl = testlist
-                    commands += self._process_testlist(tl, indentlevel + 1, t)
-            elif smt.value == "exposition":
-                commands += prefix + "print "
-                for testlist in smt.children:
+                    commands += prefix + "print "
                     commands += self._process_testlist(
                         testlist,
                         indentlevel + 1)
-            elif smt.value in ["win", "lose"]:
-                if len(smt.children) > 0:
-                    for testlist in smt.children:
-                        commands += prefix + "print "
-                        commands += self._process_testlist(
-                            testlist,
-                            indentlevel + 1)
-                commands += prefix + "exit(0)"
-            elif smt.value == "is":
-                if len(smt.children) > 0:
-                    if smt.children[0].type == "god_id":
-                        self.main = self._process_god_assign(
-                            smt.children,
-                            indentlevel + 1) + self.main
-            elif smt.value == "expression":
-                if len(smt.children) > 0:
-                    if smt.children[0].type == "id":
-                        commands += prefix
-                        commands += self._process_assign(
-                            smt.children,
-                            indentlevel + 1)
-                    elif smt.children[0].type == "test":
-                        commands += prefix
-                        commands += self._process_testlist(smt)
+            commands += prefix + "exit(0)"
+        elif smt.value == "is":
+            if len(smt.children) > 0:
+                if smt.children[0].type == "god_id":
+                    self.main = self._process_god_assign(
+                        smt.children,
+                        indentlevel + 1) + self.main
+        elif smt.value == "expression":
+            if len(smt.children) > 0:
+                if smt.children[0].type == "id":
+                    commands += prefix
+                    commands += self._process_assign(
+                        smt.children,
+                        indentlevel + 1)
+                elif smt.children[0].type == "test":
+                    commands += prefix
+                    commands += self._process_testlist(smt)
 
-            elif smt.value == "flow":
-                commands += prefix
-                if len(smt.children) > 0:
-                    if smt.children[0].type in ["break_statement",
-                                                "continue_statement"]:
-                        commands += smt.children[0].value
-                    # direction list
-                    else:
-                        i = 0
-                        for child in smt.children:
-                            if child.type == "direction":
-                                if i == 0:
-                                    commands += 'direction = {"'
-                                else:
-                                    commands += '"'
-                                commands += self._process_direction(
-                                    child,
-                                    indentlevel + 1)
-                                if (len(smt.children) - 1) != i:
-                                    commands += ', '
-                                else:
-                                    commands += "}"
-                            i += 1
+        elif smt.value == "flow":
+            commands += prefix
+            if len(smt.children) > 0:
+                if smt.children[0].type in ["break_statement",
+                                            "continue_statement"]:
+                    commands += smt.children[0].value
+                # direction list
+                else:
+                    i = 0
+                    for child in smt.children:
+                        if child.type == "direction":
+                            if i == 0:
+                                commands += 'direction = {"'
+                            else:
+                                commands += '"'
+                            commands += self._process_direction(
+                                child,
+                                indentlevel + 1)
+                            if (len(smt.children) - 1) != i:
+                                commands += ', '
+                            else:
+                                commands += "}"
+                        i += 1
 
-            elif smt.value == "if" or smt.type == "elif_statements":
-                commands += prefix + self._process_ifstatement(smt,
-                                                               indentlevel)
+        elif smt.value == "if" or smt.type == "elif_statements":
+            commands += prefix + self._process_ifstatement(smt,
+                                                           indentlevel)
 
-            elif smt.value == "while":
-                commands += prefix + self._process_whilestatement(smt,
-                                                                  indentlevel)
+        elif smt.value == "while":
+            commands += prefix + self._process_whilestatement(smt,
+                                                              indentlevel)
 
-            elif smt.value is None:
-                commands += self._process_testlist(smt, 2)
+        elif smt.value is None:
+            commands += self._process_testlist(smt, 2)
 
         # We need to remove the leading whitespace and first tab because of
         # the list constructed by _scene_gen().
@@ -389,7 +393,7 @@ class CodeGen:
         commands = "while "
         commands += self._process_test(smt.children[0], 0) + ":\n    "
         for c in smt.children[1:]:
-            commands += self._process_statements(c, indentlevel+1)
+            commands += self._process_suite(c, indentlevel+1)
         return commands
 
     # This function takes statement node with "if" value, or an elif node.
@@ -404,14 +408,14 @@ class CodeGen:
         for c in smt.children[1:]:
             if c.value == "else":
                 commands += "\n" + "    "*indentlevel + "else:\n    "
-                commands += self._process_statements(c, indentlevel+1)
+                commands += self._process_suite(c, indentlevel+1)
             elif c.type == "elif_statements":
                 commands += "\n    "\
-                         + self._process_statements(Node(None, "suite",
+                         + self._process_suite(Node(None, "suite",
                                                          [c]),
                                                     indentlevel)
             else:
-                commands += self._process_statements(c, indentlevel+1)
+                commands += self._process_suite(c, indentlevel+1)
         return commands
 
     def _process_assign(self, ass, indentlevel=1):
