@@ -595,7 +595,6 @@ class CodeGen:
         commands = ''
         if exps.value in ["*", "/", "//", "+", "-"]:
             tempv = exps.value
-            i = indentlevel + 1
             temp = self._process_arithmetic(exps, str(tempv))
             commands += temp
             if len(exps.children) > 1:
