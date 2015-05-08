@@ -23,6 +23,7 @@ scene $2 {
 
 item pony(pony_id, so){
   id is pony_id
+  say "ok"
 }
 
 start: $1

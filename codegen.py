@@ -190,10 +190,9 @@ class CodeGen:
                 for exp in c.children:
                     item_code += "," + exp.children[0].value
                 item_code += "):\n"
-                # item_code +="\n        self.__namespace = {}\n    "
             elif c.type == "suite":
-                commands += self._process_item_block(c)
-        item_code = item_code + "\n    ".join(commands)
+                commands += self._process_item_block(item)
+        item_code = item_code + "    ".join(commands)
         # + "\n        pass\n\n    "
 
         # Here modify code so that constructor takes args
@@ -206,7 +205,9 @@ class CodeGen:
     def _process_item_block(self, c):
         commands = []
         if len(c.children) > 0:
-            commands.append(self._process_statements(c, 2))
+            for child in c.children:
+                commands.append(self._process_statements(child,
+                                indentlevel=2, blocktype='item'))
         return commands
 
 # in narratr: k is key(1) (is the constructor call)
@@ -237,7 +238,8 @@ class CodeGen:
 
         if len(c.children) > 0:
             for child in c.children:
-                commands.append(self._process_statements(child, 2))
+                commands.append(self._process_statements(child,
+                                indentlevel=2, blocktype='scene'))
         commands.append("    return self.action(direction)\n")
         return commands
 
@@ -252,7 +254,8 @@ class CodeGen:
         commands = []
         commands.append("def cleanup(self):")
         if len(c.children) > 0:
-            commands.append(self._process_statements(c.children[0], 3))
+            commands.append(self._process_statements(c.children[0],
+                            indentlevel=3, blocktype='scene'))
         else:
             commands.append("    pass")
         return commands
@@ -271,7 +274,8 @@ class CodeGen:
         commands.append("    response = \"\"\n        while True:")
         if len(c.children) > 0:
             for child in c.children:
-                commands.append(self._process_statements(child, 3))
+                commands.append(self._process_statements(child,
+                                indentlevel=3,  blocktype='scene'))
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
@@ -281,7 +285,8 @@ class CodeGen:
 
     # Statement is actually a suite node, but we're keeping the name for
     # backwards-compatability.
-    def _process_statements(self, statement, indentlevel=1, datatype=None):
+    def _process_statements(self, statement, indentlevel=1, datatype=None,
+                            blocktype='scene'):
         commands = ''
         prefix = "\n" + "    "*indentlevel
         indent = 1
@@ -291,37 +296,43 @@ class CodeGen:
                 for testlist in smt.children:
                     t = "String"
                     tl = testlist
-                    commands += self._process_testlist(tl, indentlevel + 1, t)
+                    commands += self._process_testlist(
+                                        tl,
+                                        indentlevel=indentlevel + 1,
+                                        datatype=t,
+                                        blocktype=blocktype)
             elif smt.value == "exposition":
                 commands += prefix + "print "
                 for testlist in smt.children:
                     commands += self._process_testlist(
                         testlist,
-                        indentlevel + 1)
+                        indentlevel=indentlevel + 1, blocktype=blocktype)
             elif smt.value in ["win", "lose"]:
                 if len(smt.children) > 0:
                     for testlist in smt.children:
                         commands += prefix + "print "
                         commands += self._process_testlist(
                             testlist,
-                            indentlevel + 1)
+                            indentlevel=indentlevel + 1, blocktype=blocktype)
                 commands += prefix + "exit(0)"
             elif smt.value == "is":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "god_id":
                         self.main = self._process_god_assign(
                             smt.children,
-                            indentlevel + 1) + self.main
+                            indentlevel=indentlevel + 1) + self.main
             elif smt.value == "expression":
                 if len(smt.children) > 0:
                     if smt.children[0].type == "id":
                         commands += prefix
                         commands += self._process_assign(
                             smt.children,
-                            indentlevel + 1)
+                            indentlevel=indentlevel + 1, blocktype=blocktype)
                     elif smt.children[0].type == "test":
                         commands += prefix
-                        commands += self._process_testlist(smt)
+                        commands += self._process_testlist(
+                                            smt,
+                                            blocktype=blocktype)
 
             elif smt.value == "flow":
                 commands += prefix
@@ -340,7 +351,7 @@ class CodeGen:
                                     commands += '"'
                                 commands += self._process_direction(
                                     child,
-                                    indentlevel + 1)
+                                    indentlevel=indentlevel + 1)
                                 if (len(smt.children) - 1) != i:
                                     commands += ', '
                                 else:
@@ -356,18 +367,27 @@ class CodeGen:
                 for c in smt.children[1:]:
                     if c.value == "else":
                         commands += prefix + "else:\n    "
-                        commands += self._process_statements(c, indentlevel+1)
+                        commands += self._process_statements(
+                                            c,
+                                            indentlevel=indentlevel+1,
+                                            blocktype=blocktype)
                     elif c.type == "elif_statements":
                         commands += "\n    "\
                                  + self._process_statements(
-                                                            Node(None, "suite",
-                                                                 [c]),
-                                                            indentlevel)
+                                            Node(None, "suite", [c]),
+                                            indentlevel=indentlevel,
+                                            blocktype=blocktype)
                     else:
-                        commands += self._process_statements(c, indentlevel+1)
+                        commands += self._process_statements(
+                                            c,
+                                            indentlevel=indentlevel+1,
+                                            blocktype=blocktype)
 
             elif smt.value is None:
-                commands += self._process_testlist(smt, 2)
+                commands += self._process_testlist(
+                                    smt,
+                                    indentlevel=2,
+                                    blocktype=blocktype)
 
         # We need to remove the leading whitespace and first tab because of
         # the list constructed by _scene_gen(). It's possible this will mess
@@ -376,7 +396,8 @@ class CodeGen:
         return commands[5:]
 
     # This function takes "testlist" node as argument
-    def _process_testlist(self, testlist, indentlevel=1, datatype=None):
+    def _process_testlist(self, testlist, indentlevel=1, datatype=None,
+                          blocktype='scene'):
         commands = ''
         for test in testlist.children:
             if test.type == "test":
@@ -385,19 +406,26 @@ class CodeGen:
                         if child.type == "expression":
                             i = indentlevel + 1
                             dt = datatype
-                            commands += self._process_expression(child, i, dt)
+                            commands += self._process_expression(
+                                                child,
+                                                indentlevel=i,
+                                                datatype=dt,
+                                                blocktype=blocktype)
                         if child.type == "and_test":
                             commands += self._process_expression(
-                                child,
-                                indentlevel + 1)
+                                                child,
+                                                indentlevel=indentlevel + 1,
+                                                blocktype=blocktype)
                         if child.type == "not_test":
                             commands += self._process_expression(
-                                child,
-                                indentlevel + 1)
+                                                child,
+                                                indentlevel=indentlevel + 1,
+                                                blocktype=blocktype)
                         if child.type == "or_test":
                             commands += self._process_expression(
-                                child,
-                                indentlevel + 1)
+                                                child,
+                                                indentlevel=indentlevel + 1,
+                                                blocktype=blocktype)
             elif test.type == "suite":
                 commands += "    "*3 + "win"
         return commands
@@ -409,7 +437,9 @@ class CodeGen:
         commands = ''
         if len(expr.children) > 0:
             if expr.type == 'suite' and expr.value is None:
-                commands += self._process_statements(expr, indentlevel)
+                commands += self._process_statements(
+                                    expr,
+                                    indentlevel=indentlevel)
             elif expr.type == 'suite' and expr.value is "else":
                 commands += '    '*(indentlevel-1) + "else:\n"
                 commands += '    '*(indentlevel+1)
@@ -419,88 +449,123 @@ class CodeGen:
     # This function taks the node which has "block_statement" type and
     # "while" value. The "while" node has similar structure with if
     # statement and is needed to be seperated
-    def _process_whilestatement(self, smt, indentlevel=1):
+    def _process_whilestatement(self, smt, indentlevel=1, blocktype='scene'):
         commands = ''
         if len(smt.children) > 1:
             for child in smt.children:
                 if child.type == 'test':
-                    commands += self._process_whilecondition(child, 3)
+                    commands += self._process_whilecondition(
+                                        child,
+                                        indentlevel=3,
+                                        blocktype=blocktype)
                 elif child.type == "suite":
                     commands += "\n" + '    '
-                    commands += self._process_action(child, 4)
+                    commands += self._process_action(child, indentlevel=4)
         return commands
 
-    def _process_whilecondition(self, cond, indentlevel=1):
+    def _process_whilecondition(self, cond, indentlevel=1, blocktype='scene'):
         commands = ''
         if len(cond.children) > 0:
             commands += "\n" + '    '*indentlevel + "while "
-            commands += self._process_factor(cond, 1)
+            commands += self._process_factor(
+                                cond,
+                                indentlevel=1,
+                                blocktype=blocktype)
             commands += ":"
         return commands
 
-    def _process_assign(self, ass, indentlevel=1):
+    def _process_assign(self, ass, indentlevel=1, blocktype='scene'):
         commands = ''
         if ass[0].value == "list":
             commands += "nlist" + " = "
-            commands += self._process_testlist(ass[1], 2)
+            commands += self._process_testlist(
+                                ass[1],
+                                indentlevel=2,
+                                blocktype=blocktype)
         else:
-            commands += "self.__namespace['" + ass[0].value + "'] = "
-            commands += self._process_testlist(ass[1], 2)
+            if blocktype == 'scene':
+                commands += "self.__namespace['" + ass[0].value + "'] = "
+            elif blocktype == 'item':
+                commands += ass[0].value + " = "
+            commands += self._process_testlist(
+                                ass[1],
+                                indentlevel=2,
+                                blocktype=blocktype)
         return commands
 
-    def _process_god_assign(self, ass, indentlevel=1):
+    def _process_god_assign(self, ass, indentlevel=1, blocktype='scene'):
         commands = ''
         commands += ass[0].value + " = "
-        commands += self._process_testlist(ass[1], 2)
+        commands += self._process_testlist(
+                            ass[1],
+                            indentlevel=2,
+                            blocktype=blocktype)
         return commands
 
     # This function takes "expression" node as argument
-    def _process_expression(self, exps, indentlevel=1, datatype=None):
+    def _process_expression(self, exps, indentlevel=1, datatype=None,
+                            blocktype='scene'):
         commands = ''
         if exps.value in ["*", "/", "//", "+", "-"]:
             tempv = exps.value
             i = indentlevel + 1
-            temp = self._process_arithmetic(exps, str(tempv), i, datatype)
+            temp = self._process_arithmetic(
+                            exps,
+                            str(tempv),
+                            indentlevel=i,
+                            datatype=datatype,
+                            blocktype=blocktype)
             commands += temp
             if len(exps.children) > 1:
                 if exps.children[0].v_type == 'id':
-                    term1 = "self.__namespace['"
-                    term1 += str(exps.children[0].value) + "']"
-
+                    if blocktype == 'scene':
+                        term1 = "self.__namespace['"
+                        term1 += str(exps.children[0].value) + "']"
+                    elif blocktype == 'item':
+                        term1 += str(exps.children[0].value)
         else:
             for child in exps.children:
 
                 if child.type == "factor":
-                    commands += self._process_factor(child, 0)
-
+                    commands += self._process_factor(
+                                        child,
+                                        indentlevel=0,
+                                        blocktype=blocktype)
                 elif child.type == "arithmetic_expression":
                     # there should be a _process_arithmetic_expression()
                     # function that is called here.
                     if child.v_type in ["integer", "float"]:
                         commands += str(child.children[0].value) + ' '
                     elif child.v_type == "id":
-                        commands += "self.__namespace['"\
+                        if blocktype == 'scene':
+                            commands += "self.__namespace['"\
                                     + child.children[0].value + "'] "
+                        elif blocktype == 'item':
+                            commands += child.children[0].value
                     else:
                         commands += child.children[0].value + ' '
                     commands += exps.value + ' '
-
                 elif child.type == "term":
                     if child.v_type == "integer":
                         commands += str(child.children[0].value) + ' '
                     elif child.v_type == "id":
-                        commands += "self.__namespace['"\
+                        if blocktype == 'scene':
+                            commands += "self.__namespace['"\
                                     + child.children[0].value + "'] "
-
+                        elif blocktype == 'item':
+                            commands += child.children[0].value
                 elif child.type == "expression" and child.value is None:
                     if len(child.children) > 0:
                         for exex in child.children:
                             if exex.type == "factor":
-                                commands += self._process_factor(exex, 2)
+                                commands += self._process_factor(
+                                                    exex,
+                                                    indentlevel=2,
+                                                    blocktype=blocktype)
         return commands
 
     # This function takes "factor" node as argument
-    def _process_factor(self, factors, indentlevel=2):
+    def _process_factor(self, factors, indentlevel=2, blocktype='scene'):
         commands = ""
         if len(factors.children) > 0:
             if len(factors.children) == 3:
@@ -559,19 +624,22 @@ class CodeGen:
 
         elif factors.v_type == "id":
             if factors.value == "pocket":
-                commands += self._process_pocket(factors, indentlevel)
+                commands += self._process_pocket(
+                                    factors,
+                                    indentlevel=indentlevel)
             elif(self.symtab.get(factors.value, 'GLOBAL')):
-                if len(child.children[0].children) > 0:
+                if len(factors.children[0].children) > 0:
                     commands += "("
-                    for c in child.children[0].children:
+                    for c in factors.children[0].children:
                         commands += self._process_expression(c) + ","
                         commands = commands[:-1] + ")"
             else:
-                commands += "self.__namespace['" + factors.value + "']"
-
+                if blocktype == 'scene':
+                    commands += "self.__namespace['" + factors.value + "']"
+                elif blocktype == 'item':
+                    commands += factors.value
         elif factors.value is None:
-            commands += self._process_factor(factors)
-
+            commands += self._process_factor(factors, blocktype=blocktype)
         elif factors.v_type == "string":
             if factors.value == "str":
                 commands += "str("
@@ -580,14 +648,13 @@ class CodeGen:
                 commands += ")"
             else:
                 commands += '"' + factors.value + '"'
-
         elif factors.v_type == "integer":
             commands += str(factors.value)
-
         return commands
 
     # This function recursively deals with arithmetic node
-    def _process_arithmetic(self, expr, expvalue, indent=1, datatype=None):
+    def _process_arithmetic(self, expr, expvalue, indentlevel=1,
+                            datatype=None, blocktype='scene'):
         commands = ''
         if len(expr.children) > 0:
             for child in expr.children:
@@ -596,7 +663,10 @@ class CodeGen:
                         if len(child.children) > 0:
                             if child.children[0].type == "factor":
                                 tempc = child.children[0]
-                                temp = self._process_factor(tempc, indent+1)
+                                temp = self._process_factor(
+                                                tempc,
+                                                indentlevel=indentlevel+1,
+                                                blocktype=blocktype)
                                 if datatype == "String":
                                     if tempc.v_type == 'string':
                                         commands += temp
@@ -609,8 +679,12 @@ class CodeGen:
                         if child.v_type == "integer":
                             tv = child.value
                             c = child
-                            temp = self._process_arithmetic(c, tv,
-                                                            indent+1, datatype)
+                            temp = self._process_arithmetic(
+                                            c,
+                                            tv,
+                                            indentlevel=indentlevel+1,
+                                            datatype=datatype,
+                                            blocktype=blocktype)
                             commands += temp + ' '
                             if datatype == "String":
                                 commands += 'str(' + str(tv) + ')' + ' '
@@ -619,8 +693,12 @@ class CodeGen:
                         elif child.v_type == 'id':
                             tv = child.value
                             c = child
-                            temp = self._process_arithmetic(c, tv,
-                                                            indent+1, datatype)
+                            temp = self._process_arithmetic(
+                                            c,
+                                            tv,
+                                            indentlevel=indentlevel+1,
+                                            datatype=datatype,
+                                            blocktype=blocktype)
                             commands += temp + ' '
                             commands += str(tv) + ' '
                 elif child.type == "term":
@@ -631,20 +709,30 @@ class CodeGen:
                                 if (datatype == "String" and
                                         tc.v_type != 'string'):
                                     commands += 'str('
-                                commands += self._process_factor(tc, indent+1)
+                                commands += self._process_factor(
+                                                    tc,
+                                                    indentlevel=indentlevel+1,
+                                                    blocktype=blocktype)
                                 if (datatype == "String" and
                                         tc.v_type != 'string'):
                                     commands += ')'
                     elif child.value in ['*', '/']:
                         tv = str(child.value)
-                        temp = self._process_arithmetic(child, tv,
-                                                        indent+1, datatype)
+                        temp = self._process_arithmetic(
+                                        child,
+                                        tv,
+                                        indentlevel=indentlevel+1,
+                                        datatype=datatype,
+                                        blocktype=blocktype)
                         commands += temp
                 elif child.type == "factor":
                     if child.v_type == 'id':
                         commands += ' ' + expvalue + ' '
-                        commands += "self.__namespace['"
-                        commands += str(child.value) + "']"
+                        if blocktype == 'scene':
+                            commands += "self.__namespace['"
+                            commands += str(child.value) + "']"
+                        elif blocktype == 'item':
+                            commands += str(child.value)
                     if child.v_type == 'integer':
                         if datatype == "String":
                             commands += ' str(' + expvalue + ') '
@@ -691,9 +779,13 @@ class CodeGen:
                                         ": Adding to the pocket requires" +
                                         " exactly two arguments. " +
                                         str(len(child.children)) + " given.")
-                    commands += self._process_expression(child.children[0], 0)
+                    commands += self._process_expression(
+                                        child.children[0],
+                                        indentlevel=0)
                     commands += "] = "
-                    commands += self._process_expression(child.children[1], 0)
+                    commands += self._process_expression(
+                                        child.children[1],
+                                        indentlevel=0)
                 elif get:
                     if len(child.children) != 1:
                         raise Exception("Line " + str(pocket_node.lineno) +
@@ -701,7 +793,9 @@ class CodeGen:
                                         " requires exactly one argument. " +
                                         str(len(child.children)) + " given.")
                     commands += "pocket["
-                    commands += self._process_expression(child.children[0], 0)
+                    commands += self._process_expression(
+                                        child.children[0],
+                                        indentlevel=0)
                     commands += "]"
                 elif remove:
                     if len(child.children) != 1:
@@ -710,6 +804,8 @@ class CodeGen:
                                         " requires exactly one argument. " +
                                         str(len(child.children)) + " given.")
                     commands += "del pocket["
-                    commands += self._process_expression(child.children[0], 0)
+                    commands += self._process_expression(
+                                        child.children[0],
+                                        indentlevel=0)
                     commands += "]"
         return commands

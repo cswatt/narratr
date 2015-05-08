@@ -2,27 +2,32 @@
 
 class s_1:
     def __init__(self):
-        pass
+        self.__namespace = {}
 
     def setup(self):
         direction = {}
-        n = 0
-            while n < 3:
-                print "Okay."
-                n = n + 1 
-        self.action(direction)
+        self.__namespace['n'] = 0
+        while [tests]:
+            print "Okay."
+            self.__namespace['n'] = self.__namespace['n'] + 1
+        return self.action(direction)
 
     def action(self, direction):
         response = ""
         while True:
             exit(0)
-            response = get_response(self.__class__.__name__, direction)
+            response = get_response(direction)
+            if isinstance(response, list):
+                self.cleanup()
+                return response[0]
 
     def cleanup(self):
         pass
 
+
+
 pocket = {}
-def get_response(caller, direction):
+def get_response(direction):
     response = raw_input(" -->> ")
     response = response.lower()
     response = response.translate(None,
@@ -33,9 +38,8 @@ def get_response(caller, direction):
         exit(0)
     elif response[:5] == "move " and len(response.split(" ")) == 2:
         if response.split(" ")[1] in direction:
-            exec caller + "_inst.cleanup()"
-            exec "s_" + str(direction[response.split(" ")[1]])\
-                + "_inst.setup()"
+            return ["s_" + str(direction[response.split(" ")[1]])\
+                + "_inst.setup()"]
         else:
             print "\"" + response.split(" ")[1] + "\" is not a "\
                 + "valid direction from this scene."
@@ -44,4 +48,6 @@ def get_response(caller, direction):
 
 s_1_inst = s_1()
 if __name__ == '__main__':
-    s_1_inst.setup()
+    next = s_1_inst.setup()
+    while True:
+        exec 'next = ' + next
