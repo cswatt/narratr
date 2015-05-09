@@ -760,10 +760,10 @@ class CodeGen:
         if arith_exp.value == "term":
             return self._process_term(self, arith_exp.children[0])
         elif arith_exp.value in ['+', '-']:
-            return '(' +\
-                   self._process_arithmetic_expression(arith_exp.children[0]) +\
-                   ') ' + arith_exp.value + ' ' +\
-                    self._process_term(self, arith_exp.children[1])
+            return '(' + \
+                self._process_arithmetic_expression(arith_exp.children[0]) + \
+                ') ' + arith_exp.value + ' ' + \
+                self._process_term(self, arith_exp.children[1])
         else:
             self._process_error("Illegal operation type for " +
                                 "'arithmetic_expression'", arith_exp.lineno)
@@ -805,6 +805,35 @@ class CodeGen:
         else:
             self._process_error("Illegal operation type for " +
                                 "'factor'", factor.lineno)
+
+    # This function processes powers.
+    def _process_power(self, power):
+        if not isinstance(power, Node) or power.type != "power":
+            self._process_error("Something bad happened while processing " +
+                                "'power'. Unfortunately, " +
+                                "that is all we know.")
+        if power.value == "atom":
+            return self._process_atom(self, power.children[0])
+        elif power.value == "trailer":
+            atom = self._process_atom(self, power.children[0])
+            trailers = ''
+            for trailer in power.children:
+                trailers += self._process_trailer(trailer)
+            return atom + trailer
+        else:
+            self._process_error("Illegal operation type for " +
+                                "'power'", power.lineno)
+
+    # This function takes "direction" node as argument
+    # Building a dictionary for direction, using the direction as key and
+    # scene number as value
+    def _process_direction(self, direction):
+        commands = ''
+        commands += direction.value
+        commands += '": '
+        for scene in direction.children:
+            commands += str(scene.value)
+        return commands
 
     def _process_pocket(self, pocket_node, indentlevel=1):
         commands = ""

@@ -419,6 +419,7 @@ class ParserForNarratr:
         '''power : power trailer
                  | atom'''
         if p[1].type == 'power':
+            p[1].value = "trailer"
             p[1].children.append(p[2])
             p[0] = p[1]
         else:
