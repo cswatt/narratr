@@ -622,6 +622,30 @@ class CodeGen:
         else:
             self._process_error("'atom' has unknown chid type.", atom.lineno)
 
+    # This function processes number nodes.
+    def _process_number(self, number):
+        if not isinstance(number, Node) or number.type != "number":
+            self._process_error("Something bad happened while processing " +
+                                "'number'. Unfortunately, that is all we " +
+                                "know.")
+        if number.is_leaf():
+            return str(number.value)
+        else:
+            self._process_error("'number' has children. It should be sterile.",
+                                number.lineno)
+
+    # This function processes boolean nodes.
+    def _process_boolean(self, boolean):
+        if not isinstance(boolean, Node) or boolean.type != "boolean":
+            self._process_error("Something bad happened while processing " +
+                                "'boolean'. Unfortunately, that is all we " +
+                                "know.")
+        if boolean.is_leaf():
+            return str(number.value)
+        else:
+            self._process_error("'boolean' has children. It should be sterile.",
+                                boolean.lineno)
+
     # This function takes "factor" node as argument
     def _process_factor(self, factors):
         commands = ""
