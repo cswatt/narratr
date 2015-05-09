@@ -116,6 +116,10 @@ class LexerForNarratr:
     def t_ID(self, t):
         r'[a-zA-Z_][a-zA-Z_0-9]*'
         t.type = self.reserved.get(t.value, 'ID')    # Check for reserved words
+        if t.type == "TRUE":
+            t.value = True
+        elif t.type == "FALSE":
+            t.value = False
         return t
 
     # This rule matches a floating point number.
