@@ -686,7 +686,7 @@ pocket = pocket_class()\n'''
 
     def _process_elifstatements(self, elif_smts, indentlevel):
         commands = ""
-        for child in elif_smts:
+        for child in elif_smts.children:
             if child.type != "elif_statement":
                 self._process_error("Invalid child of elif_statements",
                                     elif_smts.lineno)
