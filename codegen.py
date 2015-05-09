@@ -742,7 +742,7 @@ pocket = pocket_class()\n'''
                                 "'boolean'. Unfortunately, that is all we " +
                                 "know.")
         if boolean.is_leaf():
-            return str(number.value)
+            return str(boolean.value)
         else:
             self._process_error("'boolean' has children. It should be " +
                                 "sterile.", boolean.lineno)
