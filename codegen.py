@@ -211,7 +211,6 @@ pocket = pocket_class()\n'''
         iid = item.value
         self.item_names.append(iid)
         item_code = "class item_" + str(iid) + ":\n    "
-        # "\n    ".join(commands)
         for c in item.children:
             if c.type == "calllist":
                 item_code = item_code + "def __init__(self"
@@ -221,13 +220,6 @@ pocket = pocket_class()\n'''
             elif c.type == "suite":
                 commands += self._process_item_block(item)
         item_code = item_code + "    ".join(commands)
-        # + "\n        pass\n\n    "
-
-        # Here modify code so that constructor takes args
-        # in python:
-# class key:
-#     def __init__(self, identifier)
-#         self.id = identifier
         return item_code
 
     def _process_item_block(self, c):
@@ -235,23 +227,6 @@ pocket = pocket_class()\n'''
         if len(c.children) > 0:
             commands.append(self._process_suite(c, 2))
         return commands
-
-# in narratr: k is key(1) (is the constructor call)
-# ...
-# item key(identifier){
-# if identifier > 1:
-#     id = identifier
-# else:
-#     id = identifier + 5
-# }
-
-# in python:
-# class key:
-#     def __init__(self, identifier):
-#         if identifier > 1:
-#             self.id = identifier
-#         else:
-#             self.id = identifier + 5
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
@@ -386,9 +361,11 @@ pocket = pocket_class()\n'''
             self._process_error("Block statement has no children to process.",
                                 smt.lineno)
         if smt.children[0].type == "if_statement":
-            commands += self._process_ifstatement(smt.children[0], indentlevel)
+            commands += prefix + \
+                        self._process_ifstatement(smt.children[0], indentlevel)
         elif smt.children[0].type == "while_statement":
-            commands += self._process_whilestatement(smt.children[0],
+            commands += prefix + \
+                        self._process_whilestatement(smt.children[0],
                                                      indentlevel)
         else:
             self._process_error("Block statement does not have valid child " +
@@ -464,9 +441,8 @@ pocket = pocket_class()\n'''
         elif smt.value == "testlist":
             commands += prefix + self._process_testlist(smt.children[0])
         elif smt.value == "is":
-            # todo check for god variable in symtab
-            god = self.symtab.getWithKey(smt.children[0].v_type).god
-            if god:
+            entry = self.symtab.getWithKey(smt.children[0].v_type)
+            if entry and entry.god:
                 commands += prefix + "self." + smt.children[0].value
             else:
                 commands += prefix + "self.__namespace['" + \
@@ -662,13 +638,13 @@ pocket = pocket_class()\n'''
     def _process_whilestatement(self, smt, indentlevel=1):
         commands = "while "
         if smt.children[0].type != "test":
-            self._process_error("no test in while loop", smt.lineno)
+            self._process_error("No test in while loop", smt.lineno)
         else:
-            commands += self._process_test(smt.children[0], 0) + ":"
+            commands += self._process_test(smt.children[0]) + ":"
         if smt.children[1].type != "suite":
-            self._process_error("no suite in while loop", smt.lineno)
+            self._process_error("No suite in while loop", smt.lineno)
         else:
-            commands += self._process_suite(c, indentlevel+1)
+            commands += self._process_suite(smt.children[1], indentlevel+1)
         return commands
 
     # This function takes statement node with "if" value, or an elif node.
@@ -736,13 +712,13 @@ pocket = pocket_class()\n'''
         if len(atom.children) != 1:
             self._process_error("'atom' has incorrect number of " +
                                 "children.", atom.lineno)
-        if atom.type == "test":
+        if atom.value == "test":
             return "(" + self._process_test(atom.children[0]) + ")"
         elif atom.value == "list":
             return self._process_list(atom.children[0])
-        elif atom.type == "number":
+        elif atom.value == "number":
             return self._process_number(atom.children[0])
-        elif atom.type == "boolean":
+        elif atom.value == "boolean":
             return self._process_boolean(atom.children[0])
         else:
             self._process_error("'atom' has unknown chid type.", atom.lineno)
@@ -766,7 +742,7 @@ pocket = pocket_class()\n'''
                                 "'boolean'. Unfortunately, that is all we " +
                                 "know.")
         if boolean.is_leaf():
-            return str(number.value)
+            return str(boolean.value)
         else:
             self._process_error("'boolean' has children. It should be " +
                                 "sterile.", boolean.lineno)
@@ -807,7 +783,7 @@ pocket = pocket_class()\n'''
             return '(' + \
                 self._process_term(term.children[0]) + \
                 ') ' + term.value + ' ' + \
-                self._process_factor(self, term.children[1])
+                self._process_factor(term.children[1])
         else:
             self._process_error("Illegal operation type for " +
                                 "'term'", term.lineno)
