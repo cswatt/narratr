@@ -909,7 +909,7 @@ pocket = pocket_class()\n'''
                                 nlist.lineno)
         if nlist.children[1].children[0] == "add":
             commands += nlist.children[0].value
-            commands += ".add"
+            commands += ".append"
             commands += self._process_trailer(pocket_node.children[2])
         elif pocket_node.children[1].children[0] == "get":
             commands += nlist.children[0].value
