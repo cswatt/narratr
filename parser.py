@@ -477,12 +477,7 @@ class ParserForNarratr:
     def p_boolean(self, p):
         '''boolean : TRUE
                    | FALSE'''
-        if not (p[1] == 'True' or p[1] == 'False'):
-                self.p_error('Syntax error: Boolean value ' +
-                             'incorrect at ' +
-                             str(p.lineno(1)))
         p[0] = Node(p[1], 'boolean', [], "boolean", lineno=p.lineno(1))
-        # make sure token is true or false
 
     def p_calllist(self, p):
         '''calllist : LPARAN args RPARAN
