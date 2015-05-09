@@ -2,6 +2,7 @@ import narratr.lexer as lexer
 import unittest
 
 
+@unittest.skip("skipping lexer tests")
 class TestLexer(unittest.TestCase):
 
     def test_lexer_helloworld(self):

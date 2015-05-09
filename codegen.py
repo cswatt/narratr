@@ -835,7 +835,7 @@ pocket = pocket_class()\n'''
         if power.value == "atom":
             return self._process_atom(power.children[0])
         elif power.value == "trailer":
-            if power.children[0].v_type == "list":
+            if power.children[0].v_type == "id":
                 return self._process_list_functions(power)
             atom = self._process_atom(power.children[0])
             if atom == "pocket":
@@ -961,24 +961,24 @@ pocket = pocket_class()\n'''
         if nlist.children[1].value != "dot":
             self._process_error("list must be followed by a dot",
                                 nlist.lineno)
-        if len(pocket_node.children[1].children) != 1:
+        if len(nlist.children[1].children) != 1:
             self._process_error("no method sepcified for list",
                                 nlist.lineno)
         if nlist.children[1].children[0] == "add":
             commands += nlist.children[0].value
             commands += ".append"
-            commands += self._process_trailer(pocket_node.children[2])
-        elif pocket_node.children[1].children[0] == "get":
+            commands += self._process_trailer(nlist.children[2])
+        elif nlist.children[1].children[0] == "get":
             commands += nlist.children[0].value
             commands += ".get"
-            commands += self._process_trailer(pocket_node.children[2])
-        elif pocket_node.children[1].children[0] == "remove":
+            commands += self._process_trailer(nlist.children[2])
+        elif nlist.children[1].children[0] == "remove":
             commands += nlist.children[0].value
             commands += ".remove"
-            commands += self._process_trailer(pocket_node.children[2])
+            commands += self._process_trailer(nlist.children[2])
         else:
             self._process_error("invalid method for list",
-                                pocket_node.lineno)
+                                nlist.lineno)
         return commands
 
     def _process_error(self, error, lineno=0):

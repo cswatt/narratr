@@ -11,7 +11,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_different_order.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_missing_action(self):
 
@@ -20,7 +20,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_missing_action.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_missing_cleanup(self):
 
@@ -29,7 +29,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_missing_cleanup.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_missing_setup(self):
 
@@ -38,7 +38,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_missing_setup.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_misspelled_start(self):
 
@@ -47,7 +47,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_misspelled_start.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_multiple_actions(self):
 
@@ -56,7 +56,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_multiple_actions.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_multiple_cleanups(self):
 
@@ -65,7 +65,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_multiple_cleanups.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_multiple_setups(self):
 
@@ -74,7 +74,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_multiple_setups.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_rogue_semicolon(self):
 
@@ -83,7 +83,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_rogue_semicolon.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_scene_name_conflict(self):
 
@@ -92,7 +92,7 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_scene_name_conflict.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))
 
     def test_parser_unmatched_braces(self):
 
@@ -101,4 +101,4 @@ class TestParserForErrors(unittest.TestCase):
 
         p = parser.ParserForNarratr()
         with open('sampleprograms/6_unmatched_braces.ntr') as f:
-            self.assertRaises(Exception, lambda: p.parse(f.read()))
+            self.assertRaises(SystemExit, lambda: p.parse(f.read()))

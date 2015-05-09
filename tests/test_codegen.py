@@ -9,10 +9,10 @@ def tests_output():
 
     cases = {"sampleprograms/0_helloworld.ntr": "Hello, World!\n",
              "sampleprograms/1_comments.ntr": "Hello.\n",
-             "sampleprograms/3_andor.ntr": "Okay.\nOkay.\n",
+             "sampleprograms/3_andor.ntr": "okay.\n",
              "sampleprograms/3_arithmetic.ntr": "2\n4\n4\n3\n3\n",
              "sampleprograms/3_assignment.ntr": "Oh, hello.\n",
-             "sampleprograms/3_comparison.ntr": "Okay.\nOkay.\nOkay.\nOkay.\n",
+             "sampleprograms/3_comparison.ntr": "okay.\nokay.\nokay.\nokay.\nokay.\n",
              # "sampleprograms/4_break.ntr": "Okay.\nOkay.\n",
              # "sampleprograms/4_continue.ntr": "0\n2\n",
              "sampleprograms/4_elseif.ntr": "Okay.\n",
@@ -32,7 +32,7 @@ def test_nonexistent_start_scene_error():
         ast = p.parse(f.read())
     symtab = p.symtab
     c = codegen.CodeGen()
-    assert_raises(Exception, lambda: c.process(ast, symtab))
+    assert_raises(SystemExit, lambda: c.process(ast, symtab))
 
 
 def check_expected_output(fname, output):
