@@ -412,7 +412,7 @@ class ParserForNarratr:
         if p[1].type == 'power':
             p[0] = Node("power", "factor", [p[1]], lineno=p[1].lineno)
         else:
-            p[0] = Node(p[1], 'factor', [p[1], p[2]], p[2].v_type,
+            p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
                         lineno=p.lineno(1))
 
     def p_power(self, p):
