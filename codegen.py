@@ -643,8 +643,8 @@ class CodeGen:
         if boolean.is_leaf():
             return str(number.value)
         else:
-            self._process_error("'boolean' has children. It should be sterile.",
-                                boolean.lineno)
+            self._process_error("'boolean' has children. It should be " +
+                                "sterile.", boolean.lineno)
 
     # This function takes "factor" node as argument
     def _process_factor(self, factors):
