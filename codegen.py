@@ -815,6 +815,8 @@ pocket = pocket_class()\n'''
         if power.value == "atom":
             return self._process_atom(power.children[0])
         elif power.value == "trailer":
+            if power.children[0].v_type == "list":
+                return self._process_list_functions(power)
             atom = self._process_atom(power.children[0])
             if atom == "pocket":
                 return _process_pocket(power)
