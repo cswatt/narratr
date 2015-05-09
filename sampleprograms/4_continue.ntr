@@ -2,6 +2,7 @@ scene $1 {
 	setup:
 		n is 0
 		while (n < 3):
+			n is n + 1
 			if (n == 1):
 				continue
 			say n

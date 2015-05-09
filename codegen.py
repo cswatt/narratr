@@ -39,11 +39,11 @@ class CodeGen:
     # DFS or other tree searching algorithms, which improves efficiency.
     def process(self, node, symtab):
         self.symtab = symtab
-        if len(node.children) != 1 or node.children[0].type != "blocks":
+        if len(node.children) != 1 or node[0].type != "blocks":
             self._process_error("Unexpected Parse Tree - Incorrect number" +
                                 "or type of children for the top node",
                                 node.lineno)
-        blocks = node.children[0].children
+        blocks = node[0].children
         for block in blocks:
             if type(block) is dict:
                 for key, s_i in block.iteritems():
@@ -213,20 +213,20 @@ pocket = pocket_class()\n'''
         if len(item.children) not in [1, 2]:
             self._process_error("Wrong number of children of item",
                                 item.lineno)
-        elif item.children[0].type != "itemparams":
+        elif item[0].type != "itemparams":
             self._process_error("Wrong number of items", item.lineno)
         else:
             item_code += "def __init__(self"
-            item_code += self._process_itemparams(item.children[0])
+            item_code += self._process_itemparams(item[0])
             item_code += "):"
         if len(item.children) == 1:
             item_code += "\n        pass"
         elif len(item.children) == 2:
-            if item.children[1].type != "suite":
+            if item[1].type != "suite":
                 self._process_error("Wrong type of child for item",
                                     item.lineno)
             else:
-                item_code += self._process_suite(item.children[1], 2)
+                item_code += self._process_suite(item[1], 2)
         return item_code
 
     def _process_itemparams(self, itemparams):
@@ -235,11 +235,11 @@ pocket = pocket_class()\n'''
             self._process_error("Wrong number of children of itemparams",
                                 itemparams.lineno)
         if len(itemparams.children) == 1:
-            if itemparams.children[0].type != "fparams":
+            if itemparams[0].type != "fparams":
                 self._process_error("Wrong type of child of itemparams",
                                     itemparams.lineno)
             else:
-                commands += self._process_fparams(itemparams.children[0])
+                commands += self._process_fparams(itemparams[0])
         return commands
 
     def _process_fparams(self, fparams):
@@ -259,10 +259,10 @@ pocket = pocket_class()\n'''
         if len(c.children) not in [0, 1]:
             self._process_error("setup block has wrong number of children")
         if len(c.children) == 1:
-            if c.children[0].type != "suite":
+            if c[0].type != "suite":
                 self._process_error("setup block doesn't have suite child")
             else:
-                commands.append(self._process_suite(c.children[0], 2))
+                commands.append(self._process_suite(c[0], 2))
         commands.append("    return self.action(direction)\n")
         return commands
 
@@ -279,10 +279,10 @@ pocket = pocket_class()\n'''
         if len(c.children) not in [0, 1]:
             self._process_error("cleanup block has wrong number of children")
         if len(c.children) == 1:
-            if c.children[0].type != "suite":
+            if c[0].type != "suite":
                 self._process_error("cleanup block doesn't have suite child")
             else:
-                commands.append(self._process_suite(c.children[0], 2))
+                commands.append(self._process_suite(c[0], 2))
         commands.append("    self.__namespace = {}")
         return commands
 
@@ -301,10 +301,10 @@ pocket = pocket_class()\n'''
         if len(c.children) not in [0, 1]:
             self._process_error("action block has wrong number of children")
         if len(c.children) == 1:
-            if c.children[0].type != "suite":
+            if c[0].type != "suite":
                 self._process_error("action block doesn't have suite child")
             else:
-                commands.append(self._process_suite(c.children[0], 3)[5:])
+                commands.append(self._process_suite(c[0], 3)[5:])
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
@@ -318,10 +318,10 @@ pocket = pocket_class()\n'''
             self._process_error("Too many children in suite.")
         else:
             if suite.value == "simple":
-                commands += self._process_simple_smt(suite.children[0],
+                commands += self._process_simple_smt(suite[0],
                                                      indentlevel)
             else:
-                commands += self._process_statements(suite.children[0],
+                commands += self._process_statements(suite[0],
                                                      indentlevel)
         return commands
 
@@ -334,10 +334,10 @@ pocket = pocket_class()\n'''
     def _process_statement(self, statement, indentlevel=1):
         commands = ''
         if statement.value == "simple":
-            commands += self._process_simple_smt(statement.children[0],
+            commands += self._process_simple_smt(statement[0],
                                                  indentlevel)
         elif statement.value == "block":
-            commands += self._process_block_smt(statement.children[0],
+            commands += self._process_block_smt(statement[0],
                                                 indentlevel)
         else:
             self._process_error("Not accepted ")
@@ -356,18 +356,18 @@ pocket = pocket_class()\n'''
             self._process_error("Simple statement has no children to process.",
                                 smt.lineno)
         if smt.value == "say":
-            commands += prefix + self._process_say_smt(smt.children[0])
+            commands += prefix + self._process_say_smt(smt[0])
         elif smt.value == "exposition":
-            commands += prefix + self._process_expo_smt(smt.children[0])
+            commands += prefix + self._process_expo_smt(smt[0])
         elif smt.value == "win":
-            commands += self._process_win_smt(smt.children[0], indentlevel)
+            commands += self._process_win_smt(smt[0], indentlevel)
         elif smt.value == "lose":
-            commands += self._process_lose_smt(smt.children[0], indentlevel)
+            commands += self._process_lose_smt(smt[0], indentlevel)
         elif smt.value == "expression":
-            commands += self._process_expression_smt(smt.children[0],
+            commands += self._process_expression_smt(smt[0],
                                                      indentlevel)
         elif smt.value == "flow":
-            commands += self._process_flow_smt(smt.children[0], indentlevel)
+            commands += self._process_flow_smt(smt[0], indentlevel)
         return commands
 
     def _process_block_smt(self, smt, indentlevel):
@@ -380,12 +380,12 @@ pocket = pocket_class()\n'''
         if len(smt.children) != 1:
             self._process_error("Block statement has no children to process.",
                                 smt.lineno)
-        if smt.children[0].type == "if_statement":
+        if smt[0].type == "if_statement":
             commands += prefix + \
-                        self._process_ifstatement(smt.children[0], indentlevel)
-        elif smt.children[0].type == "while_statement":
+                        self._process_ifstatement(smt[0], indentlevel)
+        elif smt[0].type == "while_statement":
             commands += prefix + \
-                        self._process_whilestatement(smt.children[0],
+                        self._process_whilestatement(smt[0],
                                                      indentlevel)
         else:
             self._process_error("Block statement does not have valid child " +
@@ -403,7 +403,7 @@ pocket = pocket_class()\n'''
         if len(smt.children) == 0:
             self._process_error("Say statement has no children to process.",
                                 smt.lineno)
-        commands += self._process_testlist(smt.children[0])
+        commands += self._process_testlist(smt[0])
         return commands
 
     # Exposition statement passes node to _process_testlist
@@ -416,7 +416,7 @@ pocket = pocket_class()\n'''
         if len(smt.children) == 0:
             self._process_error("Exposition statement has no children to" +
                                 " process.", smt.lineno)
-        commands += self._process_testlist(smt.children[0])
+        commands += self._process_testlist(smt[0])
         return commands
 
     # Win tatement, print the smt if there is and exit the scene
@@ -429,7 +429,7 @@ pocket = pocket_class()\n'''
                                 "all we know.")
         if len(smt.children) != 0:
             commands += prefix + "print "\
-                        + self._process_testlist(smt.children[0])
+                        + self._process_testlist(smt[0])
         commands += prefix + "exit(0)"
         return commands
 
@@ -443,7 +443,7 @@ pocket = pocket_class()\n'''
                                 "all we know.")
         if len(smt.children) != 0:
             commands += prefix + "print "\
-                        + self._process_testlist(smt.children[0])
+                        + self._process_testlist(smt[0])
         commands += prefix + "exit(0)"
         return commands
 
@@ -459,21 +459,21 @@ pocket = pocket_class()\n'''
             self._process_error("Lose statement has no children to process.",
                                 smt.lineno)
         elif smt.value == "testlist":
-            commands += prefix + self._process_testlist(smt.children[0])
+            commands += prefix + self._process_testlist(smt[0])
         elif smt.value == "is":
-            entry = self.symtab.getWithKey(smt.children[0].key)
+            entry = self.symtab.getWithKey(smt[0].key)
             if entry and entry.god:
-                commands += prefix + "self." + smt.children[0].value + " = "
+                commands += prefix + "self." + smt[0].value + " = "
             else:
                 commands += prefix + "self.__namespace['" + \
-                            smt.children[0].value + "'] = "
-            commands += self._process_testlist(smt.children[1])
+                            smt[0].value + "'] = "
+            commands += self._process_testlist(smt[1])
         elif smt.value == "godis":
             commands += prefix + "try:"
-            commands += prefix + "    self." + smt.children[0].value
+            commands += prefix + "    self." + smt[0].value
             commands += prefix + "except NameError:"
-            commands += prefix + "    self." + smt.children[0].value + " = "
-            commands += self._process_testlist(smt.children[1])
+            commands += prefix + "    self." + smt[0].value + " = "
+            commands += self._process_testlist(smt[1])
         return commands
 
     def _process_flow_smt(self, smt, indentlevel):
@@ -487,14 +487,14 @@ pocket = pocket_class()\n'''
             self._process_error("Flow statement has incorrect number of " +
                                 "children to process.", smt.lineno)
 
-        if smt.children[0].type == "continue_statement":
-            commands += prefix + self._process_continue(smt.children[0])
-        elif smt.children[0].type == "break_statement":
-            commands += prefix + self._process_break(smt.children[0])
-        elif smt.children[0].type == "moves_declaration":
-            commands += prefix + self._process_moves_dec(smt.children[0])
-        elif smt.children[0].type == "moveto_statement":
-            commands += self._process_moveto(smt.children[0], indentlevel)
+        if smt[0].type == "continue_statement":
+            commands += prefix + self._process_continue(smt[0])
+        elif smt[0].type == "break_statement":
+            commands += prefix + self._process_break(smt[0])
+        elif smt[0].type == "moves_declaration":
+            commands += prefix + self._process_moves_dec(smt[0])
+        elif smt[0].type == "moveto_statement":
+            commands += self._process_moveto(smt[0], indentlevel)
         else:
             self._process_error("flow statement has wrong type of child")
         return commands
@@ -522,10 +522,10 @@ pocket = pocket_class()\n'''
         if len(smt.children) != 1:
             self._process_error("moves declaration has wrong number of " +
                                 "children")
-        elif smt.children[0].type != "directionlist":
+        elif smt[0].type != "directionlist":
             self._process_error("moves declaration has wrong type of children")
         else:
-            commands += self._process_directionlist(smt.children[0]) + "}"
+            commands += self._process_directionlist(smt[0]) + "}"
         return commands
 
     def _process_directionlist(self, smt):
@@ -542,7 +542,7 @@ pocket = pocket_class()\n'''
             if len(d.children) != 1:
                 self._process_error("incorrect children of direction")
             else:
-                commands += str(d.children[0].value)
+                commands += str(d[0].value)
                 if l != i:
                     commands += ", "
         return commands
@@ -557,10 +557,10 @@ pocket = pocket_class()\n'''
         commands += prefix + "self.cleanup()"
         if len(smt.children) != 1:
             self._process_error("moveto has the wrong number of children")
-        elif smt.children[0].type != "sceneid":
+        elif smt[0].type != "sceneid":
             self._process_error("moveto has wrong kind of child")
         else:
-            commands += prefix + "return 's_" + str(smt.children[0].value)
+            commands += prefix + "return 's_" + str(smt[0].value)
             commands += "_inst.setup()'"
         return commands
 
@@ -593,7 +593,7 @@ pocket = pocket_class()\n'''
         if len(test.children) != 1:
             self._process_error("'test' has incorrect number of children.",
                                 test.lineno)
-        return self._process_or_test(test.children[0])
+        return self._process_or_test(test[0])
 
     def _process_or_test(self, or_test):
         if not isinstance(or_test, Node) or or_test.type != "or_test":
@@ -604,10 +604,10 @@ pocket = pocket_class()\n'''
             self._process_error("'or_test' has incorrect number of children.",
                                 or_test.lineno)
         if or_test.value == 'or':
-            return '(' + self._process_or_test(or_test.children[0]) + ') or ' \
-                    + self._process_and_test(or_test.children[1])
+            return '(' + self._process_or_test(or_test[0]) + ') or ' \
+                    + self._process_and_test(or_test[1])
         else:
-            return self._process_and_test(or_test.children[0])
+            return self._process_and_test(or_test[0])
 
     def _process_and_test(self, and_test):
         if not isinstance(and_test, Node) or and_test.type != "and_test":
@@ -618,10 +618,10 @@ pocket = pocket_class()\n'''
             self._process_error("'and_test' has incorrect number of children.",
                                 and_test.lineno)
         if and_test.value == 'and':
-            return '(' + self._process_and_test(and_test.children[0]) + \
-                    ') and ' + self._process_not_test(and_test.children[1])
+            return '(' + self._process_and_test(and_test[0]) + \
+                    ') and ' + self._process_not_test(and_test[1])
         else:
-            return self._process_not_test(and_test.children[0])
+            return self._process_not_test(and_test[0])
 
     def _process_not_test(self, not_test):
         if not isinstance(not_test, Node) or not_test.type != "not_test":
@@ -632,9 +632,9 @@ pocket = pocket_class()\n'''
             self._process_error("'not_test' has incorrect number of children.",
                                 not_test.lineno)
         if not_test.value == 'not':
-            return 'not ' + self._process_not_test(not_test.children[0])
+            return 'not ' + self._process_not_test(not_test[0])
         else:
-            return self._process_comparison(not_test.children[0])
+            return self._process_comparison(not_test[0])
 
     def _process_comparison(self, comparison):
         if not isinstance(comparison, Node) or comparison.type != "comparison":
@@ -645,11 +645,11 @@ pocket = pocket_class()\n'''
             self._process_error("'comparison' has incorrect number of " +
                                 "children.", comparison.lineno)
         if comparison.value == 'comparison':
-            return '(' + self._process_comparison(comparison.children[0]) + \
-                   ') ' + self._process_comparisonop(comparison.children[1]) \
-                   + " " + self._process_expression(comparison.children[2])
+            return '(' + self._process_comparison(comparison[0]) + \
+                   ') ' + self._process_comparisonop(comparison[1]) \
+                   + " " + self._process_expression(comparison[2])
         else:
-            return self._process_expression(comparison.children[0])
+            return self._process_expression(comparison[0])
 
     def _process_comparisonop(self, comparisonop):
         return comparisonop.value
@@ -657,14 +657,14 @@ pocket = pocket_class()\n'''
     # This function takes statement node with "while" value.
     def _process_whilestatement(self, smt, indentlevel=1):
         commands = "while "
-        if smt.children[0].type != "test":
+        if smt[0].type != "test":
             self._process_error("No test in while loop", smt.lineno)
         else:
-            commands += self._process_test(smt.children[0]) + ":"
-        if smt.children[1].type != "suite":
+            commands += self._process_test(smt[0]) + ":"
+        if smt[1].type != "suite":
             self._process_error("No suite in while loop", smt.lineno)
         else:
-            commands += self._process_suite(smt.children[1], indentlevel+1)
+            commands += self._process_suite(smt[1], indentlevel+1)
         return commands
 
     # This function takes statement node with "if" value, or an elif node.
@@ -673,14 +673,14 @@ pocket = pocket_class()\n'''
     def _process_ifstatement(self, smt, indentlevel):
         prefix = "\n" + "    "*indentlevel
         commands = prefix + "if "
-        commands += self._process_test(smt.children[0]) + ":"
-        commands += self._process_suite(smt.children[1], indentlevel+1)
-        if smt.children[2]:
-            commands += self._process_elifstatements(smt.children[2],
+        commands += self._process_test(smt[0]) + ":"
+        commands += self._process_suite(smt[1], indentlevel+1)
+        if smt[2]:
+            commands += self._process_elifstatements(smt[2],
                                                      indentlevel)
-        if smt.children[3]:
+        if smt[3]:
             commands += prefix + "else:"
-            commands += self._process_suite(smt.children[3], indentlevel+1)
+            commands += self._process_suite(smt[3], indentlevel+1)
         return commands
 
     def _process_elifstatements(self, elif_smts, indentlevel):
@@ -696,19 +696,19 @@ pocket = pocket_class()\n'''
     def _process_elifstatement(self, smt, indentlevel):
         prefix = "\n" + "    "*indentlevel
         commands = prefix + "elif "
-        if smt.children[0].type != "test":
+        if smt[0].type != "test":
             self._process_error("Invalid elif tree", smt.lineno)
         else:
-            commands += self._process_test(smt.children[0]) + ":"
-        if smt.children[1].type != "suite":
+            commands += self._process_test(smt[0]) + ":"
+        if smt[1].type != "suite":
             self._process_error("Invalid elif tree", smt.lineno)
         else:
-            commands += self._process_suite(smt.children[1], indentlevel+1)
+            commands += self._process_suite(smt[1], indentlevel+1)
         return commands
 
     # This function takes "expression" node as argument
     def _process_expression(self, expression):
-        return self._process_arithmetic_expression(expression.children[0])
+        return self._process_arithmetic_expression(expression[0])
 
     # This function processes atom nodes.
     def _process_atom(self, atom):
@@ -733,13 +733,13 @@ pocket = pocket_class()\n'''
             self._process_error("'atom' has incorrect number of " +
                                 "children.", atom.lineno)
         if atom.value == "test":
-            return "(" + self._process_test(atom.children[0]) + ")"
+            return "(" + self._process_test(atom[0]) + ")"
         elif atom.value == "list":
-            return self._process_list(atom.children[0])
+            return self._process_list(atom[0])
         elif atom.value == "number":
-            return self._process_number(atom.children[0])
+            return self._process_number(atom[0])
         elif atom.value == "boolean":
-            return self._process_boolean(atom.children[0])
+            return self._process_boolean(atom[0])
         else:
             self._process_error("'atom' has unknown child type.", atom.lineno)
 
@@ -778,12 +778,12 @@ pocket = pocket_class()\n'''
             self._process_error("'arithmetic_expression' has incorrect " +
                                 "number of children.", arith_exp.lineno)
         if arith_exp.value == "term":
-            return self._process_term(arith_exp.children[0])
+            return self._process_term(arith_exp[0])
         elif arith_exp.value in ['+', '-']:
             return '(' + \
-                self._process_arithmetic_expression(arith_exp.children[0]) + \
+                self._process_arithmetic_expression(arith_exp[0]) + \
                 ') ' + arith_exp.value + ' ' + \
-                self._process_term(arith_exp.children[1])
+                self._process_term(arith_exp[1])
         else:
             self._process_error("Illegal operation type for " +
                                 "'arithmetic_expression'", arith_exp.lineno)
@@ -798,12 +798,12 @@ pocket = pocket_class()\n'''
             self._process_error("'term' has incorrect " +
                                 "number of children.", term.lineno)
         if term.value == "factor":
-            return self._process_factor(term.children[0])
+            return self._process_factor(term[0])
         elif term.value in ['*', '/', '//']:
             return '(' + \
-                self._process_term(term.children[0]) + \
+                self._process_term(term[0]) + \
                 ') ' + term.value + ' ' + \
-                self._process_factor(term.children[1])
+                self._process_factor(term[1])
         else:
             self._process_error("Illegal operation type for " +
                                 "'term'", term.lineno)
@@ -818,10 +818,10 @@ pocket = pocket_class()\n'''
             self._process_error("'factor' has incorrect " +
                                 "number of children.", factor.lineno)
         if factor.value == "power":
-            return self._process_power(factor.children[0])
+            return self._process_power(factor[0])
         elif factor.value in ['+', '-']:
             return '(' + factor.value + \
-                self._process_factor(factor.children[0]) + ')'
+                self._process_factor(factor[0]) + ')'
         else:
             self._process_error("Illegal operation type for " +
                                 "'factor'", factor.lineno)
@@ -833,15 +833,15 @@ pocket = pocket_class()\n'''
                                 "'power'. Unfortunately, " +
                                 "that is all we know.")
         if power.value == "atom":
-            return self._process_atom(power.children[0])
+            return self._process_atom(power[0])
         elif power.value == "trailer":
-            if power.children[0].v_type == "id":
+            if power[0].v_type == "id":
                 return self._process_list_functions(power)
-            atom = self._process_atom(power.children[0])
+            atom = self._process_atom(power[0])
             if atom == "pocket":
                 return _process_pocket(power)
             trailers = ''
-            for trailer in power.children[1:]:
+            for trailer in power[1:]:
                 trailers += self._process_trailer(trailer)
             return atom + trailers
         else:
@@ -858,9 +858,9 @@ pocket = pocket_class()\n'''
             self._process_error("'trailer' has incorrect " +
                                 "number of children.", trailer.lineno)
         if trailer.value == "dot":
-            return "." + str(trailer.children[0])
+            return "." + str(trailer[0])
         elif trailer.value == "calllist":
-            return self._process_calllist(trailer.children[0])
+            return self._process_calllist(trailer[0])
         else:
             self._process_error("Illegal value type for 'trailer'",
                                 trailer.lineno)
@@ -877,7 +877,7 @@ pocket = pocket_class()\n'''
         if not calllist.value:
             return '()'
         elif calllist.value == 'args':
-            return '(' + self._process_args(calllist.children[0]) + ')'
+            return '(' + self._process_args(calllist[0]) + ')'
         else:
             self._process_error("Illegal value type for 'calllist'",
                                 calllist.lineno)
@@ -892,7 +892,7 @@ pocket = pocket_class()\n'''
             self._process_error("'args' has incorrect " +
                                 "number of children.", args.lineno)
         if args.value == "expression":
-            return self._process_expression(args.children[0])
+            return self._process_expression(args[0])
         elif args.value == 'args':
             argscode = []
             for expression in args.children:
@@ -913,7 +913,7 @@ pocket = pocket_class()\n'''
             return "[]"
         else:
             commands += '['
-            commands += self._process_testlist(nlist.children[0])
+            commands += self._process_testlist(nlist[0])
             commands += ']'
             return commands
 
@@ -933,21 +933,21 @@ pocket = pocket_class()\n'''
         if len(pocket_node.children) != 3:
             self._process_error("pocket has wrong number of children",
                                 pocket_node.lineno)
-        if pocket_node.children[1].value != "dot":
+        if pocket_node[1].value != "dot":
             self._process_error("pocket must be followed by a dot",
                                 pocket_node.lineno)
-        if len(pocket_node.children[1].children) != 1:
+        if len(pocket_node[1].children) != 1:
             self._process_error("no method specified for pocket",
                                 pocket_node.lineno)
-        if pocket_node.children[1].children[0] == "add":
+        if pocket_node[1].children[0] == "add":
             commands += "pocket.add"
-            commands += self._process_trailer(pocket_node.children[2])
-        elif pocket_node.children[1].children[0] == "get":
+            commands += self._process_trailer(pocket_node[2])
+        elif pocket_node[1].children[0] == "get":
             commands += "pocket.get"
-            commands += self._process_trailer(pocket_node.children[2])
-        elif pocket_node.children[1].children[0] == "remove":
+            commands += self._process_trailer(pocket_node[2])
+        elif pocket_node[1].children[0] == "remove":
             commands += "pocket.remove"
-            commands += self._process_trailer(pocket_node.children[2])
+            commands += self._process_trailer(pocket_node[2])
         else:
             self._process_error("invalid method for pocket",
                                 pocket_node.lineno)
@@ -958,24 +958,24 @@ pocket = pocket_class()\n'''
         if len(nlist.children) != 3:
             self._process_error("list has wrong number of children",
                                 nlist.lineno)
-        if nlist.children[1].value != "dot":
+        if nlist[1].value != "dot":
             self._process_error("list must be followed by a dot",
                                 nlist.lineno)
-        if len(nlist.children[1].children) != 1:
+        if len(nlist[1].children) != 1:
             self._process_error("no method sepcified for list",
                                 nlist.lineno)
-        if nlist.children[1].children[0] == "add":
-            commands += nlist.children[0].value
+        if nlist[1].children[0] == "add":
+            commands += nlist[0].value
             commands += ".append"
-            commands += self._process_trailer(nlist.children[2])
-        elif nlist.children[1].children[0] == "get":
-            commands += nlist.children[0].value
+            commands += self._process_trailer(nlist[2])
+        elif nlist[1].children[0] == "get":
+            commands += nlist[0].value
             commands += ".get"
-            commands += self._process_trailer(nlist.children[2])
-        elif nlist.children[1].children[0] == "remove":
-            commands += nlist.children[0].value
+            commands += self._process_trailer(nlist[2])
+        elif nlist[1].children[0] == "remove":
+            commands += nlist[0].value
             commands += ".remove"
-            commands += self._process_trailer(nlist.children[2])
+            commands += self._process_trailer(nlist[2])
         else:
             self._process_error("invalid method for list",
                                 nlist.lineno)

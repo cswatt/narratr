@@ -634,7 +634,7 @@ class ParserForNarratr:
                      ": " + "at token '" + str(p.value) + "'\n")
         exit(1)
 
-    def _semantic_error(self, p, err_type=None):
+    def _semantic_error(self, p, err_type=None, lineno=0):
         if err_type == "combination_error":
             stderr.write("ERROR: Type error at line " + str(p.lineno(2)) +
                          ": cannot combine '" + p[1].v_type +
@@ -643,7 +643,7 @@ class ParserForNarratr:
             stderr.write("ERROR: Syntax Error at Line " + str(p.lineno) +
                          ": " + "at token '" + str(p.value) + "'\n")
         elif isinstance(p, str):
-            stderr.write("ERROR: " + p + "\n")
+            stderr.write("ERROR: Line " + str(lineno) + ": " + p + "\n")
         exit(1)
 
     def parse(self, string_to_parse, **kwargs):
