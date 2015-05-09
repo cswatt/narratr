@@ -593,7 +593,10 @@ class ParserForNarratr:
                 self.p_error(p, "combination_error")
 
         elif p[1].v_type == "boolean":
-                self.p_error(p, "combination_error")
+            self.p_error(p, "combination_error")
+
+        else:
+            p[0] = Node(p[2], n_type, [p[1], p[3]], "unknown", p.lineno(2))
 
         return p[0]
 
