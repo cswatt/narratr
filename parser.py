@@ -98,8 +98,8 @@ class ParserForNarratr:
         self.pass_down(p[0], p[2])
 
     def p_item_block(self, p):
-        '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
-                      | ITEM ID calllist LCURLY suite RCURLY'''
+        '''item_block : ITEM ID itemparams LCURLY newlines_optional RCURLY
+                      | ITEM ID itemparams LCURLY suite RCURLY'''
         if isinstance(p[5], Node) and p[5].type == "suite":
             children = [p[3], p[5]]
         else:
@@ -491,6 +491,25 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'args', [p[1]], lineno=p[1].lineno)
         p[0].type = 'args'
+
+    def p_itemparams(self, p):
+        '''itemparams : LPARAN RPARAN
+                      | LPARAN fparams RPARAN'''
+        if isinstance(p[2], Node):
+            p[0] = Node('fparams', 'itemparams', [p[2]], lineno=p[2].lineno)
+        else:
+            p[0] = Node(None, 'itemparams', lineno=p.lineno(1))
+
+    def p_fparams(self, p):
+        '''fparams : fparams ID
+                   | ID'''
+        if isinstance(p[1], Node):
+            p[1].value = "fparams"
+            p[1].children.append(Node(p[2], "id"))
+            p[0] = p[1]
+        else:
+            p[0] = Node("id", "fparams", [Node(p[1], "id")],
+                        lineno=p.lineno(1))
 
     def p_block_statement(self, p):
         '''block_statement : if_statement
