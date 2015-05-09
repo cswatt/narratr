@@ -261,11 +261,13 @@ pocket = pocket_class()\n'''
         commands = []
         commands.append("def setup(self):" +
                         "\n        direction = {}")
-
-        if len(c.children) > 0:
-            for child in c.children:
-                commands.append(self._process_suite(child, 2))
-        commands.append("    return self.action(direction)\n")
+        if len(c.children) != 1:
+            self._process_error("setup block has wrong number of children")
+        if c.children[0].type != "suite":
+            self._process_error("setup block doesn't have suite child")
+        else:
+            commands.append(self._process_suite(c.children[0], 2))
+            commands.append("    return self.action(direction)\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
@@ -279,9 +281,8 @@ pocket = pocket_class()\n'''
         commands = []
         commands.append("def cleanup(self):")
         if len(c.children) > 0:
-            commands.append(self._process_suite(c.children[0], 3))
-        else:
-            commands.append("    pass")
+            commands.append(self._process_suite(c.children[0], 2))
+        commands.append("    self.__namespace = {}")
         return commands
 
     # Code for adding an action block. Takes as input a single "action block"
@@ -848,55 +849,23 @@ pocket = pocket_class()\n'''
             commands += str(scene.value)
         return commands
 
-    def _process_pocket(self, pocket_node, indentlevel=1):
+    def _process_pocket(self, pocket_node):
         commands = ""
-        add = get = remove = False
-        if len(pocket_node.children) != 2:
-            self._process_error("Pocket has the wrong structure.",
-                                pocket_node.lineno)
-
-        if pocket_node.children[0].children[1].value == "add":
-            if len(pocket_node.children[1].children) != 2:
-                l = len(pocket_node.children[1].children)
-                self._process_error("Adding to the pocket requires" +
-                                    " exactly two arguments. " +
-                                    str(l) + " given.", pocket_node.lineno)
-            else:
-                commands += "pocket['"
-                commands += self._process_expression(
-                                    pocket_node.children[1].children[0])
-                commands += "] = "
-                commands += self._process_expression(
-                                    pocket_node.children[1].children[1])
-
-        elif pocket_node.children[0].children[1].value == "get":
-            if len(pocket_node.children[1].children) != 1:
-                l = len(pocket_node.children[1].children)
-                self._process_error("Adding to the pocket requires" +
-                                    " exactly one argument. " +
-                                    str(l) + " given.", pocket_node.lineno)
-            else:
-                commands += "pocket['"
-                commands += self._process_expression(
-                                    pocket_node.children[1].children[0])
-                commands += "]"
-
-        elif pocket_node.children[0].children[1].value == "remove":
-            if len(pocket_node.children[1].children) != 1:
-                l = len(pocket_node.children[1].children)
-                self._process_error("Removing from pocket requires" +
-                                    " exactly one argument. " +
-                                    str(l) + " given.", pocket_node.lineno)
-            else:
-                commands += "del pocket['"
-                commands += self._process_expression(
-                                    pocket_node.children[1].children[0])
-                commands += "]"
+        if len(pocket_node.children) != 3:
+            self._process_error("pocket has wrong number of children", pocket_node.lineno)
+        if pocket_node.children[1] != "dot":
+            self._process_error("pocket must be followed by a dot", pocket_node.lineno)
+        if len(pocket_node.children[1].children) != 1:
+            self._process_error("no method specified for pocket", pocket_node.lineno)
+        
+        if pocket_node.children[1].children[0] == "add":
+            commands += "pocket.add" + self._process_trailer(pocket_node.children[2])
+        elif pocket_node.children[1].children[0] == "get":
+            commands += "pocket.get" + self._process_trailer(pocket_node.children[2])
+        elif pocket_node.children[1].children[0] == "remove":
+            commands += "pocket.remove" + self._process_trailer(pocket_node.children[2])
         else:
-            self._process_error("Cannot '" +
-                                str(pocket_node.children[0].children[1]) +
-                                "' the pocket.", child.children[1].lineno)
-        return commands
+            self._process_error("invalid method for pocket", pocket_node.lineno)
 
     def _process_error(self, error, lineno=0):
         if lineno != 0:
