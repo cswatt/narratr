@@ -840,13 +840,32 @@ pocket = pocket_class()\n'''
             return self._process_atom(power.children[0])
         elif power.value == "trailer":
             atom = self._process_atom(power.children[0])
+            if atom == "pocket":
+                return _process_pocket(power)
             trailers = ''
-            for trailer in power.children:
+            for trailer in power.children[1:]:
                 trailers += self._process_trailer(trailer)
             return atom + trailer
         else:
             self._process_error("Illegal operation type for " +
                                 "'power'", power.lineno)
+
+    # This function processes trailers.
+    def _process_trailer(self, trailer):
+        if not isinstance(trailer, Node) or trailer.type != "trailer":
+            self._process_error("Something bad happened while processing " +
+                                "'trailer'. Unfortunately, " +
+                                "that is all we know.")
+        if len(trailer.children) != 1:
+            self._process_error("'trailer' has incorrect " +
+                                "number of children.", trailer.lineno)
+        if trailer.value == "dot":
+            return "." + str(trailer.children[0])
+        elif trailer.value == "calllist":
+            return self._process_calllist(trailer.children[0])
+        else:
+            self._process_error("Illegal value type for " +
+                                "'trailer'", trailer.lineno)
 
     # This function takes "direction" node as argument
     # Building a dictionary for direction, using the direction as key and
