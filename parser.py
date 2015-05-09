@@ -559,20 +559,16 @@ class ParserForNarratr:
     # a branch and the scope to be assigned to all found named entities.
     def pass_down(self, branch, scope):
         for i, child in enumerate(branch.children):
+            if not child:
+                continue
             if child.type == "id":
-                self.symtab.insert(child.value,
-                                   None,
-                                   None,
-                                   scope, False)
+                self.symtab.insert(child.value, None, None, scope, False)
                 child.v_type = self.symtab.getKey(child.value, scope)
             elif child.type == "atom" and child.v_type == "id":
                 child.v_type = self.symtab.getKey(child.value, scope)
             elif child.type == "god_id":
                 try:
-                    self.symtab.insert(child.value,
-                                       [],
-                                       [],
-                                       scope, True)
+                    self.symtab.insert(child.value, [], [], scope, True)
                     child.v_type = self.symtab.getKey(child.value, scope)
                 except:
                     pass
