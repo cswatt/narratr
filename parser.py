@@ -541,7 +541,7 @@ class ParserForNarratr:
             p[0].children.append(new_elif)
         else:
             elif_statement = Node(None, 'elif_statement', [p[2], p[4]],
-                        lineno=p.lineno(1))
+                                  lineno=p.lineno(1))
             p[0] = Node(None, 'elif_statements', [elif_statement],
                         lineno=elif_statement.lineno)
 
