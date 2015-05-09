@@ -345,7 +345,7 @@ class CodeGen:
         elif smt.value == "expression":
             commands += self._process_expr_smt(smt.children[0], indentlevel)
         elif smt.value == "flow":
-            commands += self._process_flow_smt(child)
+            commands += self._process_flow_smt(smt.children[0], indentlevel)
         return commands
 
     def _process_block_smt(self, smt, indentlevel):
@@ -453,27 +453,84 @@ class CodeGen:
             commands += prefix + self._process_testlist(smt.children[1])
         return commands
 
-    # Flow statemnt
-    def _process_flow_smt(self, smt):
-        commands = ''
+    def _process_flow_smt(self, smt, indentlevel):
+        prefix = "\n" + "    "*indentlevel
+        commands = ""
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
                                 "'flow statement'. Unfortunately, that is " +
                                 "all we know.")
-        if len(smt.children) == 0:
-            self._process_error("Flow statement has no children to process.",
-                                smt.lineno)
-        for c in smt.children:
-            if c.type == "flow_statement":
-                for child in c.children:
-                    if child.type == "continue_statement":
-                        commands += child.value
-                    elif child.type == "break_statement":
-                        commands += child.value
-                    elif child.type == "moves_declaration":
-                        pass
-                    elif child.type == "moveto_statement":
-                        pass
+        if len(smt.children) != 1:
+            self._process_error("Flow statement has incorrect number of "+
+                                "children to process.", smt.lineno)
+
+        if smt.children[0].type == "continue_statement":
+            commands += prefix + self._process_continue(smt.children[0])
+        elif smt.children[0].type == "break_statement":
+            commands += prefix + self._process_break(smt.children[0])
+        elif smt.children[0].type == "moves_declaration":
+            commands += prefix + self._process_moves_dec(smt.children[0])
+        elif smt.children[0].type == "moveto_statement":
+            commands += self._process_moveto(smt.children[0], indentlevel)
+        else:
+            self._process_error("flow statement has wrong type of child")
+        print commands
+        return commands
+
+    def _process_continue(self, smt):
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'continue statement'. Unfortunately, that is " +
+                                "all we know.")
+        return "continue"
+        
+    def _process_break(self, smt):
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'break statement'. Unfortunately, that is " +
+                                "all we know.")
+        return "break"
+    
+    def _process_moves_dec(self, smt):
+        commands += "direction = {"
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'break statement'. Unfortunately, that is " +
+                                "all we know.")
+        if len(smt.children) != 1:
+            self._process_error("moves declaration has wrong number of children")
+        elif smt.children[0].type != "directionlist":
+            self._process_error("moves declaration has wrong type of children")
+        else:
+            commands += self._process_directionlist(smt.children[0]) + "}"
+        return commands
+    
+    def _process_directionlist(self, smt):
+        pass
+            
+    def _process_moveto(self, smt, indentlevel):
+        commands = ""
+        prefix = "\n" + "    "*indentlevel
+        if not isinstance(smt, Node):
+            self._process_error("Something bad happened while processing " +
+                                "'moveto statement'. Unfortunately, that is " +
+                                "all we know.")
+        commands += prefix + "self.cleanup()"
+        if len(smt.children) != 1:
+            self._process_error("moveto has the wrong number of children")
+        elif smt.children[0].type != "sceneid":
+            self._process_error("moveto has wrong kind of child")
+        else:
+            commands += prefix + "return 's_" + str(smt.children[0].value)
+            commands += "_inst.setup()'"
+        return commands
+    
+    def _process_direction(self, smt, indentlevel):
+        if not isinstance(smt, Node):
+         self._process_error("Something bad happened while processing " +
+                             "'direction statement'. Unfortunately, that is " +
+                             "all we know.")
+        return smt.value
 
     # This function takes "testlist" node as argument
     def _process_testlist(self, testlist):

@@ -257,19 +257,11 @@ class ParserForNarratr:
 
     def p_break_statement(self, p):
         '''break_statement : BREAK'''
-        if not (p[1] == 'break'):
-            self.p_error('Break not using correct syntax at' +
-                         str(p.lineno(1)))
         p[0] = Node(p[1], 'break_statement', [], lineno=p.lineno(1))
-        p[0].type = 'break_statement'
 
     def p_continue_statement(self, p):
         '''continue_statement : CONTINUE'''
-        if not (p[1] == 'continue'):
-            self.p_error('Break not using correct syntax at' +
-                         str(p.lineno(1)))
         p[0] = Node(p[1], 'continue_statement', [], lineno=p.lineno(1))
-        p[0].type = 'continue_statement'
 
     def p_moves_declaration(self, p):
         '''moves_declaration : MOVES directionlist'''
