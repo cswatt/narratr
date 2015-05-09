@@ -582,7 +582,7 @@ pocket = pocket_class()\n'''
         testcode = []
         for test in tests:
             testcode.append(self._process_test(test))
-        return ",".join(testcode)
+        return ", ".join(testcode)
 
     def _process_test(self, test):
         if not isinstance(test, Node) or test.type != "test":
@@ -863,6 +863,7 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal value type for 'trailer'",
                                 trailer.lineno)
 
+    # This function processes calllist
     def _process_calllist(self, calllist):
         if not isinstance(calllist, Node) or calllist.type != "calllist":
             self._process_error("Something bad happened while processing " +
@@ -878,6 +879,26 @@ pocket = pocket_class()\n'''
         else:
             self._process_error("Illegal value type for 'calllist'",
                                 calllist.lineno)
+
+    # This function processes args
+    def _process_args(self, args):
+        if not isinstance(args, Node) or args.type != "args":
+            self._process_error("Something bad happened while processing " +
+                                "'args'. Unfortunately, " +
+                                "that is all we know.")
+        if len(args.children) < 1:
+            self._process_error("'args' has incorrect " +
+                                "number of children.", args.lineno)
+        if args.value == "expression":
+            return self._process_expression(args.children[0])
+        elif args.value == 'args':
+            argscode = []
+            for expression in args.children:
+                argscode.append(self._process_expression(expression))
+            return ", ".join(argscode)
+        else:
+            self._process_error("Illegal value type for 'args'",
+                                args.lineno)
 
     # This function processes list.
     def _process_list(self, nlist):
