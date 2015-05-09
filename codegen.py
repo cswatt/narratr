@@ -348,21 +348,24 @@ class CodeGen:
             commands += self._process_flow_smt(child)
         return commands
 
-    def _process_block_smt(self, smt, indentlevel=1):
+    def _process_block_smt(self, smt, indentlevel):
         commands = ''
         prefix = "\n" + "    "*indentlevel
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
                                 "'block statement'. Unfortunately, that is " +
                                 "all we know.")
-        if len(smt.children) == 0:
+        if len(smt.children) != 1:
             self._process_error("Block statement has no children to process.",
                                 smt.lineno)
-        for child in smt.children:
-            if child.type == "if_statement":
-                self._process_ifstatement(child)
-            elif child.type == "while_statement":
-                self._process_whilestatement(child)
+        if smt.children[0].type == "if_statement":
+            commands += self._process_ifstatement(smt.children[0], indentlevel)
+        elif smt.children[0].type == "while_statement":
+            commands += self._process_whilestatement(smt.children[0],
+                                                     indentlevel)
+        else:
+            self._process_error("Block statement does not have valid child " +
+                                "node.")
         return commands
 
     # Say statement function is called from simple statement and
@@ -558,30 +561,53 @@ class CodeGen:
     # This function takes statement node with "while" value.
     def _process_whilestatement(self, smt, indentlevel=1):
         commands = "while "
-        commands += self._process_test(smt.children[0], 0) + ":\n    "
-        for c in smt.children[1:]:
+        if smt.children[0].type != "test":
+            self._process_error("no test in while loop", smt.lineno)
+        else:
+            commands += self._process_test(smt.children[0], 0) + ":"
+        if smt.children[1].type != "suite":
+            self._process_error("no suite in while loop", smt.lineno)
+        else:
             commands += self._process_suite(c, indentlevel+1)
         return commands
 
     # This function takes statement node with "if" value, or an elif node.
     # Note, because of the embedding structure, we need to process it this
     # way, and the constructions are identical, except "if" vs "elif" token.
-    def _process_ifstatement(self, smt, indentlevel=1):
-        if smt.value is not None:
-            commands = "if "
-        else:
-            commands = "elif "
-        commands += self._process_test(smt.children[0], 0) + ":\n    "
-        for c in smt.children[1:]:
-            if c.value == "else":
-                commands += "\n" + "    "*indentlevel + "else:\n    "
-                commands += self._process_suite(c, indentlevel+1)
-            elif c.type == "elif_statements":
-                commands += "\n    "\
-                         + self._process_suite(Node(None, "suite", [c]),
-                                               indentlevel)
+    def _process_ifstatement(self, smt, indentlevel):
+        prefix = "\n" + "    "*indentlevel
+        commands = prefix + "if "
+        commands += self._process_test(smt.children[0]) + ":"
+        commands += self._process_suite(smt.children[1], indentlevel+1)
+        if smt.children[2]:
+            commands += self._process_elifstatements(smt.children[2],
+                                                     indentlevel)
+        if smt.children[3]:
+            commands += prefix + "else:"
+            commands += self._process_suite(smt.children[3], indentlevel+1)
+        return commands
+
+    def _process_elifstatements(self, elif_smts, indentlevel):
+        commands = ""
+        for child in elif_smts:
+            if child.type != "elif_statement":
+                self._process_error("Invalid child of elif_statements",
+                                    elif_smts.lineno)
             else:
-                commands += self._process_suite(c, indentlevel+1)
+                commands += self._process_elifstatement(child, indentlevel)
+        return commands
+
+    def _process_elifstatement(self, smt, indentlevel):
+        prefix = "\n" + "    "*indentlevel
+        commands = prefix + "elif "
+        if smt.children[0].type != "test":
+            self._process_error("Invalid elif tree", smt.lineno)
+        else:
+            commands += self._process_test(smt.children[0]) + ":"
+        if smt.children[1].type != "suite":
+            self._process_error("Invalid elif tree", smt.lineno)
+        else:
+            commands += self._process_suite(smt.children[1], indentlevel+1)
         return commands
 
     # This function takes "expression" node as argument
