@@ -876,7 +876,7 @@ pocket = pocket_class()\n'''
         if len(pocket_node.children) != 3:
             self._process_error("pocket has wrong number of children",
                                 pocket_node.lineno)
-        if pocket_node.children[1] != "dot":
+        if pocket_node.children[1].value != "dot":
             self._process_error("pocket must be followed by a dot",
                                 pocket_node.lineno)
         if len(pocket_node.children[1].children) != 1:
@@ -894,6 +894,35 @@ pocket = pocket_class()\n'''
         else:
             self._process_error("invalid method for pocket",
                                 pocket_node.lineno)
+        return commands
+
+    def _process_list_functions(self, nlist):
+        commands = ""
+        if len(nlist.children) != 3:
+            self._process_error("list has wrong number of children",
+                                nlist.lineno)
+        if nlist.children[1].value != "dot":
+            self._process_error("list must be followed by a dot",
+                                nlist.lineno)
+        if len(pocket_node.children[1].children) != 1:
+            self._process_error("no method sepcified for list",
+                                nlist.lineno)
+        if nlist.children[1].children[0] == "add":
+            commands += nlist.children[0].value
+            commands += ".add"
+            commands += self._process_trailer(pocket_node.children[2])
+        elif pocket_node.children[1].children[0] == "get":
+            commands += nlist.children[0].value
+            commands += ".get"
+            commands += self._process_trailer(pocket_node.children[2])
+        elif pocket_node.children[1].children[0] == "remove":
+            commands += nlist.children[0].value
+            commands += ".remove"
+            commands += self._process_trailer(pocket_node.children[2])
+        else:
+            self._process_error("invalid method for list",
+                                pocket_node.lineno)        
+        return commands
 
     def _process_error(self, error, lineno=0):
         if lineno != 0:
