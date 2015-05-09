@@ -738,7 +738,7 @@ pocket = pocket_class()\n'''
                                 "children.", atom.lineno)
         if atom.type == "test":
             return "(" + self._process_test(atom.children[0]) + ")"
-        elif atom.type == "list":
+        elif atom.value == "list":
             return self._process_list(atom.children[0])
         elif atom.type == "number":
             return self._process_number(atom.children[0])
@@ -866,6 +866,21 @@ pocket = pocket_class()\n'''
         else:
             self._process_error("Illegal value type for " +
                                 "'trailer'", trailer.lineno)
+
+    # This function processes list.
+    def _process_list(self, nlist):
+        commands = ''
+        if not isinstance(nlist, Node) or nlist.type != "list":
+            self._process_error("Something bad happened while processing " +
+                                "'list'. Unfortunately, " +
+                                "that is all we know.")        
+        if len(nlist.children) == 0:
+            return "[]"
+        else:
+            commands += '['
+            commands += self._process_testlist(nlist.children[0])
+            commands += ']'
+            return commands
 
     # This function takes "direction" node as argument
     # Building a dictionary for direction, using the direction as key and
