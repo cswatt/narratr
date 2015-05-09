@@ -570,8 +570,11 @@ class ParserForNarratr:
             if not isinstance(child, Node):
                 continue
             if child.type == "id":
-                self.symtab.insert(child.value, None, None, scope, False)
-                child.v_type = self.symtab.getKey(child.value, scope)
+                try:
+                    self.symtab.insert(child.value, None, None, scope, False)
+                    child.v_type = self.symtab.getKey(child.value, scope)
+                except:
+                    pass
             elif child.type == "atom" and child.v_type == "id":
                 child.v_type = self.symtab.getKey(child.value, scope)
             elif child.type == "god_id":
