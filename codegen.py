@@ -207,26 +207,45 @@ pocket = pocket_class()\n'''
         return scene_code
 
     def _item_gen(self, item, iid):
-        commands = []
         iid = item.value
         self.item_names.append(iid)
         item_code = "class item_" + str(iid) + ":\n    "
-        for c in item.children:
-            if c.type == "calllist":
-                item_code = item_code + "def __init__(self"
-                for exp in c.children:
-                    item_code += "," + exp.children[0].value
-                item_code += "):\n"
-            elif c.type == "suite":
-                commands += self._process_item_block(item)
-        item_code = item_code + "    ".join(commands)
+        if len(item.children) not in [1, 2]:
+            self._process_error("Wrong number of children of item", item.lineno)
+        elif item.children[0].type != "itemparams":
+            self._process_error("Wrong number of items", item.lineno)
+        else:
+            item_code += "def __init__(self"
+            item_code += ", " + self._process_itemparams(item.children[0])
+            item_code += "):\n    pass"
+        if len(item.children) == 2:
+            if item.children[1].type != "suite":
+                self._process_error("Wrong type of child for item", item.lineno)
+            else:
+                item_code += self._process_suite(item.children[1], 1)
         return item_code
-
-    def _process_item_block(self, c):
-        commands = []
-        if len(c.children) > 0:
-            commands.append(self._process_suite(c, 2))
+    
+    def _process_itemparams(self, itemparams):
+        commands = ""
+        if len(itemparams.children) not in [0, 1]:
+            self._process_error("Wrong number of children of itemparams",
+                                itemparams.lineno)
+        if len(itemparams.children) == 1:
+            if itemparams.children[0].type != "fparams":
+                self._process_error("Wrong type of child of itemparams",
+                                    itemparams.lineno)
+            else:
+                commands += self._process_fparams(itemparams.children[0])
         return commands
+    
+    def _process_fparams(self, fparams):
+        commands = ""
+        l = len(fparams.children) - 1
+        for i, param in enumerate(fparams.children):
+            commands += str(param.value)
+            if i != l:
+                commands += ","
+        return commands        
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
