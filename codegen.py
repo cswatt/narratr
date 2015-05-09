@@ -343,7 +343,8 @@ class CodeGen:
         elif smt.value == "lose":
             commands += self._process_lose_smt(smt.children[0], indentlevel)
         elif smt.value == "expression":
-            commands += self._process_expr_smt(smt.children[0], indentlevel)
+            commands += self._process_expression_smt(smt.children[0],
+                                                     indentlevel)
         elif smt.value == "flow":
             commands += self._process_flow_smt(child)
         return commands
@@ -421,7 +422,7 @@ class CodeGen:
         return commands
 
     # Expression statement
-    def _process_expr_smt(self, smt, indentlevel):
+    def _process_expression_smt(self, smt, indentlevel):
         prefix = '\n' + '    '*indentlevel
         commands = ''
         if not isinstance(smt, Node):
@@ -585,8 +586,41 @@ class CodeGen:
         return commands
 
     # This function takes "expression" node as argument
-    def _process_expression(self, exps):
-        return self._process_arithmmetic(exps.children[0])
+    def _process_expression(self, expression):
+        return self._process_arithmetic(expression.children[0])
+
+    # This function processes atom nodes.
+    def _process_atom(self, atom):
+        if not isinstance(atom, Node) or atom.type != "atom":
+            self._process_error("Something bad happened while processing " +
+                                "'atom'. Unfortunately, that is all we " +
+                                "know.")
+        if atom.is_leaf():
+            if atom.v_type == "string":
+                return str(atom.value)
+            else:
+                if not atom.v_type:
+                    self._process_error("Name Error: " + str(atom.value) +
+                                        " is not defined.", atom.lineno)
+                else:
+                    entry = self.symtab.getKey(atom.v_type)
+                    if entry.god:
+                        return "self." + atom.value
+                    else:
+                        return "self.__namespace['" + atom.value + "']"
+        if len(atom.children) != 1:
+            self._process_error("'atom' has incorrect number of " +
+                                "children.", atom.lineno)
+        if atom.type == "test":
+            return "(" + self._process_test(atom.children[0]) + ")"
+        elif atom.type == "list":
+            return self._process_list(atom.children[0])
+        elif atom.type == "number":
+            return self._process_number(atom.children[0])
+        elif atom.type == "boolean":
+            return self._process_boolean(atom.children[0])
+        else:
+            self._process_error("'atom' has unknown chid type.", atom.lineno)
 
     # This function takes "factor" node as argument
     def _process_factor(self, factors):
