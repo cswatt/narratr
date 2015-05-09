@@ -26,12 +26,13 @@ class Node:
     #               Technically optional, but include for all new nodes.
     #   lineno      The line number at which the node appears. Technically
     #               optional, but include for all new nodes.
-    def __init__(self, v, t, c=[], v_type=None, lineno=0):
+    def __init__(self, v, t, c=[], v_type=None, lineno=0, key=None):
         self.value = v
         self.type = t
         self.children = c
         self.v_type = v_type
         self.lineno = lineno
+        self.key = key
 
     # This method is helpful for string representations
     def __repr__(self):
@@ -43,3 +44,13 @@ class Node:
             return False
         else:
             return True
+
+    # This method overloads the indexing [] operator to return the child
+    # corresponding to the index.
+    def __getitem__(self, index):
+        if self.is_leaf():
+            raise Exception("Node has no children.")
+        if index >= len(self.children) or index < 0:
+            raise Exception("Node index out of bounds.")
+        return self.children[index]
+
