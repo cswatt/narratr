@@ -216,13 +216,15 @@ pocket = pocket_class()\n'''
             self._process_error("Wrong number of items", item.lineno)
         else:
             item_code += "def __init__(self"
-            item_code += ", " + self._process_itemparams(item.children[0])
-            item_code += "):\n    pass"
-        if len(item.children) == 2:
+            item_code += self._process_itemparams(item.children[0])
+            item_code += "):"
+        if len(item.children) == 1:
+            item_code += "\n        pass"
+        elif len(item.children) == 2:
             if item.children[1].type != "suite":
                 self._process_error("Wrong type of child for item", item.lineno)
             else:
-                item_code += self._process_suite(item.children[1], 1)
+                item_code += self._process_suite(item.children[1], 2)
         return item_code
     
     def _process_itemparams(self, itemparams):
@@ -239,12 +241,12 @@ pocket = pocket_class()\n'''
         return commands
     
     def _process_fparams(self, fparams):
-        commands = ""
+        commands = ", "
         l = len(fparams.children) - 1
         for i, param in enumerate(fparams.children):
             commands += str(param.value)
             if i != l:
-                commands += ","
+                commands += ", "
         return commands        
 
     # Code for adding a setup block. Takes as input a single "setup block"
