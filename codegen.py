@@ -21,7 +21,9 @@ from node import Node
 
 class CodeGen:
     def __init__(self):
-        self.frontmatter = "#!/usr/bin/env python\nfrom sys import exit\n\n"
+        self.frontmatter = "#!/usr/bin/env python\n" + \
+                            "from __future__ import division" + \
+                            "from sys import exit\n\n"
         self.scenes = []
         self.scene_nums = []
         self.items = []
@@ -462,7 +464,7 @@ class CodeGen:
                                 "'flow statement'. Unfortunately, that is " +
                                 "all we know.")
         if len(smt.children) != 1:
-            self._process_error("Flow statement has incorrect number of "+
+            self._process_error("Flow statement has incorrect number of " +
                                 "children to process.", smt.lineno)
 
         if smt.children[0].type == "continue_statement":
@@ -742,14 +744,33 @@ class CodeGen:
         if arith_exp.value == "term":
             return self._process_term(self, arith_exp.children[0])
         elif arith_exp.value in ['+', '-']:
-            return '(' +
-                   self._process_arithmetic_expression(arith_exp.children[0]) +
-                   ') ' + arith_exp.value + ' ' +
-                    self._process_term(self, arith_exp.children[1])
+            return '(' + \
+                self._process_arithmetic_expression(arith_exp.children[0]) + \
+                ') ' + arith_exp.value + ' ' + \
+                self._process_term(self, arith_exp.children[1])
         else:
             self._process_error("Illegal operation type for " +
                                 "'arithmetic_expression'", arith_exp.lineno)
 
+    # This function processes terms.
+    def _process_term(self, term):
+        if not isinstance(term, Node) or term.type != "term":
+            self._process_error("Something bad happened while processing " +
+                                "'term'. Unfortunately, " +
+                                "that is all we know.")
+        if len(term.children) not in [1, 2]:
+            self._process_error("'term' has incorrect " +
+                                "number of children.", term.lineno)
+        if term.value == "factor":
+            return self._process_factor(self, term.children[0])
+        elif term.value in ['*', '/', '//']:
+            return '(' + \
+                self._process_term(term.children[0]) + \
+                ') ' + term.value + ' ' + \
+                self._process_factor(self, term.children[1])
+        else:
+            self._process_error("Illegal operation type for " +
+                                "'term'", term.lineno)
 
     # This function takes "direction" node as argument
     # Building a dictionary for direction, using the direction as key and
