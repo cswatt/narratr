@@ -590,8 +590,13 @@ class ParserForNarratr:
                             self._semantic_error("Declaring previously " +
                                                  "declared variable as god",
                                                  lineno=child.lineno)
-            else:
-                self.pass_down(child, scope)
+            elif child.type == "atom" and child.v_type == "id":
+                if child.value == "str":
+                    continue
+                entry = self.symtab.get(child.value, scope)
+                if entry:
+                    child.key = self.symtab.getKey(child.value, scope)              
+            self.pass_down(child, scope)
 
     # Check numbers for interoperability. If they are of
     # differing types, the result is always the more general of
