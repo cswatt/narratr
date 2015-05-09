@@ -207,26 +207,44 @@ pocket = pocket_class()\n'''
         return scene_code
 
     def _item_gen(self, item, iid):
-        commands = []
         iid = item.value
         self.item_names.append(iid)
         item_code = "class item_" + str(iid) + ":\n    "
-        for c in item.children:
-            if c.type == "calllist":
-                item_code = item_code + "def __init__(self"
-                for exp in c.children:
-                    item_code += "," + exp.children[0].value
-                item_code += "):\n"
-            elif c.type == "suite":
-                commands += self._process_item_block(item)
-        item_code = item_code + "    ".join(commands)
+        if len(item.children) not in [1, 2]:
+            self._process_error("Wrong number of children of item", item.lineno)
+        elif item.children[0].type != "itemparams":
+            self._process_error("Wrong number of items", item.lineno)
+        else:
+            item_code += "def __init__(self"
+            item_code += self._process_itemparams(item.children[0])
+            item_code += "):"
+        if len(item.children) == 1:
+            item_code += "\n        pass"
+        elif len(item.children) == 2:
+            if item.children[1].type != "suite":
+                self._process_error("Wrong type of child for item", item.lineno)
+            else:
+                item_code += self._process_suite(item.children[1], 2)
         return item_code
-
-    def _process_item_block(self, c):
-        commands = []
-        if len(c.children) > 0:
-            commands.append(self._process_suite(c, 2))
+    
+    def _process_itemparams(self, itemparams):
+        commands = ""
+        if len(itemparams.children) not in [0, 1]:
+            self._process_error("Wrong number of children of itemparams",
+                                itemparams.lineno)
+        if len(itemparams.children) == 1:
+            if itemparams.children[0].type != "fparams":
+                self._process_error("Wrong type of child of itemparams",
+                                    itemparams.lineno)
+            else:
+                commands += self._process_fparams(itemparams.children[0])
         return commands
+    
+    def _process_fparams(self, fparams):
+        commands = []
+        for i, param in enumerate(fparams.children):
+            commands.append(str(param.value))
+        return ", " + ", ".join(commands)
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
@@ -564,7 +582,7 @@ pocket = pocket_class()\n'''
         testcode = []
         for test in tests:
             testcode.append(self._process_test(test))
-        return ",".join(testcode)
+        return ", ".join(testcode)
 
     def _process_test(self, test):
         if not isinstance(test, Node) or test.type != "test":
@@ -721,7 +739,7 @@ pocket = pocket_class()\n'''
         elif atom.value == "boolean":
             return self._process_boolean(atom.children[0])
         else:
-            self._process_error("'atom' has unknown chid type.", atom.lineno)
+            self._process_error("'atom' has unknown child type.", atom.lineno)
 
     # This function processes number nodes.
     def _process_number(self, number):
@@ -842,8 +860,45 @@ pocket = pocket_class()\n'''
         elif trailer.value == "calllist":
             return self._process_calllist(trailer.children[0])
         else:
-            self._process_error("Illegal value type for " +
-                                "'trailer'", trailer.lineno)
+            self._process_error("Illegal value type for 'trailer'",
+                                trailer.lineno)
+
+    # This function processes calllist
+    def _process_calllist(self, calllist):
+        if not isinstance(calllist, Node) or calllist.type != "calllist":
+            self._process_error("Something bad happened while processing " +
+                                "'calllist'. Unfortunately, " +
+                                "that is all we know.")
+        if len(calllist.children) not in [0, 1]:
+            self._process_error("'calllist' has incorrect " +
+                                "number of children.", calllist.lineno)
+        if not calllist.value:
+            return '()'
+        elif calllist.value == 'args':
+            return '(' + self._process_args(calllist.children[0]) + ')'
+        else:
+            self._process_error("Illegal value type for 'calllist'",
+                                calllist.lineno)
+
+    # This function processes args
+    def _process_args(self, args):
+        if not isinstance(args, Node) or args.type != "args":
+            self._process_error("Something bad happened while processing " +
+                                "'args'. Unfortunately, " +
+                                "that is all we know.")
+        if len(args.children) < 1:
+            self._process_error("'args' has incorrect " +
+                                "number of children.", args.lineno)
+        if args.value == "expression":
+            return self._process_expression(args.children[0])
+        elif args.value == 'args':
+            argscode = []
+            for expression in args.children:
+                argscode.append(self._process_expression(expression))
+            return ", ".join(argscode)
+        else:
+            self._process_error("Illegal value type for 'args'",
+                                args.lineno)
 
     # This function processes list.
     def _process_list(self, nlist):
@@ -851,7 +906,7 @@ pocket = pocket_class()\n'''
         if not isinstance(nlist, Node) or nlist.type != "list":
             self._process_error("Something bad happened while processing " +
                                 "'list'. Unfortunately, " +
-                                "that is all we know.")        
+                                "that is all we know.")
         if len(nlist.children) == 0:
             return "[]"
         else:
