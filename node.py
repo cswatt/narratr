@@ -53,4 +53,3 @@ class Node:
         if index >= len(self.children) or index < 0:
             raise Exception("Node index out of bounds.")
         return self.children[index]
-

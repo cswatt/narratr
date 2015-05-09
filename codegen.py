@@ -461,7 +461,7 @@ pocket = pocket_class()\n'''
         elif smt.value == "testlist":
             commands += prefix + self._process_testlist(smt.children[0])
         elif smt.value == "is":
-            entry = self.symtab.getWithKey(smt.children[0].v_type)
+            entry = self.symtab.getWithKey(smt.children[0].key)
             if entry and entry.god:
                 commands += prefix + "self." + smt.children[0].value
             else:
@@ -724,7 +724,7 @@ pocket = pocket_class()\n'''
                     self._process_error("Name Error: " + str(atom.value) +
                                         " is not defined.", atom.lineno)
                 else:
-                    entry = self.symtab.getWithKey(atom.v_type)
+                    entry = self.symtab.getWithKey(atom.key)
                     if entry and entry.god:
                         return "self." + atom.value
                     else:

@@ -571,15 +571,15 @@ class ParserForNarratr:
             if child.type == "id":
                 try:
                     self.symtab.insert(child.value, None, None, scope, False)
-                    child.v_type = self.symtab.getKey(child.value, scope)
+                    child.key = self.symtab.getKey(child.value, scope)
                 except:
                     pass
             elif child.type == "atom" and child.v_type == "id":
-                child.v_type = self.symtab.getKey(child.value, scope)
+                child.key = self.symtab.getKey(child.value, scope)
             elif child.type == "god_id":
                 try:
                     self.symtab.insert(child.value, [], [], scope, True)
-                    child.v_type = self.symtab.getKey(child.value, scope)
+                    child.key = self.symtab.getKey(child.value, scope)
                 except:
                     pass
             self.pass_down(child, scope)
