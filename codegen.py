@@ -726,6 +726,8 @@ pocket = pocket_class()\n'''
                                         " is not defined.", atom.lineno)
                 else:
                     entry = self.symtab.getWithKey(atom.key)
+                    if not entry:
+                        return atom.value
                     if entry and entry.god:
                         return "self." + atom.value
                     else:
