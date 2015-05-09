@@ -569,19 +569,25 @@ class ParserForNarratr:
             if not isinstance(child, Node):
                 continue
             if child.type == "id":
-                try:
+                child.key = self.symtab.getKey(child.value, scope)
+                entry = self.symtab.getWithKey(child.key)
+                if not entry:
                     self.symtab.insert(child.value, None, None, scope, False)
-                    child.key = self.symtab.getKey(child.value, scope)
-                except:
-                    pass
+
             elif child.type == "atom" and child.v_type == "id":
                 child.key = self.symtab.getKey(child.value, scope)
             elif child.type == "god_id":
-                try:
-                    self.symtab.insert(child.value, [], [], scope, True)
-                    child.key = self.symtab.getKey(child.value, scope)
-                except:
-                    pass
+                child.key = self.symtab.getKey(child.value, scope)
+                entry = self.symtab.getWithKey(child.key)
+                if not entry:
+                    self.symtab.insert(child.value, None, None, scope, True)
+                else:
+                    if entry.god:
+                        self._semantic_error("Re-declaring god " +
+                                             "variable in same scope")
+                    else:
+                        self._semantic_error("Declaring previously declared " +
+                                             "variable as good")
             self.pass_down(child, scope)
 
     # Check numbers for interoperability. If they are of

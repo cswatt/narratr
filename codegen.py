@@ -463,17 +463,17 @@ pocket = pocket_class()\n'''
         elif smt.value == "is":
             entry = self.symtab.getWithKey(smt.children[0].key)
             if entry and entry.god:
-                commands += prefix + "self." + smt.children[0].value
+                commands += prefix + "self." + smt.children[0].value + " = "
             else:
                 commands += prefix + "self.__namespace['" + \
                             smt.children[0].value + "'] = "
             commands += self._process_testlist(smt.children[1])
         elif smt.value == "godis":
             commands += prefix + "try:"
-            commands += prefix + "    " + smt.children[0].value
+            commands += prefix + "    self." + smt.children[0].value
             commands += prefix + "except NameError:"
             commands += prefix + "    self." + smt.children[0].value + " = "
-            commands += prefix + self._process_testlist(smt.children[1])
+            commands += self._process_testlist(smt.children[1])
         return commands
 
     def _process_flow_smt(self, smt, indentlevel):
