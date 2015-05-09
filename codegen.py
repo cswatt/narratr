@@ -646,160 +646,27 @@ class CodeGen:
             self._process_error("'boolean' has children. It should be " +
                                 "sterile.", boolean.lineno)
 
-    # This function takes "factor" node as argument
-    def _process_factor(self, factors):
-        commands = ""
-        # When is this triggered, if ever? Is there a better way to write
-        # it?
-        if len(factors.children) > 0:
-            if len(factors.children) == 3:
-                for factor in factors.children[0].children:
-                    commands += str(factor.value) + ' '
-                if factors.children[1].type == "comparison_op":
-                    commands += factors.children[1].value
-                for factor in factors.children[2].children:
-                    commands += ' ' + str(factor.value)
+    # This function processes arithmetic expressions.
+    def _process_arithmetic_expression(self, arith_exp):
+        if not isinstance(arith_exp, Node) or \
+           arith_exp.type != "arithmetic_expression":
+            self._process_error("Something bad happened while processing " +
+                                "'arithmetic_expression'. Unfortunately, " +
+                                "that is all we know.")
+        if len(arith_exp.children) not in [1, 2]:
+            self._process_error("'arithmetic_expression' has incorrect " +
+                                "number of children.", arith_exp.lineno)
+        if arith_exp.value == "term":
+            return self._process_term(self, arith_exp.children[0])
+        elif arith_exp.value in ['+', '-']:
+            return '(' +
+                   self._process_arithmetic_expression(arith_exp.children[0]) +
+                   ') ' + arith_exp.value + ' ' +
+                    self._process_term(self, arith_exp.children[1])
+        else:
+            self._process_error("Illegal operation type for " +
+                                "'arithmetic_expression'", arith_exp.lineno)
 
-            elif factors.children[0].v_type == "boolean":
-                if factors.children[0].children[0].value == "true":
-                    commands += "True"
-                elif factors.children[0].children[0].value == "false":
-                    commands += "False"
-
-        if factors.v_type in ["integer", "float"]:
-            commands += str(factors.value)
-
-        elif factors.v_type == "string":
-            commands += '"' + factors.value + '"'
-
-        elif factors.v_type == "list":
-            commands += "["
-            count = 0
-            for lchild in factors.children:
-                tl = lchild.children[0]
-                commands += self._process_expression(tl)
-                count += 1
-                if count != len(child.children):
-                    commands += ', '
-            commands += "]"
-
-        elif factors.value == "list":
-            commands += "nlist"
-            if len(factors.children) > 0:
-                for fchild in child.children:
-                    if fchild.type == "trailer":
-                        if len(fchild.children) > 0:
-                            fcount = 0
-                            for ffchild in fchild.children:
-                                if ffchild.type == "dot":
-                                    commands += ffchild.value
-                                elif ffchild.type == "id":
-                                    if ffchild.value == "add":
-                                        commands += "append("
-                                elif ffchild.type == "expression":
-                                    t = ffchild
-                                    temp = self._process_expression(t)
-                                    commands += temp
-                                    fcount += 1
-                                    if fcount != len(fchild.children):
-                                        commands += ', '
-                                    else:
-                                        commands += ')'
-
-        elif factors.v_type == "id":
-            if factors.value == "pocket":
-                commands += self._process_pocket(factors)
-            elif(self.symtab.get(factors.value, 'GLOBAL')):
-                if len(factors.children[0].children) > 0:
-                    commands += "("
-                    for c in factors.children[0].children:
-                        commands += self._process_expression(c) + ","
-                        commands = commands[:-1] + ")"
-            else:
-                if blocktype == 'scene':
-                    commands += "self.__namespace['" + factors.value + "']"
-                elif blocktype == 'item':
-                    commands += factors.value
-        elif factors.value is None:
-            commands += self._process_factor(factors)
-        elif factors.v_type == "string":
-            if factors.value == "str":
-                commands += "str("
-                commands += self._process_expression(
-                            factors.children[0].children[0])
-                commands += ")"
-            else:
-                commands += '"' + factors.value + '"'
-        elif factors.v_type == "integer":
-            commands += str(factors.value)
-        return commands
-
-    # This function recursively deals with arithmetic node
-    def _process_arithmetic(self, expr, expvalue):
-        commands = ''
-        if len(expr.children) > 0:
-            for child in expr.children:
-                if child.type == "arithmetic_expression":
-                    if child.value not in ['+', '-', '*', '/']:
-                        if len(child.children) > 0:
-                            if child.children[0].type == "factor":
-                                tempc = child.children[0]
-                                temp = self._process_factor(tempc)
-                                if datatype == "String":
-                                    if tempc.v_type == 'string':
-                                        commands += temp
-                                    else:
-                                        commands += 'str(' + temp + ')'
-                                else:
-                                    commands += temp
-                                commands += ' ' + expvalue + ' '
-                    else:
-                        if child.v_type == "integer":
-                            tv = child.value
-                            c = child
-                            temp = self._process_arithmetic(c, tv)
-                            commands += temp + ' '
-                            if datatype == "String":
-                                commands += 'str(' + str(tv) + ')' + ' '
-                            else:
-                                commands += str(tv) + ' '
-                        elif child.v_type == 'id':
-                            tv = child.value
-                            c = child
-                            temp = self._process_arithmetic(c, tv)
-                            commands += temp + ' '
-                            commands += str(tv) + ' '
-                elif child.type == "term":
-                    if child.value is None:
-                        if len(child.children) > 0:
-                            if child.children[0].type == "factor":
-                                tc = child.children[0]
-                                if (datatype == "String" and
-                                        tc.v_type != 'string'):
-                                    commands += 'str('
-                                commands += self._process_factor(tc)
-                                if (datatype == "String" and
-                                        tc.v_type != 'string'):
-                                    commands += ')'
-                    elif child.value in ['*', '/']:
-                        tv = str(child.value)
-                        temp = self._process_arithmetic(child, tv)
-                        commands += temp
-                elif child.type == "factor":
-                    if child.v_type == 'id':
-                        commands += ' ' + expvalue + ' '
-                        if blocktype == 'scene':
-                            commands += "self.__namespace['"
-                            commands += str(child.value) + "']"
-                        elif blocktype == 'item':
-                            commands += str(child.value)
-                    if child.v_type == 'integer':
-                        if datatype == "String":
-                            commands += ' str(' + expvalue + ') '
-                        else:
-                            commands += ' ' + expvalue + ' '
-                        commands += str(child.value)
-        return commands
 
     # This function takes "direction" node as argument
     # Building a dictionary for direction, using the direction as key and
