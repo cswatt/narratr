@@ -740,7 +740,7 @@ pocket = pocket_class()\n'''
         elif atom.value == "boolean":
             return self._process_boolean(atom.children[0])
         else:
-            self._process_error("'atom' has unknown chid type.", atom.lineno)
+            self._process_error("'atom' has unknown child type.", atom.lineno)
 
     # This function processes number nodes.
     def _process_number(self, number):
@@ -861,8 +861,24 @@ pocket = pocket_class()\n'''
         elif trailer.value == "calllist":
             return self._process_calllist(trailer.children[0])
         else:
-            self._process_error("Illegal value type for " +
-                                "'trailer'", trailer.lineno)
+            self._process_error("Illegal value type for 'trailer'",
+                                trailer.lineno)
+
+    def _process_calllist(self, calllist):
+        if not isinstance(calllist, Node) or calllist.type != "calllist":
+            self._process_error("Something bad happened while processing " +
+                                "'calllist'. Unfortunately, " +
+                                "that is all we know.")
+        if len(calllist.children) not in [0, 1]:
+            self._process_error("'calllist' has incorrect " +
+                                "number of children.", calllist.lineno)
+        if not calllist.value:
+            return '()'
+        elif calllist.value == 'args':
+            return '(' + self._process_args(calllist.children[0]) + ')'
+        else:
+            self._process_error("Illegal value type for 'calllist'",
+                                calllist.lineno)
 
     # This function processes list.
     def _process_list(self, nlist):
@@ -870,7 +886,7 @@ pocket = pocket_class()\n'''
         if not isinstance(nlist, Node) or nlist.type != "list":
             self._process_error("Something bad happened while processing " +
                                 "'list'. Unfortunately, " +
-                                "that is all we know.")        
+                                "that is all we know.")
         if len(nlist.children) == 0:
             return "[]"
         else:
