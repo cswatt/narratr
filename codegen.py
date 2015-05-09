@@ -209,7 +209,7 @@ pocket = pocket_class()\n'''
     def _item_gen(self, item, iid):
         iid = item.value
         self.item_names.append(iid)
-        item_code = "class item_" + str(iid) + ":\n    "
+        item_code = "class " + str(iid) + ":\n    "
         if len(item.children) not in [1, 2]:
             self._process_error("Wrong number of children of item",
                                 item.lineno)
