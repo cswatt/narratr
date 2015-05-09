@@ -241,13 +241,10 @@ pocket = pocket_class()\n'''
         return commands
     
     def _process_fparams(self, fparams):
-        commands = ", "
-        l = len(fparams.children) - 1
+        commands = []
         for i, param in enumerate(fparams.children):
-            commands += str(param.value)
-            if i != l:
-                commands += ", "
-        return commands        
+            commands.append(str(param.value))
+        return ", " + ", ".join(commands)
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
