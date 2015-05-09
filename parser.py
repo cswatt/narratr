@@ -480,7 +480,6 @@ class ParserForNarratr:
             p[0] = Node("args", "calllist", [p[2]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, 'calllist', [], lineno=p.lineno(1))
-        p[0].type = 'calllist'
 
     def p_args(self, p):
         '''args : args COMMA expression
@@ -490,7 +489,6 @@ class ParserForNarratr:
             p[0].children.append(p[3])
         else:
             p[0] = Node(None, 'args', [p[1]], lineno=p[1].lineno)
-        p[0].type = 'args'
 
     def p_itemparams(self, p):
         '''itemparams : LPARAN RPARAN
