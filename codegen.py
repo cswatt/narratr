@@ -22,7 +22,7 @@ from node import Node
 class CodeGen:
     def __init__(self):
         self.frontmatter = "#!/usr/bin/env python\n" + \
-                            "from __future__ import division" + \
+                            "from __future__ import division\n" + \
                             "from sys import exit\n\n"
         self.scenes = []
         self.scene_nums = []
@@ -688,7 +688,7 @@ class CodeGen:
 
     # This function takes "expression" node as argument
     def _process_expression(self, expression):
-        return self._process_arithmetic(expression.children[0])
+        return self._process_arithmetic_expression(expression.children[0])
 
     # This function processes atom nodes.
     def _process_atom(self, atom):
@@ -698,14 +698,14 @@ class CodeGen:
                                 "know.")
         if atom.is_leaf():
             if atom.v_type == "string":
-                return str(atom.value)
+                return repr(str(atom.value))
             else:
                 if not atom.v_type:
                     self._process_error("Name Error: " + str(atom.value) +
                                         " is not defined.", atom.lineno)
                 else:
-                    entry = self.symtab.getKey(atom.v_type)
-                    if entry.god:
+                    entry = self.symtab.getWithKey(atom.v_type)
+                    if entry and entry.god:
                         return "self." + atom.value
                     else:
                         return "self.__namespace['" + atom.value + "']"
@@ -758,7 +758,7 @@ class CodeGen:
             self._process_error("'arithmetic_expression' has incorrect " +
                                 "number of children.", arith_exp.lineno)
         if arith_exp.value == "term":
-            return self._process_term(self, arith_exp.children[0])
+            return self._process_term(arith_exp.children[0])
         elif arith_exp.value in ['+', '-']:
             return '(' + \
                 self._process_arithmetic_expression(arith_exp.children[0]) + \
@@ -778,7 +778,7 @@ class CodeGen:
             self._process_error("'term' has incorrect " +
                                 "number of children.", term.lineno)
         if term.value == "factor":
-            return self._process_factor(self, term.children[0])
+            return self._process_factor(term.children[0])
         elif term.value in ['*', '/', '//']:
             return '(' + \
                 self._process_term(term.children[0]) + \
@@ -798,10 +798,10 @@ class CodeGen:
             self._process_error("'factor' has incorrect " +
                                 "number of children.", factor.lineno)
         if factor.value == "power":
-            return self._process_power(self, factor.children[0])
+            return self._process_power(factor.children[0])
         elif factor.value in ['+', '-']:
             return '(' + factor.value + \
-                self._process_factor(self, factor.children[0]) + ')'
+                self._process_factor(factor.children[0]) + ')'
         else:
             self._process_error("Illegal operation type for " +
                                 "'factor'", factor.lineno)
@@ -813,9 +813,9 @@ class CodeGen:
                                 "'power'. Unfortunately, " +
                                 "that is all we know.")
         if power.value == "atom":
-            return self._process_atom(self, power.children[0])
+            return self._process_atom(power.children[0])
         elif power.value == "trailer":
-            atom = self._process_atom(self, power.children[0])
+            atom = self._process_atom(power.children[0])
             trailers = ''
             for trailer in power.children:
                 trailers += self._process_trailer(trailer)
