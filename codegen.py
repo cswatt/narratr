@@ -843,7 +843,7 @@ pocket = pocket_class()\n'''
             trailers = ''
             for trailer in power.children[1:]:
                 trailers += self._process_trailer(trailer)
-            return atom + trailer
+            return atom + trailers
         else:
             self._process_error("Illegal operation type for " +
                                 "'power'", power.lineno)
