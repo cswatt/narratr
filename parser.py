@@ -92,14 +92,14 @@ class ParserForNarratr:
         try:
             self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
         except:
-            self.p_error("Error at line " + str(p.lineno(1)) +
-                         ": A scene with the id '" + str(p[2]) + "' already" +
-                         " exists.")
+            self._semantic_error("Error at line " + str(p.lineno(1)) +
+                                 ": A scene with the id '" + str(p[2]) +
+                                 "' already exists.")
         self.pass_down(p[0], p[2])
 
     def p_item_block(self, p):
-        '''item_block : ITEM ID calllist LCURLY newlines_optional RCURLY
-                      | ITEM ID calllist LCURLY suite RCURLY'''
+        '''item_block : ITEM ID itemparams LCURLY newlines_optional RCURLY
+                      | ITEM ID itemparams LCURLY suite RCURLY'''
         if isinstance(p[5], Node) and p[5].type == "suite":
             children = [p[3], p[5]]
         else:
@@ -108,9 +108,9 @@ class ParserForNarratr:
         try:
             self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
         except:
-            self.p_error("Error at line " + str(p.lineno(1)) +
-                         ": An item with the id '" + str(p[2]) + "' already" +
-                         " exists.")
+            self._semantic_error("Error at line " + str(p.lineno(1)) +
+                                 ": An item with the id '" + str(p[2]) +
+                                 "' already exists.")
         self.pass_down(p[0], p[2])
 
     def p_start_state(self, p):
@@ -188,14 +188,11 @@ class ParserForNarratr:
             elif p[1].type == "lose_statement":
                 value = "lose"
         else:
-            self.p_error("Syntax Error forming simple_statement.")
+            self._semantic_error("Syntax Error forming simple_statement.")
         p[0] = Node(value, 'simple_statement', [p[1]], lineno=p[1].lineno)
 
     def p_say_statement(self, p):
         '''say_statement : SAY testlist'''
-        if not (p[1] == 'say'):
-            self.p_error('Syntax for say statement incorrect at' +
-                         str(p.lineno(2)))
         p[0] = Node(None, "say_statement", [p[2]], lineno=p[2].lineno)
 
     def p_exposition_statement(self, p):
@@ -238,7 +235,7 @@ class ParserForNarratr:
             elif p[1].type == 'moveto_statement':
                 value = "moveto"
         else:
-            self.p_error("Parse error in flow_statement.")
+            self._semantic_error("Parse error in flow_statement.")
         p[0] = Node(value, "flow_statement", [p[1]], lineno=p[1].lineno)
 
     def p_expression_statement(self, p):
@@ -378,10 +375,10 @@ class ParserForNarratr:
                         p[0] = Node(p[2], 'arithmetic_expression',
                                     [p[1], p[3]], "string", p.lineno(2))
                     else:
-                        self.p_error(p, err_type="combination_error")
+                        self._semantic_error(p, err_type="combination_error")
                 # Reject any expression trying to subtract strings.
                 elif p[2] == "-":
-                    self.p_error(p, err_type="combination_error")
+                    self._semantic_error(p, err_type="combination_error")
             else:
                 p[0] = self.combination_rules(p, 'arithmetic_expression')
 
@@ -394,7 +391,7 @@ class ParserForNarratr:
             # Type checking: reject anything with strings
             if (p[1].v_type in ["string", "list"] or
                     p[3].v_type in ["string", "list"]):
-                self.p_error(p, err_type="combination_error")
+                self._semantic_error(p, err_type="combination_error")
 
             p[0] = self.combination_rules(p, 'term')
             # For integer division, we can just reset the v_type
@@ -410,7 +407,8 @@ class ParserForNarratr:
                   | MINUS factor
                   | power'''
         if p[1].type == 'power':
-            p[0] = Node("power", "factor", [p[1]], lineno=p[1].lineno)
+            p[0] = Node("power", "factor", [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
         else:
             p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
                         lineno=p.lineno(1))
@@ -423,7 +421,8 @@ class ParserForNarratr:
             p[1].children.append(p[2])
             p[0] = p[1]
         else:
-            p[0] = Node("atom", 'power', [p[1]], lineno=p[1].lineno)
+            p[0] = Node("atom", 'power', [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
 
     def p_atom_node(self, p):
         '''atom : LPARAN test RPARAN
@@ -431,9 +430,11 @@ class ParserForNarratr:
                 | number
                 | boolean'''
         if isinstance(p[1], Node):
-            p[0] = Node(p[1].type, "atom", [p[1]], lineno=p[1].lineno)
+            p[0] = Node(p[1].type, "atom", [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
         else:
-            p[0] = Node("test", "atom", [p[2]], lineno=p.lineno(1))
+            p[0] = Node("test", "atom", [p[2]],  p[2].v_type,
+                        lineno=p.lineno(1))
 
     def p_atom_string(self, p):
         '''atom : STRING'''
@@ -490,6 +491,25 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'args', [p[1]], lineno=p[1].lineno)
         p[0].type = 'args'
+
+    def p_itemparams(self, p):
+        '''itemparams : LPARAN RPARAN
+                      | LPARAN fparams RPARAN'''
+        if isinstance(p[2], Node):
+            p[0] = Node('fparams', 'itemparams', [p[2]], lineno=p[2].lineno)
+        else:
+            p[0] = Node(None, 'itemparams', lineno=p.lineno(1))
+
+    def p_fparams(self, p):
+        '''fparams : fparams ID
+                   | ID'''
+        if isinstance(p[1], Node):
+            p[1].value = "fparams"
+            p[1].children.append(Node(p[2], "id"))
+            p[0] = p[1]
+        else:
+            p[0] = Node("id", "fparams", [Node(p[1], "id")],
+                        lineno=p.lineno(1))
 
     def p_block_statement(self, p):
         '''block_statement : if_statement
@@ -578,29 +598,32 @@ class ParserForNarratr:
                 p[0] = Node(p[2], n_type, [p[1], p[3]],
                             "float", p.lineno(2))
             else:
-                self.p_error(p, "combination_error")
+                self._semantic_error(p, "combination_error")
         elif p[1].v_type == "float":
             if p[3].v_type in ["integer", "float"]:
                 p[0] = Node(p[2], n_type, [p[1], p[3]],
                             "float", p.lineno(2))
             else:
-                self.p_error(p, "combination_error")
+                self._semantic_error(p, "combination_error")
         elif p[1].v_type == "list":
             if p[3].v_type == "list":
                 p[0] = Node(p[2], n_type, [p[1], p[3]],
                             "list", p.lineno(2))
             else:
-                self.p_error(p, "combination_error")
-
+                self._semantic_error(p, "combination_error")
         elif p[1].v_type == "boolean":
             self.p_error(p, "combination_error")
-
         else:
             p[0] = Node(p[2], n_type, [p[1], p[3]], "unknown", p.lineno(2))
 
         return p[0]
 
-    def p_error(self, p, err_type=None):
+    def p_error(self, p):
+        stderr.write("ERROR: Syntax Error at Line " + str(p.lineno) +
+                     ": " + "at token '" + str(p.value) + "'\n")
+        exit(1)
+
+    def _semantic_error(self, p, err_type=None):
         if err_type == "combination_error":
             stderr.write("ERROR: Type error at line " + str(p.lineno(2)) +
                          ": cannot combine '" + p[1].v_type +
