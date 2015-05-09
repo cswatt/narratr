@@ -784,7 +784,7 @@ pocket = pocket_class()\n'''
             return '(' + \
                 self._process_arithmetic_expression(arith_exp.children[0]) + \
                 ') ' + arith_exp.value + ' ' + \
-                self._process_term(self, arith_exp.children[1])
+                self._process_term(arith_exp.children[1])
         else:
             self._process_error("Illegal operation type for " +
                                 "'arithmetic_expression'", arith_exp.lineno)
