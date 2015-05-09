@@ -36,7 +36,9 @@ class Node:
 
     # This method is helpful for string representations
     def __repr__(self):
-        return "Node(%r, %r, %r)" % (self.value, self.type, self.children)
+        return "Node(%r, %r, %r, %r, %r, %r)" % (self.value, self.type,
+                                                 self.children, self.v_type,
+                                                 self.lineno, self.key)
 
     # This method checks if a node is a leaf node.
     def is_leaf(self):
