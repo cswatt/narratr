@@ -522,17 +522,15 @@ class ParserForNarratr:
         if len(p) == 9:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]],
                         lineno=p[2].lineno)
-            p[8].value = 'else'
         elif len(p) == 8:
-            p[0] = Node(None, 'if_statement', [p[2], p[4], p[7]],
+            p[0] = Node(None, 'if_statement', [p[2], p[4], None, p[7]],
                         lineno=p[2].lineno)
-            p[7].value = 'else'
         elif len(p) == 6:
-            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5]],
+            p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], None],
                         lineno=p[2].lineno)
         else:
-            p[0] = Node(None, 'if_statement', [p[2], p[4]], lineno=p[2].lineno)
-        p[0].type = 'if_statement'
+            p[0] = Node(None, 'if_statement', [p[2], p[4], None, None],
+                        lineno=p[2].lineno)
 
     def p_elif_statements(self, p):
         '''elif_statements : elif_statements ELIF test COLON suite
