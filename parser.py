@@ -539,12 +539,13 @@ class ParserForNarratr:
                            | ELIF test COLON suite'''
         if isinstance(p[1], Node) and p[1].type == 'elif_statements':
             p[0] = p[1]
-            new_elif = Node(None, 'elif_statements', [p[3], p[5]])
+            new_elif = Node(None, 'elif_statement', [p[3], p[5]])
             p[0].children.append(new_elif)
         else:
-            p[0] = Node(None, 'elif_statements', [p[2], p[4]],
-                        lineno=p[2].lineno)
-        p[0].type = 'elif_statements'
+            elif_statement = Node(None, 'elif_statement', [p[2], p[4]],
+                        lineno=p.lineno(1))
+            p[0] = Node(None, 'elif_statements', [elif_statement],
+                        lineno=elif_statement.lineno)
 
     def p_while_statement(self, p):
         '''while_statement : WHILE test COLON suite'''
@@ -561,13 +562,13 @@ class ParserForNarratr:
     def pass_down(self, branch, scope):
         for i, child in enumerate(branch.children):
             if child.type == "id":
-
                 self.symtab.insert(child.value,
                                    None,
                                    None,
                                    scope, False)
                 child.v_type = self.symtab.getKey(child.value, scope)
-
+            elif child.type == "atom" and child.v_type == "id":
+                child.v_type = self.symtab.getKey(child.value, scope)
             elif child.type == "god_id":
                 try:
                     self.symtab.insert(child.value,
