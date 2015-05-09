@@ -261,13 +261,14 @@ pocket = pocket_class()\n'''
         commands = []
         commands.append("def setup(self):" +
                         "\n        direction = {}")
-        if len(c.children) != 1:
+        if len(c.children) not in [0, 1]:
             self._process_error("setup block has wrong number of children")
-        if c.children[0].type != "suite":
-            self._process_error("setup block doesn't have suite child")
-        else:
-            commands.append(self._process_suite(c.children[0], 2))
-            commands.append("    return self.action(direction)\n")
+        if len(c.children) == 1:
+            if c.children[0].type != "suite":
+                self._process_error("setup block doesn't have suite child")
+            else:
+                commands.append(self._process_suite(c.children[0], 2))
+        commands.append("    return self.action(direction)\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
@@ -280,13 +281,14 @@ pocket = pocket_class()\n'''
     def _process_cleanup_block(self, c):
         commands = []
         commands.append("def cleanup(self):")
-        if len(c.children) != 1:
+        if len(c.children) not in [0, 1]:
             self._process_error("cleanup block has wrong number of children")
-        if c.children[0].type != "suite":
-            self._process_error("cleanup block doesn't have suite child")
-        else:
-            commands.append(self._process_suite(c.children[0], 2))
-            commands.append("    self.__namespace = {}")
+        if len(c.children) == 1:
+            if c.children[0].type != "suite":
+                self._process_error("cleanup block doesn't have suite child")
+            else:
+                commands.append(self._process_suite(c.children[0], 2))
+        commands.append("    self.__namespace = {}")
         return commands
 
     # Code for adding an action block. Takes as input a single "action block"
@@ -301,13 +303,14 @@ pocket = pocket_class()\n'''
         commands = []
         commands.append("def action(self, direction):")
         commands.append("    response = \"\"\n        while True:")
-        if len(c.children) != 1:
+        if len(c.children) not in [0, 1]:
             self._process_error("action block has wrong number of children")
-        if c.children[0].type != "suite":
-            self._process_error("action block doesn't have suite child")
-        else:
-            commands.append(self._process_suite(child, 3)[5:])
-            commands.append("        response = get_response(" +
+        if len(c.children) == 1:
+            if c.children[0].type != "suite":
+                self._process_error("action block doesn't have suite child")
+            else:
+                commands.append(self._process_suite(child, 3)[5:])
+        commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
                         "\n                self.cleanup()\n" +
@@ -859,20 +862,26 @@ pocket = pocket_class()\n'''
     def _process_pocket(self, pocket_node):
         commands = ""
         if len(pocket_node.children) != 3:
-            self._process_error("pocket has wrong number of children", pocket_node.lineno)
+            self._process_error("pocket has wrong number of children",
+                                pocket_node.lineno)
         if pocket_node.children[1] != "dot":
-            self._process_error("pocket must be followed by a dot", pocket_node.lineno)
+            self._process_error("pocket must be followed by a dot",
+                                pocket_node.lineno)
         if len(pocket_node.children[1].children) != 1:
-            self._process_error("no method specified for pocket", pocket_node.lineno)
-        
+            self._process_error("no method specified for pocket",
+                                pocket_node.lineno)
         if pocket_node.children[1].children[0] == "add":
-            commands += "pocket.add" + self._process_trailer(pocket_node.children[2])
+            commands += "pocket.add"
+            commands += self._process_trailer(pocket_node.children[2])
         elif pocket_node.children[1].children[0] == "get":
-            commands += "pocket.get" + self._process_trailer(pocket_node.children[2])
+            commands += "pocket.get"
+            commands += self._process_trailer(pocket_node.children[2])
         elif pocket_node.children[1].children[0] == "remove":
-            commands += "pocket.remove" + self._process_trailer(pocket_node.children[2])
+            commands += "pocket.remove"
+            commands += self._process_trailer(pocket_node.children[2])
         else:
-            self._process_error("invalid method for pocket", pocket_node.lineno)
+            self._process_error("invalid method for pocket",
+                                pocket_node.lineno)
 
     def _process_error(self, error, lineno=0):
         if lineno != 0:
