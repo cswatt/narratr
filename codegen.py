@@ -309,7 +309,7 @@ pocket = pocket_class()\n'''
             if c.children[0].type != "suite":
                 self._process_error("action block doesn't have suite child")
             else:
-                commands.append(self._process_suite(child, 3)[5:])
+                commands.append(self._process_suite(c.children[0], 3)[5:])
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
