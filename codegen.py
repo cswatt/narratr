@@ -211,7 +211,8 @@ pocket = pocket_class()\n'''
         self.item_names.append(iid)
         item_code = "class item_" + str(iid) + ":\n    "
         if len(item.children) not in [1, 2]:
-            self._process_error("Wrong number of children of item", item.lineno)
+            self._process_error("Wrong number of children of item",
+                                item.lineno)
         elif item.children[0].type != "itemparams":
             self._process_error("Wrong number of items", item.lineno)
         else:
@@ -222,11 +223,12 @@ pocket = pocket_class()\n'''
             item_code += "\n        pass"
         elif len(item.children) == 2:
             if item.children[1].type != "suite":
-                self._process_error("Wrong type of child for item", item.lineno)
+                self._process_error("Wrong type of child for item",
+                                    item.lineno)
             else:
                 item_code += self._process_suite(item.children[1], 2)
         return item_code
-    
+
     def _process_itemparams(self, itemparams):
         commands = ""
         if len(itemparams.children) not in [0, 1]:
@@ -239,7 +241,7 @@ pocket = pocket_class()\n'''
             else:
                 commands += self._process_fparams(itemparams.children[0])
         return commands
-    
+
     def _process_fparams(self, fparams):
         commands = []
         for i, param in enumerate(fparams.children):
@@ -976,7 +978,7 @@ pocket = pocket_class()\n'''
             commands += self._process_trailer(pocket_node.children[2])
         else:
             self._process_error("invalid method for list",
-                                pocket_node.lineno)        
+                                pocket_node.lineno)
         return commands
 
     def _process_error(self, error, lineno=0):
