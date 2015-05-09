@@ -32,7 +32,7 @@ def test_nonexistent_start_scene_error():
         ast = p.parse(f.read())
     symtab = p.symtab
     c = codegen.CodeGen()
-    assert_raises(Exception, lambda: c.process(ast, symtab))
+    assert_raises(SystemExit, lambda: c.process(ast, symtab))
 
 
 def check_expected_output(fname, output):
