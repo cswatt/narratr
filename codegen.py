@@ -211,7 +211,6 @@ pocket = pocket_class()\n'''
         iid = item.value
         self.item_names.append(iid)
         item_code = "class item_" + str(iid) + ":\n    "
-        # "\n    ".join(commands)
         for c in item.children:
             if c.type == "calllist":
                 item_code = item_code + "def __init__(self"
@@ -221,13 +220,6 @@ pocket = pocket_class()\n'''
             elif c.type == "suite":
                 commands += self._process_item_block(item)
         item_code = item_code + "    ".join(commands)
-        # + "\n        pass\n\n    "
-
-        # Here modify code so that constructor takes args
-        # in python:
-# class key:
-#     def __init__(self, identifier)
-#         self.id = identifier
         return item_code
 
     def _process_item_block(self, c):
@@ -235,23 +227,6 @@ pocket = pocket_class()\n'''
         if len(c.children) > 0:
             commands.append(self._process_suite(c, 2))
         return commands
-
-# in narratr: k is key(1) (is the constructor call)
-# ...
-# item key(identifier){
-# if identifier > 1:
-#     id = identifier
-# else:
-#     id = identifier + 5
-# }
-
-# in python:
-# class key:
-#     def __init__(self, identifier):
-#         if identifier > 1:
-#             self.id = identifier
-#         else:
-#             self.id = identifier + 5
 
     # Code for adding a setup block. Takes as input a single "setup block"
     # node. Adds boilerplate code (function definition, empty dictionary for
