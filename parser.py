@@ -410,7 +410,8 @@ class ParserForNarratr:
                   | MINUS factor
                   | power'''
         if p[1].type == 'power':
-            p[0] = Node("power", "factor", [p[1]], lineno=p[1].lineno)
+            p[0] = Node("power", "factor", [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
         else:
             p[0] = Node(p[1], 'factor', [p[2]], p[2].v_type,
                         lineno=p.lineno(1))
@@ -423,7 +424,8 @@ class ParserForNarratr:
             p[1].children.append(p[2])
             p[0] = p[1]
         else:
-            p[0] = Node("atom", 'power', [p[1]], lineno=p[1].lineno)
+            p[0] = Node("atom", 'power', [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
 
     def p_atom_node(self, p):
         '''atom : LPARAN test RPARAN
@@ -431,9 +433,11 @@ class ParserForNarratr:
                 | number
                 | boolean'''
         if isinstance(p[1], Node):
-            p[0] = Node(p[1].type, "atom", [p[1]], lineno=p[1].lineno)
+            p[0] = Node(p[1].type, "atom", [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
         else:
-            p[0] = Node("test", "atom", [p[2]], lineno=p.lineno(1))
+            p[0] = Node("test", "atom", [p[2]],  p[2].v_type,
+                        lineno=p.lineno(1))
 
     def p_atom_string(self, p):
         '''atom : STRING'''
