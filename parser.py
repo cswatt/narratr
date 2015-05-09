@@ -408,10 +408,10 @@ class ParserForNarratr:
             # For integer division, we can just reset the v_type
             if p[2] == "//":
                 p[0].v_type = "integer"
-            p[0].lineno = p.lineno(3)
+            p[0].lineno = p.lineno(1)
         else:
-            p[0] = Node(None, 'term', [p[1]], p[1].v_type, lineno=p[1].lineno)
-            p[0].type = 'term'
+            p[0] = Node("factor", 'term', [p[1]], p[1].v_type,
+                        lineno=p[1].lineno)
 
     def p_factor(self, p):
         '''factor : PLUS factor
