@@ -111,7 +111,7 @@ class ParserForNarratr:
             self._semantic_error("Error at line " + str(p.lineno(1)) +
                                  ": An item with the id '" + str(p[2]) +
                                  "' already exists.")
-        self.pass_down(p[0], p[2])
+        self.pass_down(p[0], "item." + p[2])
 
     def p_start_state(self, p):
         'start_state : START COLON SCENEID'

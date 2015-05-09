@@ -462,7 +462,8 @@ pocket = pocket_class()\n'''
             commands += prefix + self._process_testlist(smt[0])
         elif smt.value == "is":
             entry = self.symtab.getWithKey(smt[0].key)
-            if entry and entry.god:
+            if entry and (entry.god or isinstance(entry.scope, str) and
+                          entry.scope.startswith("item")):
                 commands += prefix + "self." + smt[0].value + " = "
             else:
                 commands += prefix + "self.__namespace['" + \
