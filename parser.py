@@ -456,7 +456,7 @@ class ParserForNarratr:
         '''list : LSQUARE RSQUARE
                 | LSQUARE testlist RSQUARE'''
         if isinstance(p[2], Node) and p[2].type == 'testlist':
-            p[0] = Node(None, "list", [], "list", p.lineno(1))
+            p[0] = Node(None, "list", [p[2]], "list", p.lineno(1))
         else:
             p[0] = Node(None, "list", [], "list", p[1].lineno)
 
