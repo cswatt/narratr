@@ -568,27 +568,30 @@ class ParserForNarratr:
         for i, child in enumerate(branch.children):
             if not isinstance(child, Node):
                 continue
-            if child.type == "id":
-                child.key = self.symtab.getKey(child.value, scope)
-                entry = self.symtab.getWithKey(child.key)
-                if not entry:
-                    self.symtab.insert(child.value, None, None, scope, False)
-
-            elif child.type == "atom" and child.v_type == "id":
-                child.key = self.symtab.getKey(child.value, scope)
-            elif child.type == "god_id":
-                child.key = self.symtab.getKey(child.value, scope)
-                entry = self.symtab.getWithKey(child.key)
-                if not entry:
-                    self.symtab.insert(child.value, None, None, scope, True)
-                else:
-                    if entry.god:
-                        self._semantic_error("Re-declaring god " +
-                                             "variable in same scope")
+            if child.type == "expression_statement":
+                if child[0].type == "id":
+                    child[0].key = self.symtab.getKey(child[0].value, scope)
+                    entry = self.symtab.getWithKey(child[0].key)
+                    if not entry:
+                        self.symtab.insert(child[0].value, None, None, scope,
+                                           False)
+                elif child[0].type == "god_id":
+                    child[0].key = self.symtab.getKey(child[0].value, scope)
+                    entry = self.symtab.getWithKey(child[0].key)
+                    if not entry:
+                        self.symtab.insert(child[0].value, None, None, scope,
+                                           True)
                     else:
-                        self._semantic_error("Declaring previously declared " +
-                                             "variable as good")
-            self.pass_down(child, scope)
+                        if entry.god:
+                            self._semantic_error("Re-declaring god " +
+                                                 "variable in same scope",
+                                                 lineno=child.lineno)
+                        else:
+                            self._semantic_error("Declaring previously " +
+                                                 "declared variable as god",
+                                                 lineno=child.lineno)
+            else:
+                self.pass_down(child, scope)
 
     # Check numbers for interoperability. If they are of
     # differing types, the result is always the more general of
