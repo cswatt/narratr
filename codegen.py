@@ -121,7 +121,20 @@ class CodeGen:
     # games.
     def _add_main(self, startstate):
         if self.main == "":
-            self.main = "pocket = {}\n"
+            self.main = '''class pocket_class:
+    def __init__(self):
+        self.data = {}
+
+    def add(self, key, val):
+        self.data[key] = val
+
+    def get(self, key):
+        return self.data.get(key)
+
+    def remove(self, key):
+        del self.data[key]
+
+pocket = pocket_class()\n'''
             self.main += '''def get_response(direction):
     response = raw_input(" -->> ")
     response = response.lower()

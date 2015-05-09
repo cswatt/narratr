@@ -547,7 +547,7 @@ class ParserForNarratr:
     # a branch and the scope to be assigned to all found named entities.
     def pass_down(self, branch, scope):
         for i, child in enumerate(branch.children):
-            if not child:
+            if not isinstance(child, Node):
                 continue
             if child.type == "id":
                 self.symtab.insert(child.value, None, None, scope, False)
