@@ -501,11 +501,11 @@ class ParserForNarratr:
             p[0] = Node(None, 'itemparams', lineno=p.lineno(1))
 
     def p_fparams(self, p):
-        '''fparams : fparams ID
+        '''fparams : fparams COMMA ID
                    | ID'''
         if isinstance(p[1], Node):
             p[1].value = "fparams"
-            p[1].children.append(Node(p[2], "id"))
+            p[1].children.append(Node(p[3], "id"))
             p[0] = p[1]
         else:
             p[0] = Node("id", "fparams", [Node(p[1], "id")],
