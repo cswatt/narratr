@@ -93,8 +93,8 @@ class ParserForNarratr:
             self.symtab.insert(p[2], p[0], "scene", "GLOBAL", False)
         except:
             self._semantic_error("Error at line " + str(p.lineno(1)) +
-                         ": A scene with the id '" + str(p[2]) + "' already" +
-                         " exists.")
+                                 ": A scene with the id '" + str(p[2]) +
+                                 "' already exists.")
         self.pass_down(p[0], p[2])
 
     def p_item_block(self, p):
@@ -109,8 +109,8 @@ class ParserForNarratr:
             self.symtab.insert(p[2], p[0], "item", "GLOBAL", False)
         except:
             self._semantic_error("Error at line " + str(p.lineno(1)) +
-                         ": An item with the id '" + str(p[2]) + "' already" +
-                         " exists.")
+                                 ": An item with the id '" + str(p[2]) +
+                                 "' already exists.")
         self.pass_down(p[0], p[2])
 
     def p_start_state(self, p):
@@ -567,7 +567,7 @@ class ParserForNarratr:
     # a branch and the scope to be assigned to all found named entities.
     def pass_down(self, branch, scope):
         for i, child in enumerate(branch.children):
-            if not child:
+            if not isinstance(child, Node):
                 continue
             if child.type == "id":
                 self.symtab.insert(child.value, None, None, scope, False)
@@ -611,9 +611,10 @@ class ParserForNarratr:
                             "list", p.lineno(2))
             else:
                 self._semantic_error(p, "combination_error")
-
         elif p[1].v_type == "boolean":
-                self._semantic_error(p, "combination_error")
+            self.p_error(p, "combination_error")
+        else:
+            p[0] = Node(p[2], n_type, [p[1], p[3]], "unknown", p.lineno(2))
 
         return p[0]
 
