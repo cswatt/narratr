@@ -280,9 +280,13 @@ pocket = pocket_class()\n'''
     def _process_cleanup_block(self, c):
         commands = []
         commands.append("def cleanup(self):")
-        if len(c.children) > 0:
+        if len(c.children) != 1:
+            self._process_error("cleanup block has wrong number of children")
+        if c.children[0].type != "suite":
+            self._process_error("cleanup block doesn't have suite child")
+        else:
             commands.append(self._process_suite(c.children[0], 2))
-        commands.append("    self.__namespace = {}")
+            commands.append("    self.__namespace = {}")
         return commands
 
     # Code for adding an action block. Takes as input a single "action block"
@@ -297,10 +301,13 @@ pocket = pocket_class()\n'''
         commands = []
         commands.append("def action(self, direction):")
         commands.append("    response = \"\"\n        while True:")
-        if len(c.children) > 0:
-            for child in c.children:
-                commands.append(self._process_suite(child, 3)[5:])
-        commands.append("        response = get_response(" +
+        if len(c.children) != 1:
+            self._process_error("action block has wrong number of children")
+        if c.children[0].type != "suite":
+            self._process_error("action block doesn't have suite child")
+        else:
+            commands.append(self._process_suite(child, 3)[5:])
+            commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
                         "\n                self.cleanup()\n" +
