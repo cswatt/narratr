@@ -772,6 +772,25 @@ class CodeGen:
             self._process_error("Illegal operation type for " +
                                 "'term'", term.lineno)
 
+    # This function processes factors.
+    def _process_factor(self, factor):
+        if not isinstance(factor, Node) or factor.type != "factor":
+            self._process_error("Something bad happened while processing " +
+                                "'factor'. Unfortunately, " +
+                                "that is all we know.")
+        if len(factor.children) != 1:
+            self._process_error("'factor' has incorrect " +
+                                "number of children.", factor.lineno)
+        if factor.value == "power":
+            return self._process_power(self, factor.children[0])
+        elif factor.value in ['+', '-']:
+            return '(' + factor.value + \
+                self._process_factor(self, factor.children[0]) + ')'
+        else:
+            self._process_error("Illegal operation type for " +
+                                "'factor'", factor.lineno)
+
+
     # This function takes "direction" node as argument
     # Building a dictionary for direction, using the direction as key and
     # scene number as value
