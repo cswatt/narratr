@@ -106,8 +106,9 @@ class CodeGen:
     # Comments on the literal Python functions are in-line below.
     def _add_main(self, startstate):
         if self.main == "":
-    # ABOUT THE POCKET CLASS: here we define the pocket class and initialize
-    # a global instance. The methods are fairly self explanatory.
+            # ABOUT THE POCKET CLASS: here we define the pocket class and
+            # initialize a global instance. The methods are fairly self
+            # explanatory.
             self.main = '''class pocket_class:
     def __init__(self):
         self.data = {}
@@ -222,6 +223,9 @@ pocket = pocket_class()\n'''
 
         return scene_code
 
+    # This function takes a item node and processes the node. It creates
+    # a class for the item which includes initiation function and other
+    # functions for different item types.
     def _item_gen(self, item, iid):
         iid = item.value
         self.item_names.append(iid)
@@ -245,6 +249,8 @@ pocket = pocket_class()\n'''
                 item_code += self._process_suite(item[1], 2)
         return item_code
 
+    # This function takes item parameters and processes its first children
+    # node if it exits.
     def _process_itemparams(self, itemparams):
         commands = ""
         if len(itemparams.children) not in [0, 1]:
@@ -258,6 +264,8 @@ pocket = pocket_class()\n'''
                 commands += self._process_fparams(itemparams[0])
         return commands
 
+    # This function takes function parameters as input and generates
+    # code for function for item class
     def _process_fparams(self, fparams):
         commands = []
         for i, param in enumerate(fparams.children):
@@ -329,6 +337,9 @@ pocket = pocket_class()\n'''
 
         return commands
 
+    # This function processes suite node and distinguishes its children
+    # nodes from simple statement if the value of the suite is "simple"
+    # and statements if the value is not specified.
     def _process_suite(self, suite, indentlevel=1):
         commands = ""
         if len(suite.children) != 1:
@@ -342,12 +353,17 @@ pocket = pocket_class()\n'''
                                                      indentlevel)
         return commands
 
+    # This function processes statements node which contains
+    # several statement nodes as its children nodes.
     def _process_statements(self, statements, indentlevel=1):
         commands = ''
         for smt in statements.children:
             commands += self._process_statement(smt, indentlevel)
         return commands
 
+    # This function processes statement node which contains two
+    # different types of statements: simple statement and
+    # block statement.
     def _process_statement(self, statement, indentlevel=1):
         commands = ''
         if statement.value == "simple":
@@ -361,7 +377,9 @@ pocket = pocket_class()\n'''
         return commands
 
     # Statement is actually a suite node, but we're keeping the name for
-    # backwards-compatability.
+    # backwards-compatability. This function takes suite node and passes
+    # to different types of simple statements based on the value of the
+    # suite node.
     def _process_simple_smt(self, smt, indentlevel=1):
         commands = ''
         prefix = "\n" + "    "*indentlevel
@@ -387,6 +405,9 @@ pocket = pocket_class()\n'''
             commands += self._process_flow_smt(smt[0], indentlevel)
         return commands
 
+    # This function takes block statement node which includes
+    # "if statement" and "while statement" type children
+    # nodes.
     def _process_block_smt(self, smt, indentlevel):
         commands = ''
         prefix = "\n" + "    "*indentlevel
@@ -436,7 +457,7 @@ pocket = pocket_class()\n'''
         commands += self._process_testlist(smt[0])
         return commands
 
-    # Win tatement, print the smt if there is and exit the scene
+    # Win statement prints the string if there is and exits the scene
     def _process_win_smt(self, smt, indentlevel):
         prefix = "\n" + "    "*indentlevel
         commands = ""
@@ -450,7 +471,7 @@ pocket = pocket_class()\n'''
         commands += prefix + "exit(0)"
         return commands
 
-    # Lose tatement, print the smt if there is and exit the scene
+    # Lose statement prints the string if there is and exits the scene
     def _process_lose_smt(self, smt, indentlevel):
         prefix = "\n" + "    "*indentlevel
         commands = ""
@@ -464,16 +485,22 @@ pocket = pocket_class()\n'''
         commands += prefix + "exit(0)"
         return commands
 
-    # Expression statement
+    # Expression statement takes expression statement node. If the value
+    # of the node is "testlist", then the function passes it to testlist
+    # function. If the value of the node is "is", it indicates that a
+    # new variable being declared. If the value of the node is "godis",
+    # the function creates namespace for the god variable and makes sure
+    # that the god variable can only be declared onece.
     def _process_expression_smt(self, smt, indentlevel):
         prefix = '\n' + '    '*indentlevel
         commands = ''
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
-                                "'lose statement'. Unfortunately, that is " +
-                                "all we know.")
+                                "'expression statement'. Unfortunately," +
+                                " that is all we know.")
         if len(smt.children) == 0:
-            self._process_error("Lose statement has no children to process.",
+            self._process_error("expression statement has no children to" +
+                                " process.",
                                 smt.lineno)
         elif smt.value == "testlist":
             commands += prefix + self._process_testlist(smt[0])
@@ -494,6 +521,8 @@ pocket = pocket_class()\n'''
             commands += self._process_testlist(smt[1])
         return commands
 
+    # This function takes flow statement node and passes the node to different
+    # flow statements.
     def _process_flow_smt(self, smt, indentlevel):
         prefix = "\n" + "    "*indentlevel
         commands = ""
@@ -517,6 +546,8 @@ pocket = pocket_class()\n'''
             self._process_error("flow statement has wrong type of child")
         return commands
 
+    # This function takes continue statement node and return "continue"
+    # if there is no error.
     def _process_continue(self, smt):
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
@@ -524,6 +555,8 @@ pocket = pocket_class()\n'''
                                 "is all we know.")
         return "continue"
 
+    # This function takes break statement node and "return" "break" if
+    # there is no error
     def _process_break(self, smt):
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
@@ -531,6 +564,9 @@ pocket = pocket_class()\n'''
                                 "all we know.")
         return "break"
 
+    # This function takes moves_declaration type and produces a direction
+    # dictionary whose the key is the direction and the value is the scene
+    # id.
     def _process_moves_dec(self, smt):
         commands = "direction = {"
         if not isinstance(smt, Node):
@@ -546,6 +582,7 @@ pocket = pocket_class()\n'''
             commands += self._process_directionlist(smt[0]) + "}"
         return commands
 
+    # This function creates the directionlist.
     def _process_directionlist(self, smt):
         commands = ""
         if not isinstance(smt, Node):
@@ -565,6 +602,8 @@ pocket = pocket_class()\n'''
                     commands += ", "
         return commands
 
+    # This function takes moveto_statement type node and adds return
+    # function in current cleanup() function.
     def _process_moveto(self, smt, indentlevel):
         commands = ""
         prefix = "\n" + "    "*indentlevel
@@ -582,6 +621,7 @@ pocket = pocket_class()\n'''
             commands += "_inst.setup()'"
         return commands
 
+    # This function returns the value of the direction node.
     def _process_direction(self, smt):
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
@@ -589,7 +629,8 @@ pocket = pocket_class()\n'''
                                 "is all we know.")
         return smt.value
 
-    # This function takes "testlist" node as argument
+    # This function takes testlist node and iterates through all its children
+    # nodes which are test nodes.
     def _process_testlist(self, testlist):
         if not isinstance(testlist, Node):
             self._process_error("Something bad happened while processing " +
@@ -604,6 +645,9 @@ pocket = pocket_class()\n'''
             testcode.append(self._process_test(test))
         return ", ".join(testcode)
 
+    # This function takes test node. Since the only children node of test node
+    # is or_test node, the function passes the node to or_test fuction after
+    # doing the error checking.
     def _process_test(self, test):
         if not isinstance(test, Node) or test.type != "test":
             self._process_error("Something bad happened while processing " +
@@ -613,6 +657,10 @@ pocket = pocket_class()\n'''
                                 test.lineno)
         return self._process_or_test(test[0])
 
+    # This function takes or_test node. The number of children node of
+    # or_test node can only be one or two. If the value of the node is
+    # "or", it indicates an or logic expression. If it is not, it indicates
+    # the children node is an and test node.
     def _process_or_test(self, or_test):
         if not isinstance(or_test, Node) or or_test.type != "or_test":
             self._process_error("Something bad happened while processing " +
@@ -627,6 +675,10 @@ pocket = pocket_class()\n'''
         else:
             return self._process_and_test(or_test[0])
 
+    # This function takes and_test node. The number of children node of
+    # and_test node can only be one or two. If the value of the node is
+    # "and", it indicates an and logic expression. If it is not, it indicates
+    # a not test node.
     def _process_and_test(self, and_test):
         if not isinstance(and_test, Node) or and_test.type != "and_test":
             self._process_error("Something bad happened while processing " +
@@ -641,6 +693,11 @@ pocket = pocket_class()\n'''
         else:
             return self._process_not_test(and_test[0])
 
+    # This function takes not test node. The number of its children node
+    # can only be one. If the value of the node is "not", the function
+    # would add "not" to the logic expression and recursively calls the
+    # not_test function. Otherwise, the function passes the children node
+    # to comparison function.
     def _process_not_test(self, not_test):
         if not isinstance(not_test, Node) or not_test.type != "not_test":
             self._process_error("Something bad happened while processing " +
@@ -654,6 +711,9 @@ pocket = pocket_class()\n'''
         else:
             return self._process_comparison(not_test[0])
 
+    # This function takes comparison node. The children nodes of comparison
+    # node are comparison, comparison operator and expression if the
+    # value is "comparison". Otherwise, the children node is expression node.
     def _process_comparison(self, comparison):
         if not isinstance(comparison, Node) or comparison.type != "comparison":
             self._process_error("Something bad happened while processing " +
@@ -669,10 +729,15 @@ pocket = pocket_class()\n'''
         else:
             return self._process_expression(comparison[0])
 
+    # This function takes comparison operator node.
     def _process_comparisonop(self, comparisonop):
         return comparisonop.value
 
-    # This function takes statement node with "while" value.
+    # This function takes while node. If the value of its children node
+    # is test, the function passes the children node to _process_test
+    # function to get the while condition. If it is not, it passes the
+    # children node to the _process_suite, adds one to indentlevel and
+    # processes the statement.
     def _process_whilestatement(self, smt, indentlevel=1):
         commands = "while "
         if smt[0].type != "test":
@@ -701,6 +766,8 @@ pocket = pocket_class()\n'''
             commands += self._process_suite(smt[3], indentlevel+1)
         return commands
 
+    # This function takes elifstaments node and iterates through
+    # all its children node which is elifstatement node.
     def _process_elifstatements(self, elif_smts, indentlevel):
         commands = ""
         for child in elif_smts.children:
@@ -711,6 +778,10 @@ pocket = pocket_class()\n'''
                 commands += self._process_elifstatement(child, indentlevel)
         return commands
 
+    # This function takes elif statement node. If the children type
+    # is test, it passes the node to process_test. Otherwise, it
+    # passes the children node to process_test. This function has
+    # a simliar structure with while statement.
     def _process_elifstatement(self, smt, indentlevel):
         prefix = "\n" + "    "*indentlevel
         commands = prefix + "elif "
@@ -724,11 +795,18 @@ pocket = pocket_class()\n'''
             commands += self._process_suite(smt[1], indentlevel+1)
         return commands
 
-    # This function takes "expression" node as argument
+    # This function takes "expression" node. Expression node
+    # only has arithmetic_expression as its children node. The function
+    # passes the node to the process_arithmetic_expression function.
     def _process_expression(self, expression):
         return self._process_arithmetic_expression(expression[0])
 
-    # This function processes atom nodes.
+    # This function takes atom nodes. If the atom node is a leaf node,
+    # it could be a string node or an id node. For the string node, the
+    # function returns the value. For the id or the godid node, the
+    # function returns "self.__namespace" or "self." If the node is not
+    # a leaf node, the function passes children node to different
+    # functions which deal with test, list, number and boolean.
     def _process_atom(self, atom):
         if not isinstance(atom, Node) or atom.type != "atom":
             self._process_error("Something bad happened while processing " +
@@ -787,7 +865,11 @@ pocket = pocket_class()\n'''
             self._process_error("'boolean' has children. It should be " +
                                 "sterile.", boolean.lineno)
 
-    # This function processes arithmetic expressions.
+    # This function takes arithmetic expressions node. The function
+    # recursively processes the arithmetic expression if the value
+    # of its children node is not term. The arithmetic expression
+    # is composed of arithmetic expression, arithmetic operator and
+    # term.
     def _process_arithmetic_expression(self, arith_exp):
         if not isinstance(arith_exp, Node) or \
            arith_exp.type != "arithmetic_expression":
@@ -808,7 +890,10 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal operation type for " +
                                 "'arithmetic_expression'", arith_exp.lineno)
 
-    # This function processes terms.
+    # This function takes term node. Term node deals with multiple and divide,
+    # which have higher precedence than plus and minus. If the value of
+    # children node is factor, the function passes the node to
+    # _process_factor function.
     def _process_term(self, term):
         if not isinstance(term, Node) or term.type != "term":
             self._process_error("Something bad happened while processing " +
@@ -828,7 +913,9 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal operation type for " +
                                 "'term'", term.lineno)
 
-    # This function processes factors.
+    # This function takes factor node. If the value of factor is power,
+    # the function passes the node to process_power function. Otherwise,
+    # the value of factor should fall in plus and minus.
     def _process_factor(self, factor):
         if not isinstance(factor, Node) or factor.type != "factor":
             self._process_error("Something bad happened while processing " +
@@ -846,7 +933,13 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal operation type for " +
                                 "'factor'", factor.lineno)
 
-    # This function processes powers.
+    # This function takes power node. If the value of the power is "atom",
+    # the function passes the children node to function _process_atom. If
+    # the value of the power is "trailer", the function then processes
+    # the value type of its first child. If the value type is id, the function
+    # just passes. If the value type is poceket or otherwise (for narratr it
+    # could only be list), the function passes nodes to process_pocket or
+    # process_list functions.
     def _process_power(self, power):
         if not isinstance(power, Node) or power.type != "power":
             self._process_error("Something bad happened while processing " +
@@ -889,7 +982,9 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal value type for 'trailer'",
                                 trailer.lineno)
 
-    # This function processes calllist
+    # This function processes calllist. If the value of calllist is
+    # "args", the function passes its children node to process_args
+    # function.
     def _process_calllist(self, calllist):
         if not isinstance(calllist, Node) or calllist.type != "calllist":
             self._process_error("Something bad happened while processing " +
@@ -906,7 +1001,10 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal value type for 'calllist'",
                                 calllist.lineno)
 
-    # This function processes args
+    # This function processes args. If the value of the node is
+    # "expression", the function passes its children node to
+    # process_expression. Otherwise, it iterates through all
+    # the expression nodes of its children node.
     def _process_args(self, args):
         if not isinstance(args, Node) or args.type != "args":
             self._process_error("Something bad happened while processing " +
@@ -926,7 +1024,8 @@ pocket = pocket_class()\n'''
             self._process_error("Illegal value type for 'args'",
                                 args.lineno)
 
-    # This function processes list.
+    # This function processes list node for list declaration and plus
+    # arithmetic operation.
     def _process_list(self, nlist):
         commands = ''
         if not isinstance(nlist, Node) or nlist.type != "list":
@@ -941,6 +1040,8 @@ pocket = pocket_class()\n'''
             commands += ']'
             return commands
 
+    # This function takes pocket node and deals with the pocket
+    # as list in python.
     def _process_pocket(self, pocket_node):
         commands = ""
         if len(pocket_node.children) != 3:
@@ -972,6 +1073,8 @@ pocket = pocket_class()\n'''
                                 pocket_node.lineno)
         return commands
 
+    # This function takes id node which is recognized as list.
+    # It interprets and implements the list operations in Python.
     def _process_list_functions(self, nlist):
         commands = ""
         if len(nlist.children) != 3:
@@ -1000,6 +1103,7 @@ pocket = pocket_class()\n'''
                                 nlist.lineno)
         return commands
 
+    # This function processes error in code generator.
     def _process_error(self, error, lineno=0):
         if lineno != 0:
             stderr.write("ERROR: Line " + str(lineno) + ": " + str(error) +
@@ -1008,6 +1112,7 @@ pocket = pocket_class()\n'''
             stderr.write("ERROR: " + str(error) + "\n")
         exit(1)
 
+    # This function processes warning in code generator.
     def _process_warning(self, warning, lineno=0):
         if lineno != 0:
             stderr.write("WARNING: Line " + str(lineno) + ": " + str(warning) +
