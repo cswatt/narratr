@@ -39,7 +39,8 @@ class ParserForNarratr:
         "program : newlines_optional blocks"
         p[0] = Node(None, "program", [p[2]])
 
-    # The starttart state may be given multiple times. This is handled in the code
+    # The starttart state may be given multiple times.
+    # This is handled in the code
     # generator.
     def p_blocks(self, p):
         '''blocks : scene_block newlines_optional
@@ -48,13 +49,13 @@ class ParserForNarratr:
                   | blocks scene_block newlines_optional
                   | blocks item_block newlines_optional
                   | blocks start_state newlines_optional'''
-        # This statement differentiate parsing for a scene block 
+        # This statement differentiate parsing for a scene block
         # as it is added to the list of blocks.
         if p[1].type == "blocks" and p[2].type == "scene_block":
             p[1].children[0][p[2].value] = p[2]
             p[0] = p[1]
-        # This statement 
-        # differentiates parsing for an item block 
+        # This statement
+        # differentiates parsing for an item block
         # as it is added to the list of blocks.
         elif p[1].type == "blocks" and p[2].type == "item_block":
             p[1].children[1][p[2].value] = p[2]
@@ -66,14 +67,14 @@ class ParserForNarratr:
         elif p[1].type == "blocks" and p[2].type == "start_state":
             p[1].children.append(p[2])
             p[0] = p[1]
-        # This parses the first scene block, as the first block 
+        # This parses the first scene block, as the first block
         # in the program.
         # It starts a Node containing all blocks.
         elif p[1].type == "scene_block":
             if(not isinstance(p[0], Node)):
                 p[0] = Node(None, "blocks", [{}, {}])
             p[0].children[0][p[1].value] = p[1]
-        # This parses the first item block, as the first block 
+        # This parses the first item block, as the first block
         # in the program.
         # It starts a Node containing all blocks.
         elif p[1].type == "item_block":
@@ -93,7 +94,7 @@ class ParserForNarratr:
     def p_newlines_optional(self, p):
         '''newlines_optional : newlines
                              | '''
-    # This appends a string of newlines, and 
+    # This appends a string of newlines, and
     # skips over these characters in the AST.
     def p_newlines(self, p):
         '''newlines : newlines NEWLINE
@@ -578,7 +579,7 @@ class ParserForNarratr:
                         lineno=p.lineno(1))
 
     # Blocks statements are conditional
-    # operations of the type if or while. 
+    # operations of the type if or while.
     # Here they are parsed.
     def p_block_statement(self, p):
         '''block_statement : if_statement
