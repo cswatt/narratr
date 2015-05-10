@@ -111,11 +111,7 @@ class CodeGen:
     def _add_main(self, startstate):
         if self.main == "":
             # ABOUT THE POCKET CLASS: here we define the pocket class and
-<<<<<<< HEAD
             # initialize a global instance. The methods are fairly self
-=======
-            # initialize global instance. The methods are fairly self
->>>>>>> origin/master
             # explanatory.
             self.main = '''class pocket_class:
     def __init__(self):
