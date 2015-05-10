@@ -31,7 +31,7 @@ class CodeGen:
         self.main = ""
 
     def process(self, node, symtab):
-        '''Call first: generate target code given narratr AST and symbol table.
+        """Call first: generate target code given narratr AST and symbol table.
 
         This function takes as its arguments the root node of the AST and the
         symbol table. It saves the symbol table to a class variable (so it is
@@ -39,7 +39,7 @@ class CodeGen:
         to identify the high level nodes (i.e. scenes, items, and startstate),
         sending the appropriate nodes to the appropriate functions for
         processing. Note we know the structure of the AST, so we don't need
-        DFS or other tree searching algorithms, which improves efficiency.'''
+        DFS or other tree searching algorithms, which improves efficiency."""
         self.symtab = symtab
         if len(node.children) != 1 or node[0].type != "blocks":
             self._process_error("Unexpected Parse Tree - Incorrect number" +
@@ -60,7 +60,7 @@ class CodeGen:
                                     block.lineno)
 
     def construct(self, outputfile="stdout"):
-        '''Class second: write the generated code to a file.
+        """Class second: write the generated code to a file.
 
         This function takes the instance variables constructed by the
         process() function and writes them to an output file. (As such, it must
@@ -71,7 +71,7 @@ class CodeGen:
         the outputfile is specified as "stdout", the code prints to standard
         out (e.g. usually the terminal window). That's mainly for debugging
         purposes, and should not be used in the production compiler, as the
-        line breaks are only approximations.'''
+        line breaks are only approximations."""
         if self.main == "":
             self._process_warning("No start scene specified. " +
                                   "Defaulting to $1.")
