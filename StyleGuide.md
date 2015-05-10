@@ -196,7 +196,7 @@ This document gives coding conventions for narratr
 ##Code lay-out
 ###Indentation
 Use 4 spaces per indentation level. For a scene, the setup, action, and cleanup must all begin on the same indentation level
-
+```
 **Yes:**
 scene $1 { 
     setup:
@@ -212,7 +212,7 @@ action:
 say "THE MATRIX HAS YOU"				
 cleanup: 
 } 
-
+```
 
 The closing brace/bracket/parenthesis on multi-line constructs may either line up under the first non-whitespace character of the last line of list, as in:
 my_list = [
