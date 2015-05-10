@@ -1,7 +1,16 @@
+scene $1 {
+  setup:
+    moves right($4)
+    pocket.add("coins", 4)
+  action:
+  cleanup:
+}
+start: $1
+
 scene $4 {
   setup:
     exposition "You are in an infinitely large room. The gentle smell of manure and princess glitter envelops the space."
-    moves left($3), right($5)
+    moves left($1)
     
     % create a list of ponies, if it does not already exist. A god variable, so it is not reset when the room is entered again.
     god ponies is []
@@ -13,25 +22,26 @@ scene $4 {
     new_ponies is 0
     
     % create a variable with the number of times the player has entered this scene. A god variable, so not reset every time the room is entered.
-    god n_visits is 0
-    
-    % increment the number of visits
-    n_visits is n_visits + 1
+    god n_visits is 1
 
-    while pocket.coins > 0:
-      ponies.add(pony(pid))
+    while pocket.get("coins") > 0:
+      ponies.append(pony(pid))
       pid is pid + 1    % increment the number of ponies
       new_ponies is new_ponies + 1  % increment the pony counter
-      pocket.coins is pocket.coins - 1  % remove a coin
+      pocket.update("coins", pocket.get("coins") - 1) % remove a coin
       say "You got a pony! And lost a coin..."
 
-    say "You received" + new_ponies + "ponies, but you've lost all your coins."
+    say "You received " + str(new_ponies) + " ponies, but you've lost all your coins."
     if n_visits > 1:
-      say "You've been here" + n_visits + "times. You probably want to stop visiting, unless you really like ponies."
+      say "You've been here " + str(n_visits) + " times. You probably want to stop visiting, unless you really like ponies."
 
   action:
+    moveto $3
+
   cleanup:
-    say "The ponies don't fit in your pocket so now" + ponies.length + "ponies are gonna follow you around. Almost makes up for not having any money."
+    % increment the number of visits
+    n_visits is n_visits + 1
+    say "The ponies don't fit in your pocket. You lucked out. But you are now poor."
 }
 
 item pony(pony_id){
