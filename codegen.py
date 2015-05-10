@@ -125,8 +125,16 @@ class CodeGen:
     def __init__(self):
         self.data = {}
 
-    def add(self, key, val):
-        self.data[key] = val
+    def add(self, key, val, verbose=True):
+        if self.data.get(key, None):
+            print " ** '" + key + "' is already in your pocket. **"
+        else:
+            self.data[key] = val
+            if verbose:
+                print " ** '" + key + "' is now in your pocket. **"
+    
+    def update(self, key, val):
+        self.data[key] = val    
 
     def get(self, key):
         return self.data.get(key)
@@ -950,6 +958,9 @@ pocket = pocket_class()\n'''
             commands += self._process_trailer(pocket_node[2])
         elif pocket_node[1].children[0] == "has":
             commands += "pocket.has"
+            commands += self._process_trailer(pocket_node[2])
+        elif pocket_node[1].children[0] == "update":
+            commands += "pocket.update"
             commands += self._process_trailer(pocket_node[2])
         else:
             self._process_error("invalid method for pocket",
