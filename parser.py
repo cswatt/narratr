@@ -354,6 +354,8 @@ class ParserForNarratr:
                          | EQUALS
                          | NOTEQUALS
                          | NOT EQUALS'''
+        if p[1] == '=':
+            p[1] = '=='
         p[0] = Node(p[1], 'comparison_op', [], lineno=p.lineno(1))
 
     # In the first two productions for this rule, we need to ensure that

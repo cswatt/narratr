@@ -856,7 +856,9 @@ pocket = pocket_class()\n'''
             return self._process_atom(power[0])
         elif power.value == "trailer":
             if power[0].v_type == "id":
-                if not self.symtab.get(power[0].value, "GLOBAL"):
+                if power[0].value in ["str", "int", "float"]:
+                    pass
+                elif not self.symtab.get(power[0].value, "GLOBAL"):
                     if power[0].value == "pocket":
                         return self._process_pocket(power)
                     else:
