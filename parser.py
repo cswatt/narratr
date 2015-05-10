@@ -42,12 +42,12 @@ class ParserForNarratr:
     # The starttart state may be given multiple times. This is handled in the code
     # generator.
     def p_blocks(self, p):
-        '''blocks : scene_block newlines_optional
+        """blocks : scene_block newlines_optional
                   | item_block newlines_optional
                   | start_state newlines_optional
                   | blocks scene_block newlines_optional
                   | blocks item_block newlines_optional
-                  | blocks start_state newlines_optional'''
+                  | blocks start_state newlines_optional"""
         # This statement differentiate parsing for a scene block 
         # as it is added to the list of blocks.
         if p[1].type == "blocks" and p[2].type == "scene_block":
@@ -91,24 +91,24 @@ class ParserForNarratr:
     # Because newlines are ignored, these functions
     # skip over the newlines in the AST.
     def p_newlines_optional(self, p):
-        '''newlines_optional : newlines
-                             | '''
+        """newlines_optional : newlines
+                             | """
     # This appends a string of newlines, and 
     # skips over these characters in the AST.
     def p_newlines(self, p):
-        '''newlines : newlines NEWLINE
-                    | NEWLINE'''
+        """newlines : newlines NEWLINE
+                    | NEWLINE"""
 
     # A scene block consists of a setup, action, and cleanup block
     # all as children. Depending on the format, it creates the
     # block node with the parts as children
     # and inserts the resulting scene in to the symbol table.
     def p_scene_block(self, p):
-        '''scene_block : SCENE SCENEID LCURLY newlines INDENT setup_block \
+        """scene_block : SCENE SCENEID LCURLY newlines INDENT setup_block \
                           action_block cleanup_block DEDENT newlines_optional \
                           RCURLY
                        | SCENE SCENEID LCURLY newlines setup_block \
-                          action_block cleanup_block RCURLY'''
+                          action_block cleanup_block RCURLY"""
         if isinstance(p[6], Node) and p[6].type == 'setup_block':
             children = [p[6], p[7], p[8]]
         elif isinstance(p[5], Node) and p[5].type == 'setup_block':
@@ -128,8 +128,8 @@ class ParserForNarratr:
     # or not, it inserts the resulting item
     # into the symbol table.
     def p_item_block(self, p):
-        '''item_block : ITEM ID itemparams LCURLY newlines_optional RCURLY
-                      | ITEM ID itemparams LCURLY suite RCURLY'''
+        """item_block : ITEM ID itemparams LCURLY newlines_optional RCURLY
+                      | ITEM ID itemparams LCURLY suite RCURLY"""
         if isinstance(p[5], Node) and p[5].type == "suite":
             children = [p[3], p[5]]
         else:
@@ -148,24 +148,24 @@ class ParserForNarratr:
         p[0] = Node(p[3], "start_state", lineno=p.lineno(3))
 
     def p_setup_block(self, p):
-        '''setup_block : SETUP COLON suite
-                       | SETUP COLON newlines'''
+        """setup_block : SETUP COLON suite
+                       | SETUP COLON newlines"""
         if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "setup_block", [p[3]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, "setup_block", lineno=p.lineno(1))
 
     def p_action_block(self, p):
-        '''action_block : ACTION COLON suite
-                        | ACTION COLON newlines'''
+        """action_block : ACTION COLON suite
+                        | ACTION COLON newlines"""
         if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "action_block", [p[3]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, "action_block", lineno=p.lineno(1))
 
     def p_cleanup_block(self, p):
-        '''cleanup_block : CLEANUP COLON suite
-                         | CLEANUP COLON newlines'''
+        """cleanup_block : CLEANUP COLON suite
+                         | CLEANUP COLON newlines"""
         if isinstance(p[3], Node) and p[3].type == "suite":
             p[0] = Node(None, "cleanup_block", [p[3]], lineno=p.lineno(1))
         else:
@@ -175,8 +175,8 @@ class ParserForNarratr:
     # Accordingly, either the block or statement is added as a child to the
     # suite.
     def p_suite(self, p):
-        '''suite : simple_statement
-                 | newlines INDENT statements DEDENT newlines_optional'''
+        """suite : simple_statement
+                 | newlines INDENT statements DEDENT newlines_optional"""
         if isinstance(p[1], Node) and p[1].type == "simple_statement":
             p[0] = Node("simple", "suite", [p[1]], lineno=p[1].lineno)
         else:
@@ -186,8 +186,8 @@ class ParserForNarratr:
     # A single statement is added as the child node of a statement
     # list.
     def p_statements(self, p):
-        '''statements : statements statement
-                      | statement'''
+        """statements : statements statement
+                      | statement"""
         if p[1].type == "statements":
             p[1].children.append(p[2])
             p[0] = p[1]
@@ -195,8 +195,8 @@ class ParserForNarratr:
             p[0] = Node(None, "statements", [p[1]], lineno=p[1].lineno)
 
     def p_statement(self, p):
-        '''statement : simple_statement
-                     | block_statement'''
+        """statement : simple_statement
+                     | block_statement"""
         if p[1].type == 'simple_statement':
             value = 'simple'
         else:
@@ -207,12 +207,12 @@ class ParserForNarratr:
     # Here we treat all these forms the same and encapsulate
     # then into simple statements.
     def p_simple_statement(self, p):
-        '''simple_statement : say_statement newlines
+        """simple_statement : say_statement newlines
                             | exposition_statement newlines
                             | win_statement newlines
                             | lose_statement newlines
                             | flow_statement newlines
-                            | expression_statement newlines'''
+                            | expression_statement newlines"""
         if isinstance(p[1], Node):
             if p[1].type == "say_statement":
                 value = "say"
@@ -231,17 +231,17 @@ class ParserForNarratr:
         p[0] = Node(value, 'simple_statement', [p[1]], lineno=p[1].lineno)
 
     def p_say_statement(self, p):
-        '''say_statement : SAY testlist'''
+        """say_statement : SAY testlist"""
         p[0] = Node(None, "say_statement", [p[2]], lineno=p[2].lineno)
 
     def p_exposition_statement(self, p):
-        '''exposition_statement : EXPOSITION testlist'''
+        """exposition_statement : EXPOSITION testlist"""
         if p[1] == "exposition":
             p[0] = Node(None, "exposition", [p[2]], lineno=p.lineno(1))
 
     def p_win_statement(self, p):
-        '''win_statement : WIN
-                         | WIN testlist'''
+        """win_statement : WIN
+                         | WIN testlist"""
         if p[1] == "win":
             if len(p) == 2:
                 children = []
@@ -250,8 +250,8 @@ class ParserForNarratr:
             p[0] = Node("win", "win_statement", children)
 
     def p_lose_statement(self, p):
-        '''lose_statement : LOSE
-                          | LOSE testlist'''
+        """lose_statement : LOSE
+                          | LOSE testlist"""
         if p[1] == "lose":
             if len(p) == 2:
                 children = []
@@ -265,10 +265,10 @@ class ParserForNarratr:
     # like break and continue,
     # or statements that allow movement from scene to scene.
     def p_flow_statement(self, p):
-        '''flow_statement : break_statement
+        """flow_statement : break_statement
                           | continue_statement
                           | moves_declaration
-                          | moveto_statement'''
+                          | moveto_statement"""
         if isinstance(p[1], Node):
             if p[1].type == 'break_statement':
                 value = "break"
@@ -285,9 +285,9 @@ class ParserForNarratr:
     # Here we handle variable declarations,
     # god variables, and regular variables.
     def p_expression_statement(self, p):
-        '''expression_statement : ID IS testlist
+        """expression_statement : ID IS testlist
                                 | GOD ID IS testlist
-                                | testlist'''
+                                | testlist"""
         if isinstance(p[1], Node):
             p[0] = Node("testlist", "expression_statement", [p[1]],
                         lineno=p[1].lineno)
@@ -299,15 +299,15 @@ class ParserForNarratr:
                         lineno=p.lineno(1))
 
     def p_break_statement(self, p):
-        '''break_statement : BREAK'''
+        """break_statement : BREAK"""
         p[0] = Node(p[1], 'break_statement', [], lineno=p.lineno(1))
 
     def p_continue_statement(self, p):
-        '''continue_statement : CONTINUE'''
+        """continue_statement : CONTINUE"""
         p[0] = Node(p[1], 'continue_statement', [], lineno=p.lineno(1))
 
     def p_moves_declaration(self, p):
-        '''moves_declaration : MOVES directionlist'''
+        """moves_declaration : MOVES directionlist"""
         p[0] = Node("moves", 'moves_declaration', [p[2]], lineno=p.lineno(1))
 
     # Here we create a list of the possible directions that
@@ -316,9 +316,9 @@ class ParserForNarratr:
     # and subsequent directions are added as children
     # to that root directionlist Node.
     def p_directionlist(self, p):
-        '''directionlist : direction LPARAN SCENEID RPARAN
+        """directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
-                                RPARAN'''
+                                RPARAN"""
         if p[1].type == 'direction':
             p[1].children.append(Node(p[3], 'sceneid', [], lineno=p.lineno(3)))
             p[0] = Node(None, 'directionlist', [p[1]], lineno=p[1].lineno)
@@ -329,14 +329,14 @@ class ParserForNarratr:
         p[0].type = 'directionlist'
 
     def p_direction(self, p):
-        '''direction : LEFT
+        """direction : LEFT
                      | RIGHT
                      | UP
-                     | DOWN'''
+                     | DOWN"""
         p[0] = Node(p[1], 'direction', [], lineno=p.lineno(1))
 
     def p_moveto_statement(self, p):
-        '''moveto_statement : MOVETO SCENEID'''
+        """moveto_statement : MOVETO SCENEID"""
         p[0] = Node('moveto', 'moveto_statement', [Node(p[2], "sceneid")],
                     lineno=p.lineno(1))
 
@@ -345,8 +345,8 @@ class ParserForNarratr:
     # Each test is added to the original testlist
     # Node.
     def p_testlist(self, p):
-        '''testlist : testlist COMMA test
-                    | test'''
+        """testlist : testlist COMMA test
+                    | test"""
         if p[1].type == 'test':
             p[0] = Node(None, 'testlist', [p[1]], p[1].v_type,
                         lineno=p[1].lineno)
@@ -357,12 +357,12 @@ class ParserForNarratr:
             p[0].type = 'testlist'
 
     def p_test(self, p):
-        '''test : or_test'''
+        """test : or_test"""
         p[0] = Node(None, 'test', [p[1]], lineno=p[1].lineno)
 
     def p_or_test(self, p):
-        '''or_test : or_test OR and_test
-                   | and_test'''
+        """or_test : or_test OR and_test
+                   | and_test"""
         if p[1].type == 'and_test':
             p[0] = Node(None, 'or_test', [p[1]], lineno=p[1].lineno)
         else:
@@ -370,8 +370,8 @@ class ParserForNarratr:
             p[0] = Node('or', 'or_test', children, lineno=p[1].lineno)
 
     def p_and_test(self, p):
-        '''and_test : and_test AND not_test
-                    | not_test'''
+        """and_test : and_test AND not_test
+                    | not_test"""
         if p[1].type == 'not_test':
             p[0] = Node(None, 'and_test', [p[1]], lineno=p[1].lineno)
         else:
@@ -379,8 +379,8 @@ class ParserForNarratr:
             p[0] = Node('and', 'and_test', children, lineno=p[1].lineno)
 
     def p_not_test(self, p):
-        '''not_test : NOT not_test
-                    | comparison'''
+        """not_test : NOT not_test
+                    | comparison"""
         if isinstance(p[1], Node) and p[1].type == 'comparison':
             p[0] = Node(None, 'not_test', [p[1]], lineno=p[1].lineno)
         else:
@@ -390,8 +390,8 @@ class ParserForNarratr:
     # to a comparison statement.
     # E.g x > 3
     def p_comparison(self, p):
-        '''comparison : comparison comparison_op expression
-                      | expression'''
+        """comparison : comparison comparison_op expression
+                      | expression"""
         if p[1].type == 'comparison':
             p[0] = Node('comparison', 'comparison', [p[1], p[2], p[3]],
                         p[1].v_type, lineno=p[1].lineno)
@@ -401,17 +401,17 @@ class ParserForNarratr:
         p[0].type = 'comparison'
 
     def p_expression(self, p):
-        '''expression : arithmetic_expression'''
+        """expression : arithmetic_expression"""
         p[0] = Node(p[1].value, "expression", [p[1]], lineno=p[1].lineno)
 
     def p_comparison_op(self, p):
-        '''comparison_op : LESS
+        """comparison_op : LESS
                          | GREATER
                          | LESSEQUALS
                          | GREATEREQUALS
                          | EQUALS
                          | NOTEQUALS
-                         | NOT EQUALS'''
+                         | NOT EQUALS"""
         if p[1] == '=':
             p[1] = '=='
         p[0] = Node(p[1], 'comparison_op', [], lineno=p.lineno(1))
@@ -421,9 +421,9 @@ class ParserForNarratr:
     # concatenation (which only allows two strings), and we allow floats
     # and integers to be combined freely.
     def p_arithmetic_expression(self, p):
-        '''arithmetic_expression : arithmetic_expression PLUS term
+        """arithmetic_expression : arithmetic_expression PLUS term
                                  | arithmetic_expression MINUS term
-                                 | term'''
+                                 | term"""
         if p[1].type == 'term':
             p[0] = Node("term", "arithmetic_expression", [p[1]], p[1].v_type,
                         lineno=p[1].lineno)
@@ -445,10 +445,10 @@ class ParserForNarratr:
     # This specifies a term, used for arithmetic operations,
     # as specified below.
     def p_term(self, p):
-        '''term : term TIMES factor
+        """term : term TIMES factor
                 | term DIVIDE factor
                 | term INTEGERDIVIDE factor
-                | factor '''
+                | factor """
         if p[1].type == "term":
             # Type checking: reject anything with strings
             if (p[1].v_type in ["string", "list"] or
@@ -465,9 +465,9 @@ class ParserForNarratr:
                         lineno=p[1].lineno)
 
     def p_factor(self, p):
-        '''factor : PLUS factor
+        """factor : PLUS factor
                   | MINUS factor
-                  | power'''
+                  | power"""
         if p[1].type == 'power':
             p[0] = Node("power", "factor", [p[1]], p[1].v_type,
                         lineno=p[1].lineno)
@@ -476,8 +476,8 @@ class ParserForNarratr:
                         lineno=p.lineno(1))
 
     def p_power(self, p):
-        '''power : power trailer
-                 | atom'''
+        """power : power trailer
+                 | atom"""
         if p[1].type == 'power':
             p[1].value = "trailer"
             p[1].children.append(p[2])
@@ -487,10 +487,10 @@ class ParserForNarratr:
                         lineno=p[1].lineno)
 
     def p_atom_node(self, p):
-        '''atom : LPARAN test RPARAN
+        """atom : LPARAN test RPARAN
                 | list
                 | number
-                | boolean'''
+                | boolean"""
         if isinstance(p[1], Node):
             p[0] = Node(p[1].type, "atom", [p[1]], p[1].v_type,
                         lineno=p[1].lineno)
@@ -499,56 +499,56 @@ class ParserForNarratr:
                         lineno=p.lineno(1))
 
     def p_atom_string(self, p):
-        '''atom : STRING'''
+        """atom : STRING"""
         p[0] = Node(p[1], 'atom', [], "string", lineno=p.lineno(1))
 
     def p_atom_id(self, p):
-        '''atom : ID'''
+        """atom : ID"""
         p[0] = Node(p[1], 'atom', [], "id", lineno=p.lineno(1))
 
     # This expression calls a function
     # in one of two syntactic ways.
     # Each is added as child to new trailer node.
     def p_trailer(self, p):
-        '''trailer : calllist
-                   | DOT ID'''
+        """trailer : calllist
+                   | DOT ID"""
         if isinstance(p[1], Node) and p[1].type == "calllist":
             p[0] = Node("calllist", "trailer", [p[1]], lineno=p[1].lineno)
         else:
             p[0] = Node("dot", 'trailer', [p[2]], p.lineno(1))
 
     def p_list(self, p):
-        '''list : LSQUARE RSQUARE
-                | LSQUARE testlist RSQUARE'''
+        """list : LSQUARE RSQUARE
+                | LSQUARE testlist RSQUARE"""
         if isinstance(p[2], Node) and p[2].type == 'testlist':
             p[0] = Node(None, "list", [p[2]], "list", p.lineno(1))
         else:
             p[0] = Node(None, "list", [], "list", p.lineno(1))
 
     def p_number_int(self, p):
-        '''number : INTEGER'''
+        """number : INTEGER"""
         p[0] = Node(p[1], 'number', [], "integer", lineno=p.lineno(1))
 
     def p_number_float(self, p):
-        '''number : FLOAT'''
+        """number : FLOAT"""
         p[0] = Node(p[1], 'number', [], "float", lineno=p.lineno(1))
 
     def p_boolean(self, p):
-        '''boolean : TRUE
-                   | FALSE'''
+        """boolean : TRUE
+                   | FALSE"""
         p[0] = Node(p[1], 'boolean', [], "boolean", lineno=p.lineno(1))
 
     def p_calllist(self, p):
-        '''calllist : LPARAN args RPARAN
-                    | LPARAN RPARAN'''
+        """calllist : LPARAN args RPARAN
+                    | LPARAN RPARAN"""
         if isinstance(p[2], Node):
             p[0] = Node("args", "calllist", [p[2]], lineno=p.lineno(1))
         else:
             p[0] = Node(None, 'calllist', [], lineno=p.lineno(1))
 
     def p_args(self, p):
-        '''args : args COMMA expression
-                | expression'''
+        """args : args COMMA expression
+                | expression"""
         if p[1].type == 'args':
             p[0] = p[1]
             p[0].value = "args"
@@ -558,8 +558,8 @@ class ParserForNarratr:
 
     # This parses parameters for an item block definition.
     def p_itemparams(self, p):
-        '''itemparams : LPARAN RPARAN
-                      | LPARAN fparams RPARAN'''
+        """itemparams : LPARAN RPARAN
+                      | LPARAN fparams RPARAN"""
         if isinstance(p[2], Node):
             p[0] = Node('fparams', 'itemparams', [p[2]], lineno=p[2].lineno)
         else:
@@ -567,8 +567,8 @@ class ParserForNarratr:
 
     # This parses parameters for a function.
     def p_fparams(self, p):
-        '''fparams : fparams COMMA ID
-                   | ID'''
+        """fparams : fparams COMMA ID
+                   | ID"""
         if isinstance(p[1], Node):
             p[1].value = "fparams"
             p[1].children.append(Node(p[3], "id"))
@@ -581,8 +581,8 @@ class ParserForNarratr:
     # operations of the type if or while. 
     # Here they are parsed.
     def p_block_statement(self, p):
-        '''block_statement : if_statement
-                           | while_statement'''
+        """block_statement : if_statement
+                           | while_statement"""
         if isinstance(p[1], Node):
             if p[1].type == 'if_statement':
                 p[0] = Node('if', 'block_statement', [p[1]],
@@ -595,10 +595,10 @@ class ParserForNarratr:
     # new node with children,
     # skipping over key words and colons.
     def p_if_statement(self, p):
-        '''if_statement : IF test COLON suite elif_statements ELSE COLON suite
+        """if_statement : IF test COLON suite elif_statements ELSE COLON suite
                         | IF test COLON suite ELSE COLON suite
                         | IF test COLON suite elif_statements
-                        | IF test COLON suite'''
+                        | IF test COLON suite"""
         if len(p) == 9:
             p[0] = Node(None, 'if_statement', [p[2], p[4], p[5], p[8]],
                         lineno=p[2].lineno)
@@ -615,8 +615,8 @@ class ParserForNarratr:
     # This parses an elif statement expression into a new node with children,
     # skipping over key words and colons.
     def p_elif_statements(self, p):
-        '''elif_statements : elif_statements ELIF test COLON suite
-                           | ELIF test COLON suite'''
+        """elif_statements : elif_statements ELIF test COLON suite
+                           | ELIF test COLON suite"""
         if isinstance(p[1], Node) and p[1].type == 'elif_statements':
             p[0] = p[1]
             new_elif = Node(None, 'elif_statement', [p[3], p[5]])
@@ -628,7 +628,7 @@ class ParserForNarratr:
                         lineno=elif_statement.lineno)
 
     def p_while_statement(self, p):
-        '''while_statement : WHILE test COLON suite'''
+        """while_statement : WHILE test COLON suite"""
         p[0] = Node(p[2], 'while_statement', [p[2], p[4]], lineno=p[2].lineno)
         p[0].type = 'while_statement'
 
