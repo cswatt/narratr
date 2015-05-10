@@ -12,20 +12,17 @@ start: $1
 
 scene $2 {
 	setup:
-		exposition "An open area stretches before you. You can hear a voice speak to you."
-		speaker is "the voice"
+		exposition "An open area stretches before you. You can hear a voice speak to you. Will you listen to the voice?"
 		god thesword is sword("The Sword of Semantic Correctness")
 		moves left($1), down($3), right($4)
 	action:
-		say "Will you listen to " + speaker + "?"
-		if not response:
-            continue
 		if (response == "no"):
 			say "That's your problem. You never listen."
-		else:
-			speaker is "Alfred Aho"
+		elif (response):
+			say "The voice is coming from Alfred Aho!"
 			say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
 			pocket.add("sword", thesword)
+			say "You've received a sword."
 	cleanup:
 }
 
@@ -44,10 +41,10 @@ scene $3 {
 scene $4{
 	setup:
 		exposition "There's a llama in the corner. It's the Pumping Llama!"
+		say "'Baa,' says the Pumping Llama. What will you do?"
 		god pumpingllama is llama("Pumping Llama")
 		moves left($2), up($5)
 	action:
-		say "'Baa,' says the Pumping Llama. What will you do?"
 		if not response:
             continue
 		if (response == "kick the llama"):
@@ -56,7 +53,7 @@ scene $4{
 		elif (response == "pet the llama" or response == "hug the llama" or response == "embrace the llama"):
 			say "The llama bats its eyelashes at you."
 	cleanup:
-		pocket.add(pumpingllama)
+		pocket.add("Pumping Llama", pumpingllama)
 		exposition "A Pumping Llama once lived in this room. Now he follows you around."
 }
 
