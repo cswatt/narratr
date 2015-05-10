@@ -182,15 +182,15 @@ pocket = pocket_class()\n'''
             if ss in self.scene_nums:
                 self.startstate = ss
             else:
-                self._process_error("Start scene $" + str(self.startstate) +
+                self._process_error("Start scene $" + str(ss) +
                                     " does not exist.")
 
             self.main += "if __name__ == '__main__':\n    next = s_"\
                 + str(self.startstate) + "_inst.setup()\n    while True:\n"\
                 + "        exec 'next = ' + next"
         else:
-            self._process_warning("Multiple start scene declarations. " +
-                                  "Using scene $" + self.startstate + ".")
+            self._process_error("Multiple start scene declarations.",
+                                startstate.lineno)
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
