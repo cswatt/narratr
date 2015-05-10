@@ -1,1 +1,22 @@
-% TODO: sample program with item and pocket
+scene $1 {
+	setup:
+		god k is key(5)
+		pocket.add("key", 1)
+		god l is lock(5)
+		say l.id
+		k is pocket.get("key")
+		say k
+	action:
+		win
+	cleanup:
+}
+
+start: $1
+
+item lock (i) {
+	id is i
+}
+
+item key (i){
+	id is i
+}
