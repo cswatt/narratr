@@ -84,7 +84,7 @@ scene $5{
 
 			if (response == "punch the dragon" or response == "punch dragon"):
 				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
-			if (response == "stab the dragon" or response == "stab dragon") and (pocket.in("sword")):
+			if (response == "stab the dragon" or response == "stab dragon") and (pocket.has("sword")):
 				dragon_hp is dragon_hp - 1
 			if (response == "throw the llama" or "throw llama"):
 				say "That's animal cruelty."
