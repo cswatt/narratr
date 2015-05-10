@@ -39,6 +39,7 @@ class CodeGen:
     # DFS or other tree searching algorithms, which improves efficiency.
     def process(self, node, symtab):
         self.symtab = symtab
+        print symtab
         if len(node.children) != 1 or node[0].type != "blocks":
             self._process_error("Unexpected Parse Tree - Incorrect number" +
                                 "or type of children for the top node",
@@ -182,7 +183,7 @@ pocket = pocket_class()\n'''
             if ss in self.scene_nums:
                 self.startstate = ss
             else:
-                self._process_error("Start scene $" + str(startstate.value) +
+                self._process_error("Start scene $" + str(self.startstate) +
                                     " does not exist.")
 
             self.main += "if __name__ == '__main__':\n    next = s_"\
