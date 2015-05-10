@@ -18,6 +18,8 @@ scene $2 {
 		moves left($1), down($3), right($4)
 	action:
 		say "Will you listen to " + speaker + "?"
+		if not response:
+            continue
 		if (response == "no"):
 			say "That's your problem. You never listen."
 		else:
@@ -46,6 +48,8 @@ scene $4{
 		moves left($2), up($5)
 	action:
 		say "'Baa,' says the Pumping Llama. What will you do?"
+		if not response:
+            continue
 		if (response == "kick the llama"):
 			say "You're a terrible person. You deserve to lose this game."
 			lose
@@ -81,7 +85,8 @@ scene $5{
 			if (dragon_hp == 0):
 				say "DRAGON: Curse you..."
 				break
-
+			if not response:
+            	continue
 			if (response == "punch the dragon" or response == "punch dragon"):
 				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
 			if (response == "stab the dragon" or response == "stab dragon") and (pocket.has("sword")):
