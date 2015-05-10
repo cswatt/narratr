@@ -124,7 +124,7 @@ Spaces are the preferred indentation method. Any Python code indented with a mix
 
 When invoking the Python 2 command line interpreter with the -t option, it issues warnings about code that illegally mixes tabs and spaces. When using -tt these warnings become errors. These options are highly recommended!
 
-##String Quotes
+###String Quotes
 In narratr, single-quoted strings and double-quoted strings are the same. 
 
 ###Maximum Line Length
