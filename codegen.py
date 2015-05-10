@@ -845,10 +845,11 @@ pocket = pocket_class()\n'''
         elif power.value == "trailer":
             if power[0].v_type == "id":
                 if not self.symtab.get(power[0].value, "GLOBAL"):
-                    return self._process_list_functions(power)
+                    if power[0].value == "pocket":
+                        return self._process_pocket(power)
+                    else:
+                        return self._process_list_functions(power)
             atom = self._process_atom(power[0])
-            if atom == "pocket":
-                return _process_pocket(power)
             trailers = ''
             for trailer in power.children[1:]:
                 trailers += self._process_trailer(trailer)
