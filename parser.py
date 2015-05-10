@@ -23,8 +23,8 @@ from lexer import LexerForNarratr
 from node import Node
 from symtab import SymTabEntry, SymTab
 
-# Error checking: make sure when item added to list, the item is of the same
-# type as the rest of the list
+# Error checking: Make sure when item added to list, the item is of the same
+# type as the rest of the list.
 
 
 class ParserForNarratr:
@@ -39,7 +39,7 @@ class ParserForNarratr:
         "program : newlines_optional blocks"
         p[0] = Node(None, "program", [p[2]])
 
-    # Start state may be given multiple times. This is handled in the code
+    # The starttart state may be given multiple times. This is handled in the code
     # generator.
     def p_blocks(self, p):
         '''blocks : scene_block newlines_optional
@@ -48,47 +48,53 @@ class ParserForNarratr:
                   | blocks scene_block newlines_optional
                   | blocks item_block newlines_optional
                   | blocks start_state newlines_optional'''
-        # differentiate parsing for scene block added to list of blocks
+        # This statement differentiate parsing for a scene block 
+        # as it is added to the list of blocks.
         if p[1].type == "blocks" and p[2].type == "scene_block":
             p[1].children[0][p[2].value] = p[2]
             p[0] = p[1]
-        # differentiate parsing for item block added to list of blocks
+        # This statement 
+        # differentiates parsing for an item block 
+        # as it is added to the list of blocks.
         elif p[1].type == "blocks" and p[2].type == "item_block":
             p[1].children[1][p[2].value] = p[2]
             p[0] = p[1]
-        # for a startstate that is declared after blocks have been
+        # For a startstate that is declared after blocks have been
         # created,
-        # start state is one of the children
-        # of the main program
+        # the start state is one of the children
+        # of the main program.
         elif p[1].type == "blocks" and p[2].type == "start_state":
             p[1].children.append(p[2])
             p[0] = p[1]
-        # parses first scene block, first block in program
-        # starts a Node containing all blocks
+        # This parses the first scene block, as the first block 
+        # in the program.
+        # It starts a Node containing all blocks.
         elif p[1].type == "scene_block":
             if(not isinstance(p[0], Node)):
                 p[0] = Node(None, "blocks", [{}, {}])
             p[0].children[0][p[1].value] = p[1]
-        # parses first item block, first block in program
-        # starts a Node containing all blocks
+        # This parses the first item block, as the first block 
+        # in the program.
+        # It starts a Node containing all blocks.
         elif p[1].type == "item_block":
             if(not isinstance(p[0], Node)):
                 p[0] = Node(None, "blocks", [{}, {}])
             p[0].children[1][p[1].value] = p[1]
-        # parses startstate, first block in program
-        # starts a Node containing all blocks
+        # This parses the start state, as the first block
+        # in the program.
+        # It starts a Node containing all blocks.
         elif p[1].type == "start_state":
             if(not isinstance(p[0], Node)):
                 p[0] = Node(None, "blocks", [{}, {}])
             p[0].children.append(p[2])
 
-    # because newlines are ignored, these functions
-    # skip over the newlines in the AST
+    # Because newlines are ignored, these functions
+    # skip over the newlines in the AST.
     def p_newlines_optional(self, p):
         '''newlines_optional : newlines
                              | '''
-    # newlines append a string of newlines, and also
-    # skips over these characters in the AST
+    # This appends a string of newlines, and 
+    # skips over these characters in the AST.
     def p_newlines(self, p):
         '''newlines : newlines NEWLINE
                     | NEWLINE'''
@@ -96,7 +102,7 @@ class ParserForNarratr:
     # A scene block consists of a setup, action, and cleanup block
     # all as children. Depending on the format, it creates the
     # block node with the parts as children
-    # and inserts the resulting scene in to the symbol table
+    # and inserts the resulting scene in to the symbol table.
     def p_scene_block(self, p):
         '''scene_block : SCENE SCENEID LCURLY newlines INDENT setup_block \
                           action_block cleanup_block DEDENT newlines_optional \
@@ -120,7 +126,7 @@ class ParserForNarratr:
     # both children of the item block.
     # Depending on whether it is an empty block
     # or not, it inserts the resulting item
-    # into the symbol table
+    # into the symbol table.
     def p_item_block(self, p):
         '''item_block : ITEM ID itemparams LCURLY newlines_optional RCURLY
                       | ITEM ID itemparams LCURLY suite RCURLY'''
@@ -165,9 +171,9 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, "cleanup_block", lineno=p.lineno(1))
 
-    # A suite can either be a single statement or a block of statements
-    # accordingly, either the block or statement is added as a child to the
-    # suite
+    # A suite can either be a single statement or a block of statements.
+    # Accordingly, either the block or statement is added as a child to the
+    # suite.
     def p_suite(self, p):
         '''suite : simple_statement
                  | newlines INDENT statements DEDENT newlines_optional'''
@@ -176,9 +182,9 @@ class ParserForNarratr:
         else:
             p[0] = Node("statements", "suite", [p[3]], lineno=p.lineno(2))
 
-    # a list of statements is handled here
-    # a single statement is added as the child node of a statement
-    # list
+    # A list of statements is handled here.
+    # A single statement is added as the child node of a statement
+    # list.
     def p_statements(self, p):
         '''statements : statements statement
                       | statement'''
@@ -197,9 +203,9 @@ class ParserForNarratr:
             value = 'block'
         p[0] = Node(value, 'statement', [p[1]], lineno=p[1].lineno)
 
-    # A simple statement can be of many set forms
-    # ehre we treat all these forms the same and encapsulate
-    # then into simple statements
+    # A simple statement can be of many set forms.
+    # Here we treat all these forms the same and encapsulate
+    # then into simple statements.
     def p_simple_statement(self, p):
         '''simple_statement : say_statement newlines
                             | exposition_statement newlines
@@ -254,10 +260,10 @@ class ParserForNarratr:
             p[0] = Node("lose", "lose_statement", children)
 
     # Flow statements are statements that break the flow of the
-    # scene
-    # these include while loop halting expressions
-    # like break and continue
-    # or statements that allow movement from scene to scene
+    # scene.
+    # These include while loop halting expressions,
+    # like break and continue,
+    # or statements that allow movement from scene to scene.
     def p_flow_statement(self, p):
         '''flow_statement : break_statement
                           | continue_statement
@@ -276,8 +282,8 @@ class ParserForNarratr:
             self._semantic_error("Parse error in flow_statement.")
         p[0] = Node(value, "flow_statement", [p[1]], lineno=p[1].lineno)
 
-    # Here we handle variable declarations
-    # god variables and regular variables
+    # Here we handle variable declarations,
+    # god variables, and regular variables.
     def p_expression_statement(self, p):
         '''expression_statement : ID IS testlist
                                 | GOD ID IS testlist
@@ -304,11 +310,11 @@ class ParserForNarratr:
         '''moves_declaration : MOVES directionlist'''
         p[0] = Node("moves", 'moves_declaration', [p[2]], lineno=p.lineno(1))
 
-    # here we create a list of the possible directions that
-    # are declared to lead you out of a scene
-    # a list is created as a node
+    # Here we create a list of the possible directions that
+    # are declared to lead you out of a scene.
+    # A list is created as a Node
     # and subsequent directions are added as children
-    # to that root directionlist node
+    # to that root directionlist Node.
     def p_directionlist(self, p):
         '''directionlist : direction LPARAN SCENEID RPARAN
                          | directionlist COMMA direction LPARAN SCENEID \
@@ -335,9 +341,9 @@ class ParserForNarratr:
                     lineno=p.lineno(1))
 
     # A testlist is a generic expression for some inequality
-    # conditional expression
+    # conditional expression.
     # Each test is added to the original testlist
-    # Node
+    # Node.
     def p_testlist(self, p):
         '''testlist : testlist COMMA test
                     | test'''
@@ -380,8 +386,8 @@ class ParserForNarratr:
         else:
             p[0] = Node('not', 'not_test', [p[2]], lineno=p[2].lineno)
 
-    # This concasts expressions and comparisons nodes
-    # to a comparison statement
+    # This concatenates expressions and comparison nodes
+    # to a comparison statement.
     # E.g x > 3
     def p_comparison(self, p):
         '''comparison : comparison comparison_op expression
@@ -436,8 +442,8 @@ class ParserForNarratr:
             else:
                 p[0] = self.combination_rules(p, 'arithmetic_expression')
 
-    # A term is used for arithmetic operations
-    # as specified below
+    # This specifies a term, used for arithmetic operations,
+    # as specified below.
     def p_term(self, p):
         '''term : term TIMES factor
                 | term DIVIDE factor
@@ -501,8 +507,8 @@ class ParserForNarratr:
         p[0] = Node(p[1], 'atom', [], "id", lineno=p.lineno(1))
 
     # This expression calls a function
-    # in one of two syntactic ways
-    # each is added as child to new trailer node
+    # in one of two syntactic ways.
+    # Each is added as child to new trailer node.
     def p_trailer(self, p):
         '''trailer : calllist
                    | DOT ID'''
@@ -550,7 +556,7 @@ class ParserForNarratr:
         else:
             p[0] = Node("expression", 'args', [p[1]], lineno=p[1].lineno)
 
-    # Parses parameters for an item block definition
+    # This parses parameters for an item block definition.
     def p_itemparams(self, p):
         '''itemparams : LPARAN RPARAN
                       | LPARAN fparams RPARAN'''
@@ -559,7 +565,7 @@ class ParserForNarratr:
         else:
             p[0] = Node(None, 'itemparams', lineno=p.lineno(1))
 
-    # Parses parameters for a function
+    # This parses parameters for a function.
     def p_fparams(self, p):
         '''fparams : fparams COMMA ID
                    | ID'''
@@ -572,7 +578,8 @@ class ParserForNarratr:
                         lineno=p.lineno(1))
 
     # Blocks statements are conditional
-    # operations of the type if or while
+    # operations of the type if or while. 
+    # Here they are parsed.
     def p_block_statement(self, p):
         '''block_statement : if_statement
                            | while_statement'''
@@ -584,8 +591,9 @@ class ParserForNarratr:
                 p[0] = Node('while', 'block_statement', [p[1]],
                             lineno=p[1].lineno)
 
-    # Parses an if statement expression into a new node with children,
-    # skipping over key words and colons
+    # This parses an if statement expression into a
+    # new node with children,
+    # skipping over key words and colons.
     def p_if_statement(self, p):
         '''if_statement : IF test COLON suite elif_statements ELSE COLON suite
                         | IF test COLON suite ELSE COLON suite
@@ -604,8 +612,8 @@ class ParserForNarratr:
             p[0] = Node(None, 'if_statement', [p[2], p[4], None, None],
                         lineno=p[2].lineno)
 
-    # Parses an elif statement expression into a new node with children,
-    #  skipping over key words and colons
+    # This parses an elif statement expression into a new node with children,
+    # skipping over key words and colons.
     def p_elif_statements(self, p):
         '''elif_statements : elif_statements ELIF test COLON suite
                            | ELIF test COLON suite'''
@@ -663,7 +671,7 @@ class ParserForNarratr:
                     child.key = self.symtab.getKey(child.value, scope)
             self.pass_down(child, scope)
 
-    # Check numbers for interoperability. If they are of
+    # This checks numbers for interoperability. If they are of
     # differing types, the result is always the more general of
     # the two data types (i.e. float). For now, we allow
     # anything with id's, but later would intend to type check
@@ -699,13 +707,13 @@ class ParserForNarratr:
 
         return p[0]
 
-    # Wrapper function for error statements in the parser
+    # This is a wrapper function for error statements in the parser.
     def p_error(self, p):
         stderr.write("ERROR: Syntax Error at Line " + str(p.lineno) +
                      ": " + "at token '" + str(p.value) + "'\n")
         exit(1)
 
-    # wrapper funciton for semantic errors
+    # This is a wrapper funciton for semantic errors.
     def _semantic_error(self, p, err_type=None, lineno=0):
         if err_type == "combination_error":
             stderr.write("ERROR: Type error at line " + str(p.lineno(2)) +
