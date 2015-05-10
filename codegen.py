@@ -305,16 +305,17 @@ pocket = pocket_class()\n'''
         commands.append("    response = \"\"\n        while True:")
         if len(c.children) not in [0, 1]:
             self._process_error("action block has wrong number of children")
-        if len(c.children) == 1:
-            if c[0].type != "suite":
-                self._process_error("action block doesn't have suite child")
-            else:
-                commands.append(self._process_suite(c[0], 3)[5:])
         commands.append("        response = get_response(" +
                         "direction)\n            " +
                         "if isinstance(response, list):" +
                         "\n                self.cleanup()\n" +
                         "                return response[0]\n")
+        if len(c.children) == 1:
+            if c[0].type != "suite":
+                self._process_error("action block doesn't have suite child")
+            else:
+                commands.append(self._process_suite(c[0], 3)[5:])
+
         return commands
 
     def _process_suite(self, suite, indentlevel=1):
