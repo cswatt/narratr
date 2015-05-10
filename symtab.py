@@ -21,17 +21,17 @@ GLOBAL = -0xC10BA1
 
 
 class SymTabEntry:
-    # symbol is the actual symbol. "x" for variable x, "key" for item key and
-    # "$1" for scene $1.
-    # value is the value of variables. This is the AST of the definitions for
-    # scenes and items.
-    # symboltype is type of the symbol - "scene", "item", "integer", "string",
-    # "float", "boolean", "list"
-    # scope is applicable for all variables. It is the scene ID in which a
-    # variable has scope. It may also be POCKET, or GLOBAL. GLOBAL is for
-    # scenes and items.
-    # god is a boolean corresponding to whether the variable was declared as
-    # a god variable.
+    # symbol        the actual symbol. "x" for variable x, "key" for item key
+    #               and "$1" for scene $1.
+    # value         the value of variables. This is the AST of the definitions
+    #               for scenes and items.
+    # symboltype    the type of the symbol - "scene", "item", "integer",
+    #               "string", "float", "boolean", "list"
+    # scope         applicable for all variables. It is the scene ID in which a
+    #               variable has scope. It may also be POCKET, or GLOBAL.
+    #               GLOBAL is for scenes and items.
+    # god           a boolean corresponding to whether the variable was
+    #               declared as a god variable.
     def __init__(self, symbol, value, symboltype, scope, god):
         self.symbol = symbol
         self.value = value
