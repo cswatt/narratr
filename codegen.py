@@ -30,14 +30,16 @@ class CodeGen:
         self.item_names = []
         self.main = ""
 
-    # This function takes as its arguments the root node of the AST and the
-    # symbol table. It saves the symbol table to a class variable (so it is
-    # accessible anywhere in the code using self), and looks through the AST
-    # to identify the high level nodes (i.e. scenes, items, and startstate),
-    # sending the appropriate nodes to the appropriate functions for
-    # processing. Note we know the structure of the AST, so we don't need
-    # DFS or other tree searching algorithms, which improves efficiency.
     def process(self, node, symtab):
+        """Call first: generate target code given narratr AST and symbol table.
+
+        This function takes as its arguments the root node of the AST and the
+        symbol table. It saves the symbol table to a class variable (so it is
+        accessible anywhere in the code using self), and looks through the AST
+        to identify the high level nodes (i.e. scenes, items, and startstate),
+        sending the appropriate nodes to the appropriate functions for
+        processing. Note we know the structure of the AST, so we don't need
+        DFS or other tree searching algorithms, which improves efficiency."""
         self.symtab = symtab
         if len(node.children) != 1 or node[0].type != "blocks":
             self._process_error("Unexpected Parse Tree - Incorrect number" +
@@ -57,17 +59,19 @@ class CodeGen:
                 self._process_error("Found unexpected block types.",
                                     block.lineno)
 
-    # This function takes the instance variables constructed by the process()
-    # function and writes them to an output file. (As such, it must be run
-    # AFTER process()! It is intended to be called externally, within the
-    # main compiler. It takes one argument, outputfile, which is a string of
-    # the location where the file should be written. By convention, that file
-    # should be in the form of *.ntrc. If no outputfile is specified
-    # or the outputfile is specified as "stdout", the code prints to standard
-    # out (e.g. usually the terminal window). That's mainly for debugging
-    # purposes, and should not be used in the production compiler, as the
-    # line breaks are only approximations.
     def construct(self, outputfile="stdout"):
+        """Class second: write the generated code to a file.
+
+        This function takes the instance variables constructed by the
+        process() function and writes them to an output file. (As such, it must
+        be run AFTER process()! It is intended to be called externally, within
+        the main compiler. It takes one argument, outputfile, which is a string
+        of the location where the file should be written. By convention, that
+        file should be in the form of *.ntrc. If no outputfile is specified or
+        the outputfile is specified as "stdout", the code prints to standard
+        out (e.g. usually the terminal window). That's mainly for debugging
+        purposes, and should not be used in the production compiler, as the
+        line breaks are only approximations."""
         if self.main == "":
             self._process_warning("No start scene specified. " +
                                   "Defaulting to $1.")
@@ -107,7 +111,11 @@ class CodeGen:
     def _add_main(self, startstate):
         if self.main == "":
             # ABOUT THE POCKET CLASS: here we define the pocket class and
+<<<<<<< HEAD
             # initialize a global instance. The methods are fairly self
+=======
+            # initialize global instance. The methods are fairly self
+>>>>>>> origin/master
             # explanatory.
             self.main = '''class pocket_class:
     def __init__(self):
@@ -183,15 +191,15 @@ pocket = pocket_class()\n'''
             if ss in self.scene_nums:
                 self.startstate = ss
             else:
-                self._process_error("Start scene $" + str(startstate.value) +
+                self._process_error("Start scene $" + str(ss) +
                                     " does not exist.")
 
             self.main += "if __name__ == '__main__':\n    next = s_"\
                 + str(self.startstate) + "_inst.setup()\n    while True:\n"\
                 + "        exec 'next = ' + next"
         else:
-            self._process_warning("Multiple start scene declarations. " +
-                                  "Using scene $" + self.startstate + ".")
+            self._process_error("Multiple start scene declarations.",
+                                startstate.lineno)
 
     # This function takes a scene node and processes it, translating into
     # valid Python (really, a Python class). Iterates through the children
@@ -954,8 +962,6 @@ pocket = pocket_class()\n'''
                 elif not self.symtab.get(power[0].value, "GLOBAL"):
                     if power[0].value == "pocket":
                         return self._process_pocket(power)
-                    else:
-                        return self._process_list_functions(power)
             atom = self._process_atom(power[0])
             trailers = ''
             for trailer in power.children[1:]:
