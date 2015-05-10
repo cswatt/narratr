@@ -11,7 +11,7 @@ Some of the major style issues are Indentation, Comments and line length.
 
 ### Indentation
 
-Use **4 spaces** per indentation level.
+Use **4 spaces** per indentation level. For a scene, the setup, action, and cleanup must all begin on the same indentation level.
 
 Indentation is the biggest style issue in Python. Spaces should be used, and not tabs. This does not mean that spaces have to be manually typed in. With most editors, typing a Tab can be automatically set to insert 4 spaces, instead of a Tab character. In Sublime Text for instance, click on the Tabs size/Spaces option on the bottom right corner, select "Indent Using Spaces" and "Tab Size: 4". Sublime would now insert four space characters when the tab button is pressed.
 
@@ -34,6 +34,16 @@ foo = long_function_name(
     var_one, var_two,
     var_three, var_four)
 ```
+
+```
+**Yes:**
+scene $1 { 
+    setup:
+    action:
+        say "THE MATRIX HAS YOU"				
+    cleanup: 
+} 
+```
 No:
 ```
 # Arguments on first line forbidden when not using vertical alignment.
@@ -46,6 +56,16 @@ def long_function_name(
     var_four):
     print(var_one)
 ```
+```
+
+**No:**
+scene $1 { 
+setup:
+action:
+say "THE MATRIX HAS YOU"				
+cleanup: 
+} 
+```
 The 4-space rule is optional for continuation lines.
 
 Optional:
@@ -55,6 +75,7 @@ foo = long_function_name(
   var_one, var_two,
   var_three, var_four)
 ```
+
 When the conditional part of an if-statement is long enough to require that it be written across multiple lines, it's worth noting that the combination of a two character keyword (i.e. if ), plus a single space, plus an opening parenthesis creates a natural 4-space indent for the subsequent lines of the multiline conditional. This can produce a visual conflict with the indented suite of code nested inside the if -statement, which would also naturally be indented to 4 spaces. This PEP takes no explicit position on how (or whether) to further visually distinguish such conditional lines from the nested suite inside the if-statement. Acceptable options in this situation include, but are not limited to:
 ```
 # No extra indentation.
@@ -102,6 +123,9 @@ result = some_function_that_takes_arguments(
 Spaces are the preferred indentation method. Any Python code indented with a mixture of tabs and spaces should be converted to using spaces exclusively.
 
 When invoking the Python 2 command line interpreter with the -t option, it issues warnings about code that illegally mixes tabs and spaces. When using -tt these warnings become errors. These options are highly recommended!
+
+##String Quotes
+In narratr, single-quoted strings and double-quoted strings are the same. 
 
 ###Maximum Line Length
 
@@ -187,70 +211,6 @@ But sometimes, this is useful:
 ```
 x = x + 1                 # Compensate for border
 ```
-
-
-
-#Updated Sections
-##Introduction
-This document gives coding conventions for narratr
-##Code lay-out
-###Indentation
-Use 4 spaces per indentation level. For a scene, the setup, action, and cleanup must all begin on the same indentation level
-```
-**Yes:**
-scene $1 { 
-    setup:
-    action:
-        say "THE MATRIX HAS YOU"				
-    cleanup: 
-} 
-
-**No:**
-scene $1 { 
-setup:
-action:
-say "THE MATRIX HAS YOU"				
-cleanup: 
-} 
-```
-
-The closing brace/bracket/parenthesis on multi-line constructs may either line up under the first non-whitespace character of the last line of list, as in:
-my_list = [
-    1, 2, 3,
-    4, 5, 6,
-    ]
-result = some_function_that_takes_arguments(
-    'a', 'b', 'c',
-    'd', 'e', 'f',
-    )
-
-
-or it may be lined up under the first character of the line that starts the multi-line construct, as in:
-my_list = [
-    1, 2, 3,
-    4, 5, 6,
-]
-result = some_function_that_takes_arguments(
-    'a', 'b', 'c',
-    'd', 'e', 'f',
-)
-
-
-###Tabs or Spaces?
-Spaces are the preferred indentation method.
-Tabs should be used solely to remain consistent with code that is already indented with tabs.
-###Maximum Line Length
-Limit all lines to a maximum of __ characters.
-##String Quotes
-In narratr, single-quoted strings and double-quoted strings are the same. 
-
-##Comments
-Comments that contradict the code are worse than no comments. 
-If a comment is short, the period at the end can be omitted. Block comments generally consist of one or more paragraphs built out of complete sentences, and each sentence should end in a period.
-
-###Block Comments
-Block comments generally apply to some (or all) code that follows them, and are indented to the same level as that code. Each line of a block comment starts with a # and a single space (unless it is indented text inside the comment).
-Paragraphs inside a block comment are separated by a line containing a single # .
 
 ##Naming Conventions
 ###Descriptive: Naming Styles
