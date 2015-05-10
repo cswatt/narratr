@@ -134,7 +134,7 @@ class CodeGen:
     def remove(self, key):
         del self.data[key]
     
-    def in(self, key):
+    def has(self, key):
         if self.data.get(key, None):
             return True
         return False
@@ -948,7 +948,7 @@ pocket = pocket_class()\n'''
             commands += "pocket.remove"
             commands += self._process_trailer(pocket_node[2])
         elif pocket_node[1].children[0] == "in":
-            commands += "pocket.in"
+            commands += "pocket.has"
             commands += self._process_trailer(pocket_node[2])
         else:
             self._process_error("invalid method for pocket",
