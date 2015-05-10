@@ -75,34 +75,34 @@ scene $5{
 		moves down($4)
 		dragon_hp is 5
 	action:
-			if (dragon_hp == 5):
-				say "DRAGON: My flames of ambiguity shall engulf you!"
-			if (dragon_hp == 4):
-				say "DRAGON: Look at you. Lost in a text-based dungeon with no company but a Pumping Llama. Pathetic."
-				say "The dragon is hurt but still alive. Now what?"
-			if (dragon_hp == 3):
-				say "DRAGON: I'm getting real tired of that sword of yours."
-				say "The dragon is hurt but still alive. Now what?"
-			if (dragon_hp == 2):
-				say "DRAGON: Why do you keep stabbing me?"
-				say "The dragon is hurt but still alive. Now what?"
-			if (dragon_hp == 1):
-				say "DRAGON: *cough* ... *cough* ..."
-				say "The dragon is hurt but still alive. Now what?"
-			if (dragon_hp == 0):
-				say "DRAGON: Curse you..."
-				say "You've slain the Complexity Dragon!"
-				win
 			if not response:
             	continue
 			if (response == "punch the dragon" or response == "punch dragon"):
 				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
-			if (response == "stab the dragon" or response == "stab dragon") and (pocket.has("sword")):
+			elif (response == "stab the dragon" or response == "stab dragon") and (pocket.has("sword")):
 				dragon_hp is dragon_hp - 1
-			if (response == "throw the llama" or response == "throw llama"):
-				say "That's animal cruelty."
-			if (response == "run away"):
+			elif (response == "throw the llama" or response == "throw llama"):
+				say "That's animal cruelty. And it won't help you."
+			elif (response == "run away"):
 				say "You should probably go back and look for something to help you fight the dragon."
-			say str(dragon_hp)
+			say "Dragon HP: " + str(dragon_hp)
+			if (dragon_hp == 5):
+				say "DRAGON: My flames of ambiguity shall engulf you!"
+			elif (dragon_hp == 4):
+				say "DRAGON: Look at you. Lost in a text-based dungeon with no company but a Pumping Llama. Pathetic."
+				say "The dragon is hurt but still alive. Now what?"
+			elif (dragon_hp == 3):
+				say "DRAGON: I'm getting real tired of that sword of yours."
+				say "The dragon is hurt but still alive. Now what?"
+			elif (dragon_hp == 2):
+				say "DRAGON: Why do you keep stabbing me?"
+				say "The dragon is hurt but still alive. Now what?"
+			elif (dragon_hp == 1):
+				say "DRAGON: *cough* ... *cough* ..."
+				say "The dragon is hurt but still alive. Now what?"
+			elif (dragon_hp == 0):
+				say "DRAGON: Curse you..."
+				say "You've slain the Complexity Dragon!"
+				win "You win!"
 	cleanup:
 }
