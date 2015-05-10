@@ -222,8 +222,8 @@ pocket = pocket_class()\n'''
 
         self.scene_nums.append(sid)
         scene_code = "class s_" + str(sid) + ":\n    def __init__(self):"\
-            + "\n        self.__namespace = {}\n\n    "\
-            + "\n    ".join(commands)
+            + "\n        self.__namespace = {}\n        "\
+            + "self.directions = {}\n\n    " + "\n    ".join(commands)
 
         return scene_code
 
@@ -282,8 +282,7 @@ pocket = pocket_class()\n'''
     # sends the child nodes to _process_suite() to generate their code.
     def _process_setup_block(self, c):
         commands = []
-        commands.append("def setup(self):" +
-                        "\n        direction = {}")
+        commands.append("def setup(self):")
         if len(c.children) not in [0, 1]:
             self._process_error("setup block has wrong number of children")
         if len(c.children) == 1:
@@ -291,7 +290,7 @@ pocket = pocket_class()\n'''
                 self._process_error("setup block doesn't have suite child")
             else:
                 commands.append(self._process_suite(c[0], 2))
-        commands.append("    return self.action(direction)\n")
+        commands.append("    return self.action()\n")
         return commands
 
     # Code for adding a cleanup block. Takes as input a single "cleanup block"
@@ -324,12 +323,12 @@ pocket = pocket_class()\n'''
     # trying to move between scenes.
     def _process_action_block(self, c):
         commands = []
-        commands.append("def action(self, direction):")
+        commands.append("def action(self):")
         commands.append("    response = \"\"\n        while True:")
         if len(c.children) not in [0, 1]:
             self._process_error("action block has wrong number of children")
         commands.append("        response = get_response(" +
-                        "direction)\n            " +
+                        "self.directions)\n            " +
                         "if isinstance(response, list):" +
                         "\n                self.cleanup()\n" +
                         "                return response[0]\n")
@@ -572,7 +571,7 @@ pocket = pocket_class()\n'''
     # dictionary whose the key is the direction and the value is the scene
     # id.
     def _process_moves_dec(self, smt):
-        commands = "direction = {"
+        commands = "if not self.directions: self.directions = {"
         if not isinstance(smt, Node):
             self._process_error("Something bad happened while processing " +
                                 "'moves declaration'. Unfortunately, that " +
