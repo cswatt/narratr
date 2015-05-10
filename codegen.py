@@ -39,7 +39,6 @@ class CodeGen:
     # DFS or other tree searching algorithms, which improves efficiency.
     def process(self, node, symtab):
         self.symtab = symtab
-        print symtab
         if len(node.children) != 1 or node[0].type != "blocks":
             self._process_error("Unexpected Parse Tree - Incorrect number" +
                                 "or type of children for the top node",
