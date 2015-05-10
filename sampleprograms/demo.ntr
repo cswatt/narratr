@@ -57,6 +57,16 @@ scene $3 {
 scene $4{
 	setup:
 		exposition "There's a llama in the corner. It's the Pumping Llama!"
+		say "      __--_--_-_"
+		say "     (          )"
+		say "    (  (ba*a)*   )"
+		say "    (            )"
+		say "    o (__--_--_)"
+		say " , o"
+		say "~)"
+		say " (_---;"
+		say "  /|~|\ "
+		say " / / / |"
 		say "'Baa,' says the Pumping Llama. What will you do?"
 		god pumpingllama is llama("Pumping Llama")
 		moves left($2), up($5)
@@ -79,6 +89,23 @@ item llama(name){
 
 scene $5{
 	setup:
+		say "     .     _///_,"
+		say "   .      / ` ' '>"
+		say "     )   o'  __/_'>"
+		say "    (   /  _/  )_\'>"
+		say "     ' '__/   /_/\_>"
+		say "         ____/_/_/_/"
+		say "        /,---, _/ /"
+		say "       ''  /_/_/_/"
+		say "          /_(_(_(_                 \""
+		say "         (   \_\_\\_               )\""
+		say "          \'__\_\_\_\__            ).\""
+		say "          //____|___\__)           )_/"
+		say "          |  _  \'___'_(           /'"
+		say "           \_ (-'\'___'_\      __,'_'"
+		say "           __) \  \\___(_   __/.__,'"
+		say "         ,((,-,__\  '', __\_/. __,'"
+		say "                     ''./_._._-'"
 		exposition "THERE IS A GIANT DRAGON. He's wearing a purple shirt that says 'Complexity of Compiler Design.' But you are no knight. What could you do to fight the dragon? Punch? Stab? Throw the llama at him?"
 		moves down($4)
 		dragon_hp is 5
@@ -93,22 +120,37 @@ scene $5{
 				say "That's animal cruelty. And it won't help you."
 			elif (response == "run away"):
 				say "You should probably go back and look for something to help you fight the dragon."
-			say "Dragon HP: " + str(dragon_hp)
 			if (dragon_hp == 5):
+				say "dragon hp: [-----]"
 				say "DRAGON: My flames of ambiguity shall engulf you!"
 			elif (dragon_hp == 4):
+				say "dragon hp: [---- ]"
 				say "DRAGON: Look at you. Lost in a text-based dungeon with no company but a Pumping Llama. Pathetic."
 				say "The dragon is hurt but still alive. Now what?"
 			elif (dragon_hp == 3):
+				say "dragon hp: [---  ]"
 				say "DRAGON: I'm getting real tired of that sword of yours."
 				say "The dragon is hurt but still alive. Now what?"
 			elif (dragon_hp == 2):
+				say "dragon hp: [--   ]"
 				say "DRAGON: Why do you keep stabbing me?"
 				say "The dragon is hurt but still alive. Now what?"
 			elif (dragon_hp == 1):
+				say "dragon hp: [-    ]"
 				say "DRAGON: *cough* ... *cough* ..."
 				say "The dragon is hurt but still alive. Now what?"
 			elif (dragon_hp == 0):
+				say "         _________,---------.____------.___"
+				say "        /_______    `--._______  `--.____ \\"
+				say "         /__.-' `-----.____    `--.____\\`_/_"
+				say "         ,'       ___      `---.___ ___//    `-."
+				say "        /     _.-'   )'           ``---'     \  \ "
+				say "       |     /       |           . '             |"
+				say "      /    /     /   |          '    ___  )   |  |"
+				say "      |   |     |  _/` _        ` _,' _ `/) '    |"
+				say "       \_  `--._\__`--'_\-___ _,-'   '-`  ___   _/"
+				say "         `---.____ `--.__-_  /_)____,  __/  ,`-'"
+				say "                  `------__>  `-------(/(/-'-\)\)"
 				say "DRAGON: Curse you..."
 				say "You've slain the Complexity Dragon!"
 				win "You win!"
