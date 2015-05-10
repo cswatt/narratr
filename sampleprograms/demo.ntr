@@ -18,7 +18,7 @@ scene $2 {
 	action:
 		if (response == "no"):
 			say "That's your problem. You never listen."
-		elif (response):
+		if (response == "yes"):
 			say "The voice is coming from Alfred Aho!"
 			say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
 			pocket.add("sword", thesword)
