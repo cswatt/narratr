@@ -26,10 +26,12 @@ class SymTabEntry:
     # value is the value of variables. This is the AST of the definitions for
     # scenes and items.
     # symboltype is type of the symbol - "scene", "item", "integer", "string",
-    # "float", "boolean", etc...
+    # "float", "boolean", "list"
     # scope is applicable for all variables. It is the scene ID in which a
     # variable has scope. It may also be POCKET, or GLOBAL. GLOBAL is for
     # scenes and items.
+    # god is a boolean corresponding to whether the variable was declared as
+    # a god variable.
     def __init__(self, symbol, value, symboltype, scope, god):
         self.symbol = symbol
         self.value = value
@@ -48,6 +50,8 @@ class SymTab:
         self.table = {}
 
     # Uses the scope and symbol to construct the internal key representation.
+    # Note, this is just string manipulation; it does not access the symbol
+    # table entries.
     def getKey(self, symbol, scope):
         if scope == POCKET:
             key = "POCKET." + str(symbol)
@@ -65,7 +69,8 @@ class SymTab:
             raise Exception("Insert needs a valid Symbol Table entry.")
 
     # This should be the interface used to add new SymTab entries.
-    # Parameters are explained above in SymTabEntry.
+    # Parameters are explained above in SymTabEntry. god defaults to
+    # False for backward compatability.
     def insert(self, symbol, value, symboltype, scope, god=False):
         if self.getKey(symbol, scope) in self.table:
             raise Exception("Symbol already in the Symbol Table in " +
