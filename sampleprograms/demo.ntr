@@ -2,6 +2,14 @@ scene $1 {
 	setup:
 		god visit is false
 		if visit == false:
+			say "  ___    _   __      _       _     _   _       _____                 _  "
+			say " / _ \  | | / /     (_)     | |   | | ( )     |  _  |               | |  "
+			say "/ /_\ \ | |/ / _ __  _  __ _| |__ | |_|/ ___  | | | |_   _  ___  ___| |_ "
+			say "|  _  | |    \| '_ \| |/ _` | '_ \| __| / __| | | | | | | |/ _ \/ __| __|"
+			say "| | | | | |\  \ | | | | (_| | | | | |_  \__ \ \ \/' / |_| |  __/\__ \ |_ "
+			say "\_| |_/ \_| \_/_| |_|_|\__, |_| |_|\__| |___/  \_/\_\\__,_|\___||___/\__|"
+			say "                        __/ |                                            "
+			say "                       |___/                                             "
 			exposition "You wake up in a dark room. There is a door to your right. What would you like to do?"
 			visit is true
 		else:
