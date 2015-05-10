@@ -20,7 +20,7 @@
 class Node:
     def __init__(self, v, t, c=[], v_type=None, lineno=0, key=None):
         """Create node for narratr AST.
-          
+
         Constructor takes:
         v           the value of the node
         t           the variable type, defined by Lexer/Parser
