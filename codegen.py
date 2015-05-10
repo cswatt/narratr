@@ -947,7 +947,7 @@ pocket = pocket_class()\n'''
         elif pocket_node[1].children[0] == "remove":
             commands += "pocket.remove"
             commands += self._process_trailer(pocket_node[2])
-        elif pocket_node[1].children[0] == "in":
+        elif pocket_node[1].children[0] == "has":
             commands += "pocket.has"
             commands += self._process_trailer(pocket_node[2])
         else:
