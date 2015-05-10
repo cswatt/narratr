@@ -40,15 +40,6 @@ class TestParserForStatements(unittest.TestCase):
         with open('sampleprograms/4_exposition.ntr') as f:
             ast = str(p.parse(f.read()))
 
-    def test_parser_for(self):
-
-        """Test that parser can parse for."""
-        ast = ""
-
-        p = parser.ParserForNarratr()
-        with open('sampleprograms/4_for.ntr') as f:
-            ast = str(p.parse(f.read()))
-
     def test_parser_if(self):
 
         """Test that parser can parse if."""

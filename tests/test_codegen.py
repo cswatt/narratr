@@ -18,7 +18,6 @@ def tests_output():
              "sampleprograms/4_break.ntr": "Okay.\nOkay.\n -->> ",
              "sampleprograms/4_continue.ntr": "2\n3\n -->> ",
              "sampleprograms/4_elseif.ntr": "Okay.\n -->> ",
-             "sampleprograms/4_for.ntr": "Sadness is infinite.\n -->> ",
              "sampleprograms/4_if.ntr": "Okay.\n -->> ",
              "sampleprograms/4_truefalse.ntr": "Okay.\n -->> ",
              "sampleprograms/4_while.ntr": "Okay.\nOkay.\nOkay.\n -->> ",
