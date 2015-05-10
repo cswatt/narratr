@@ -16,12 +16,15 @@ scene $2 {
 		god thesword is sword("The Sword of Semantic Correctness")
 		moves left($1), down($3), right($4)
 	action:
-		if (response == "no"):
-			say "That's your problem. You never listen."
-		if (response == "yes"):
-			say "The voice is coming from Alfred Aho!"
-			say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
-			pocket.add("sword", thesword)
+		if pocket.has("sword"):
+			say "AHO: You have the sword. There's no reason for you to be in this room."
+		else:
+			if (response == "no"):
+				say "That's your problem. You never listen."
+			if (response == "yes"):
+				say "The voice is coming from Alfred Aho!"
+				say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
+				pocket.add("sword", thesword)
 	cleanup:
 }
 
