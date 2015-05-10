@@ -23,7 +23,7 @@ scene $2 {
 		else:
 			speaker is "Alfred Aho"
 			say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
-			pocket.add(thesword)
+			pocket.add("sword", thesword)
 	cleanup:
 }
 
@@ -76,7 +76,7 @@ scene $5{
 				say "DRAGON: I'm getting real tired of that sword of yours."
 			if (dragon_hp == 2):
 				say "DRAGON: Why do you keep stabbing me?"
-			if (dragon_hp == 1:
+			if (dragon_hp == 1):
 				say "DRAGON: *cough* ... *cough* ..."
 			if (dragon_hp == 0):
 				say "DRAGON: Curse you..."
@@ -84,7 +84,7 @@ scene $5{
 
 			if (response == "punch the dragon" or response == "punch dragon"):
 				say "You tried to punch the dragon with your puny, puny fists. It doesn't work."
-			if (response == "stab the dragon" or response == "stab dragon") and (thesword.pickedUp):
+			if (response == "stab the dragon" or response == "stab dragon") and (pocket.in("sword")):
 				dragon_hp is dragon_hp - 1
 			if (response == "throw the llama" or "throw llama"):
 				say "That's animal cruelty."
