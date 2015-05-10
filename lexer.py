@@ -155,7 +155,7 @@ class LexerForNarratr:
         return t
 
     # This function generates the INDENT token if a new indent is created,
-    # generates not tokens if the indent level is the same, and generates a
+    # generates no tokens if the indent level is the same, and generates a
     # DEDENT token for each indent level that is reduced.
     # All DEDENTs are not generated here. Only the DEDENTs on lines beginning
     # with a white space are geenrated here.
