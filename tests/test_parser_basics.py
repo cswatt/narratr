@@ -30,10 +30,6 @@ class TestParser(unittest.TestCase):
         with open('sampleprograms/1_constantsliterals.ntr') as f:
             ast = str(p.parse(f.read()))
 
-    def test_parser_derived(self):
-
-        pass
-
     def test_parser_list(self):
 
         """Test that parser can parse list."""

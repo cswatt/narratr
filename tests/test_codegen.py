@@ -9,6 +9,8 @@ def tests_output():
 
     cases = {"sampleprograms/0_helloworld.ntr": "Hello, World!\n -->> ",
              "sampleprograms/1_comments.ntr": "Hello.\n -->> ",
+             "sampleprograms/2_list.ntr":
+             "['apple', 'banana', 'orange', 'peach']\n -->> ",
              "sampleprograms/3_andor.ntr": "okay.\n -->> ",
              "sampleprograms/3_arithmetic.ntr":
              "6\n6\n3\n4\n3.0\n3\n3 three\n -->> ",
