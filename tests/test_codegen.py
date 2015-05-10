@@ -22,7 +22,7 @@ def tests_output():
              "sampleprograms/4_break.ntr": "Okay.\nOkay.\n -->> ",
              "sampleprograms/4_continue.ntr": "2\n3\n -->> ",
              "sampleprograms/4_elseif.ntr": "Okay.\n -->> ",
-             "sampleprograms/4_if.ntr": "Okay.\n -->> ",
+             "sampleprograms/4_if.ntr": "5\n -->> ",
              "sampleprograms/4_truefalse.ntr": "Okay.\n -->> ",
              "sampleprograms/4_while.ntr": "Okay.\nOkay.\nOkay.\n -->> ",
              }
@@ -32,6 +32,7 @@ def tests_output():
 
 def test_nonexistent_start_scene_error():
 
+    """Test that a nonexistent start scene causes an error."""
     p = parser.ParserForNarratr()
     with open('sampleprograms/6_nonexistent_start_scene.ntr') as f:
         ast = p.parse(f.read())
@@ -42,6 +43,7 @@ def test_nonexistent_start_scene_error():
 
 def check_expected_output(fname, output):
 
+    """Run each compiled program and check for output correctness."""
     p = parser.ParserForNarratr()
     try:
         with open(fname) as f:
