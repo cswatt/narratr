@@ -1,38 +1,70 @@
-scene $2{
-	setup:
-		exposition "You've entered a strange room decorated with beautiful woven baskets. You can hear a wolf howling in the distance. You're feeling slightly better, but the world is still spinning. On the table in the corner, there is a key. It seems to call to you."
-		moves left($1), right($3)
-		god key1 is key("the bronze key", 1)
-	action:
-		say "You can move left or right. What would you like to do?"
-		if (not response):
-        	continue
-            
-		%If the player doesn't give response to the say, the program skips the loop and goes to another round
-		if (response == "pick up key") and (not key1.pickedup):	
-        	pocket.add(key1)
-	cleanup:
-		say "'Goooooodbye,' howls the wolf."
-		if (key1.pickedup):
-			exposition "You've entered a strange room decorated with beautiful woven baskets. You can hear a wolf howling in the distance. You're feeling slightly better, but the world is still spinning. There is a table in the corner."
+scene $1 {
+    setup:
+        exposition "You had a lot to drink last night. You don't know where you are. Do you even know who you are? God, you're a mess."
+        moves right($2)
+    action:
+        say "You can move right. What would you like to do?"
+    cleanup:
 }
 
-scene $3{
-	setup:
-		exposition "Now you're in the last room flooded by sunlight. But there are no windows. There's a safe in the corner... but it's locked."
-		moves left($2)
-		god lock1 is lock(1)
-	action:
-		if (not response):
-        	continue
-		if (response == "use key") and (not pocket.keys):
-        
-        %The program starts checking for the matching key and lock
-        lock1.opened is true       
-        
-		%Can be either a success or a failure
-		if (lock1.opened):     
-   			%The player reaches the win state
-			win       
-	cleanup:
+scene $2 {
+    setup:
+        exposition "You've entered a strange room decorated with beautiful woven baskets. You can hear a wolf howling in the distance. You're feeling slightly better, but the world is still spinning. On the table in the corner, there is a key. It seems to call to you."
+        moves left($1), right($3)
+        god k is key("the bronze key", 1)
+    action:
+        if (response == "pick up key") and (k != 0):
+            say k.description
+            pocket.add("key", k)
+            k is 0
+        say "You can move left or right. What would you like to do?"
+    cleanup:
+        say "'Goooooodbye,' howls the wolf."
+}
+
+scene $3 {
+    setup:
+        exposition "Now you're in a room flooded by sunlight. But there are no windows. There's a safe in the corner... but it's locked."
+        moves left($2), right($4)
+        god l is lock(1)
+    action:
+        if response == "use key":
+            if pocket.has("key") and l != 0:
+                k is pocket.get("key")
+                if k.id == l.id:
+                    say "The lock is opened"
+                    pocket.remove("key")
+                    l is 0
+                else:
+                    say "You have the wrong key!"
+    cleanup:
+}
+
+scene $4 {
+    setup:
+        exposition "Now you're in the last room flooded by sunlight. But there are no windows. There's a slightly different safe in the corner... but it's locked."
+        moves left($2)
+        god l is lock(2)
+    action:
+        if response == "use key":
+            if pocket.has("key") and l != 0:
+                k is pocket.get("key")
+                if k.id == l.id:
+                    say "The lock is opened"
+                    pocket.remove("key")
+                    l is 0
+                else:
+                    say "You have the wrong key! You lose it!"
+                    pocket.remove("key")
+    cleanup:
+}
+
+item key(n,i) {
+    name is n
+    id is i
+    description is "A bronze key. It feels heavy in your hand. You could probably whack someone with it and do some real damage."
+}
+
+item lock(i) {
+    id is i
 }
