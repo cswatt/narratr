@@ -591,8 +591,6 @@ class ParserForNarratr:
                                                  "declared variable as god",
                                                  lineno=child.lineno)
             elif child.type == "atom" and child.v_type == "id":
-                if child.value in ["str", "int", "float"]:
-                    continue
                 entry = self.symtab.get(child.value, scope)
                 if entry:
                     child.key = self.symtab.getKey(child.value, scope)              

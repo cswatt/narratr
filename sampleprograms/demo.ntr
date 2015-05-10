@@ -1,11 +1,15 @@
 scene $1 {
 	setup:
-		exposition "You wake up in a dark room. There is a door to your right. What would you like to do?"
+		god visit is false
+		if visit == false:
+			exposition "You wake up in a dark room. There is a door to your right. What would you like to do?"
+			visit is true
+		else:
+			exposition "You're in the same old room where you started. Did you go in a circle? Are you lost?"
 		moves right($2)
 	action:
 		say "There is a door to your right. What would you like to do?"
 	cleanup:
-		exposition "You're in the same old room where you started. Did you go in a circle? Are you lost?"
 }
 
 start: $1
@@ -20,7 +24,7 @@ scene $2 {
 			say "AHO: You have the sword. There's no reason for you to be in this room."
 		else:
 			if (response == "no"):
-				say "That's your problem. You never listen."
+				say "That's your problem. You never listen. Are you ready to listen now?"
 			if (response == "yes"):
 				say "The voice is coming from Alfred Aho!"
 				say "'Hello, intrepid traveler,' says Alfred Aho. 'Here is a sword.'"
@@ -34,9 +38,11 @@ item sword(name){
 
 scene $3 {
 	setup: 
-		exposition "It's just a closet."
+		message is "You've walked into a closet. Better go back where you came from."
+		say message
 		moves up($2)
 	action:
+		say message
 	cleanup:
 }
 
@@ -97,5 +103,6 @@ scene $5{
 				say "That's animal cruelty."
 			if (response == "run away"):
 				say "You should probably go back and look for something to help you fight the dragon."
+			say str(dragon_hp)
 	cleanup:
 }
