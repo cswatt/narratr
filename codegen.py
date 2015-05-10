@@ -927,17 +927,6 @@ pocket = pocket_class()\n'''
             commands += ']'
             return commands
 
-    # This function takes "direction" node as argument
-    # Building a dictionary for direction, using the direction as key and
-    # scene number as value
-    def _process_direction(self, direction):
-        commands = ''
-        commands += direction.value
-        commands += '": '
-        for scene in direction.children:
-            commands += str(scene.value)
-        return commands
-
     def _process_pocket(self, pocket_node):
         commands = ""
         if len(pocket_node.children) != 3:
