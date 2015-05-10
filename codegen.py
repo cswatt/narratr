@@ -103,6 +103,38 @@ class CodeGen:
     # warning and keeps the start state declared higher in the program. If
     # called without a node, it triggers the default action, which is a start
     # state of 1. This should only be used internally.
+    # Comments on the literal Python functions are in-line below.
+    def _add_main(self, startstate):
+        if self.main == "":
+    # ABOUT THE POCKET CLASS: here we define the pocket class and initialize
+    # a global instance. The methods are fairly self explanatory.
+            self.main = '''class pocket_class:
+    def __init__(self):
+        self.data = {}
+
+    def add(self, key, val, verbose=True):
+        if self.data.get(key, None):
+            print " ** '" + key + "' is already in your pocket. **"
+        else:
+            self.data[key] = val
+            if verbose:
+                print " ** '" + key + "' is now in your pocket. **"
+
+    def update(self, key, val):
+        self.data[key] = val
+
+    def get(self, key):
+        return self.data.get(key)
+
+    def remove(self, key):
+        del self.data[key]
+
+    def has(self, key):
+        if self.data.get(key, None):
+            return True
+        return False
+
+pocket = pocket_class()\n'''
     # ABOUT THE RESPONSE CODE: the default response code, which is dropped
     # into a function called get_response(), waits for user input. When it
     # it receives this input, it strips the case (i.e. everything is made
@@ -119,35 +151,6 @@ class CodeGen:
     # function, which will return that piece of code. This is a centerpiece of
     # our approach to avoiding an overflow of activation records in large
     # games.
-    def _add_main(self, startstate):
-        if self.main == "":
-            self.main = '''class pocket_class:
-    def __init__(self):
-        self.data = {}
-
-    def add(self, key, val, verbose=True):
-        if self.data.get(key, None):
-            print " ** '" + key + "' is already in your pocket. **"
-        else:
-            self.data[key] = val
-            if verbose:
-                print " ** '" + key + "' is now in your pocket. **"
-    
-    def update(self, key, val):
-        self.data[key] = val    
-
-    def get(self, key):
-        return self.data.get(key)
-
-    def remove(self, key):
-        del self.data[key]
-    
-    def has(self, key):
-        if self.data.get(key, None):
-            return True
-        return False
-
-pocket = pocket_class()\n'''
             self.main += '''def get_response(direction):
     response = raw_input(" -->> ")
     response = response.lower()
