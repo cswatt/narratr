@@ -477,7 +477,7 @@ pocket = pocket_class()\n'''
         elif smt.value == "godis":
             commands += prefix + "try:"
             commands += prefix + "    self." + smt[0].value
-            commands += prefix + "except NameError:"
+            commands += prefix + "except AttributeError:"
             commands += prefix + "    self." + smt[0].value + " = "
             commands += self._process_testlist(smt[1])
         return commands
