@@ -1,8 +1,8 @@
 scene $1 {
 	setup:
 		say "Hello, World!"
-	action:
 		win
+	action:
 	cleanup:
 }
 
