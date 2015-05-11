@@ -1,0 +1,28 @@
+scene $1{
+	setup:
+		exposition "You are in a room. It has a key."
+		moves right($2)
+	action:
+		if response == "pick up key":
+			pocket.add("key", key(1))
+		else:
+			"There's a key on the floor. What do you want to do with it?"
+	cleanup:
+}
+
+scene $2{
+	setup:
+		exposition "Now you are in a new room. In the corner, you see a locked door."
+	action:
+		if response == "open door":
+			if pocket.has("key"):
+				say "You unlocked the door."
+				win "You won!"
+			else:
+				say "You don't have the key."
+	cleanup:
+}
+
+item key(keyid){
+	id is keyid
+}
